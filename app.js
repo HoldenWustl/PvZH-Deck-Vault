@@ -221,6 +221,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Stats Rendering Logic ---
     function renderStatsChart(limit = 'all') {
+        // --- NEW: Hero Deduction Matrix ---
+    const heroCounts = {};
+    const heroMatrix = {
+        // Plants (Alphabetical order of classes)
+        "Mega-Grow,Smarty": "Green Shadow",
+        "Kabloom,Solar": "Solar Flare",
+        "Guardian,Solar": "Wall-Knight",
+        "Mega-Grow,Solar": "Chompzilla",
+        "Guardian,Kabloom": "Spudow",
+        "Guardian,Smarty": "Citron / Beta-Carrotina",
+        "Guardian,Mega-Grow": "Grass Knuckles",
+        "Kabloom,Smarty": "Nightcap",
+        "Smarty,Solar": "Rose",
+        "Kabloom,Mega-Grow": "Captain Combustible",
+        
+        // Zombies (Alphabetical order of classes)
+        "Beastly,Hearty": "The Smash",
+        "Crazy,Sneaky": "Impfinity",
+        "Brainy,Hearty": "Rustbolt",
+        "Beastly,Crazy": "Electric Boogaloo",
+        "Beastly,Sneaky": "Brain Freeze",
+        "Brainy,Crazy": "Professor Brainstorm",
+        "Beastly,Brainy": "Immorticia",
+        "Crazy,Hearty": "Z-Mech",
+        "Hearty,Sneaky": "Neptuna",
+        "Brainy,Sneaky": "Super Brainz / HG"
+    };
     // Existing Data Accumulators
     const cardCopies = {};      
     const deckPresence = {};    
@@ -241,6 +268,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let minSparkCost = Infinity;
     let mostExpensiveDeck = null; 
     let leastExpensiveDeck = null;
+    let maxAvgCost = -1;
+    let minAvgCost = Infinity;
+    let heaviestDeck = null;
+    let lightestDeck = null;
     
     // --- NEW: Average Deck Formula Trackers ---
     let earlyGameTotal = 0; // Cost 0-2
@@ -276,6 +307,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let uniqueInThisDeck = 0;
         const deckCardNames = []; 
         let currentDeckSparkCost = 0;
+        let currentDeckTotalMana = 0;
+        const currentDeckClasses = new Set();
 
         // 1. Process Timeline
         if (deck.upload_date && deck.upload_date !== "UNKNOWN_DATE") {
@@ -333,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     
                     if (info.Cost !== null && info.Cost !== undefined) {
+                        currentDeckTotalMana += (info.Cost * count);
                         costCurve[info.Cost] = (costCurve[info.Cost] || 0) + count;
                         if (info.Cost <= 2) earlyGameTotal += count;
                         else if (info.Cost <= 5) midGameTotal += count;
@@ -340,6 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     if (info.Class) {
                         classCounts[info.Class] = (classCounts[info.Class] || 0) + count;
+                        currentDeckClasses.add(info.Class);
                     }
                     
                     if (info.Type) {
@@ -361,6 +396,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+        const sortedClasses = Array.from(currentDeckClasses).sort().join(",");
+        
+        // If it finds a match, use it. If a deck is somehow mono-class, label it as such.
+        const heroName = heroMatrix[sortedClasses] || (sortedClasses ? `Mono: ${sortedClasses}` : "Unknown");
+        heroCounts[heroName] = (heroCounts[heroName] || 0) + 1;
+
         totalUniqueCardSlots += uniqueInThisDeck;
 
         if (currentDeckSparkCost > 0) {
@@ -371,6 +412,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentDeckSparkCost < minSparkCost) {
                 minSparkCost = currentDeckSparkCost;
                 leastExpensiveDeck = deck;
+            }
+        }
+        if (currentDeckTotalMana > 0) {
+            // Since decks are strictly 40 cards, we can hardcode the divisor
+            const avgCost = currentDeckTotalMana / 40; 
+            
+            if (avgCost > maxAvgCost) {
+                maxAvgCost = avgCost;
+                heaviestDeck = deck;
+            }
+            if (avgCost < minAvgCost) {
+                minAvgCost = avgCost;
+                lightestDeck = deck;
             }
         }
 
@@ -398,6 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (document.getElementById('mostP2wDeck') && mostExpensiveDeck && leastExpensiveDeck) {
+        // --- Existing P2W DOM Updates ---
         const mostId = getYouTubeId(mostExpensiveDeck.youtube_url);
         document.getElementById('mostP2wDeck').innerText = mostExpensiveDeck.name || mostExpensiveDeck.youtube_title;
         document.getElementById('mostP2wCost').innerText = maxSparkCost.toLocaleString() + ' Sparks';
@@ -409,6 +464,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('leastP2wCost').innerText = minSparkCost.toLocaleString() + ' Sparks';
         if (leastId) document.getElementById('leastP2wImg').src = `https://img.youtube.com/vi/${leastId}/mqdefault.jpg`;
         document.getElementById('leastP2wLink').href = leastExpensiveDeck.youtube_url || "#";
+
+        // --- NEW: Heaviest/Lightest DOM Updates ---
+        if (heaviestDeck && lightestDeck) {
+            const heaviestId = getYouTubeId(heaviestDeck.youtube_url);
+            document.getElementById('heaviestDeck').innerText = heaviestDeck.name || heaviestDeck.youtube_title;
+            // Using toFixed(2) to keep the average readable (e.g. "3.45 Avg Cost")
+            document.getElementById('heaviestCost').innerText = maxAvgCost.toFixed(2) + ' Avg Cost';
+            if (heaviestId) document.getElementById('heaviestImg').src = `https://img.youtube.com/vi/${heaviestId}/mqdefault.jpg`;
+            document.getElementById('heaviestLink').href = heaviestDeck.youtube_url || "#";
+
+            const lightestId = getYouTubeId(lightestDeck.youtube_url);
+            document.getElementById('lightestDeck').innerText = lightestDeck.name || lightestDeck.youtube_title;
+            document.getElementById('lightestCost').innerText = minAvgCost.toFixed(2) + ' Avg Cost';
+            if (lightestId) document.getElementById('lightestImg').src = `https://img.youtube.com/vi/${lightestId}/mqdefault.jpg`;
+            document.getElementById('lightestLink').href = lightestDeck.youtube_url || "#";
+        }
     }
 
     // Prepare Data for Charts 
@@ -588,103 +659,103 @@ document.addEventListener('DOMContentLoaded', () => {
         options: { responsive: true, maintainAspectRatio: false, scales: { r: { grid: { color: gridColor }, angleLines: { color: gridColor }, ticks: { display: false }, pointLabels: { color: '#c9d1d9', font: { size: 12 } } } }, plugins: { legend: { display: false } } }
     });
 
-   // --- CHART 8: Rarity Breakdown ---
-    const ctx8 = document.getElementById('rarityChart').getContext('2d');
-    const canvasWidth = ctx8.canvas.clientWidth || 400; 
-    const canvasHeight = ctx8.canvas.clientHeight || 400; 
-
-    const sliceGradient = ctx8.createLinearGradient(0, 0, canvasWidth, canvasHeight); 
-    sliceGradient.addColorStop(0, '#4b00c4');  
-    sliceGradient.addColorStop(0.3, '#df00ff');
-    sliceGradient.addColorStop(0.5, '#ff5900'); 
-    sliceGradient.addColorStop(0.75, '#ffcc00');
-    sliceGradient.addColorStop(1, '#bfff00');  
-
-    const patternCanvas = document.createElement('canvas');
-    patternCanvas.width = 40;  
-    patternCanvas.height = 15; 
-    const pCtx = patternCanvas.getContext('2d');
+  // --- CHART 10: Hero Playrates (Toggleable Radar) ---
     
-    const pGradient = pCtx.createLinearGradient(0, 0, 40, 0); 
-    pGradient.addColorStop(0, '#4b00c4');    
-    pGradient.addColorStop(0.3, '#df00ff'); 
-    pGradient.addColorStop(0.5, '#ff5900');  
-    pGradient.addColorStop(0.75, '#ffcc00'); 
-    pGradient.addColorStop(1, '#bfff00');    
-    pCtx.fillStyle = pGradient;
-    pCtx.fillRect(0, 0, 40, 15);
-    const legendPattern = ctx8.createPattern(patternCanvas, 'repeat');
+    // 1. Define the exact lists (alphabetical) to keep the 10-point webs perfectly shaped
+    const plantHeroes = [
+        "Captain Combustible", "Chompzilla", "Citron / Beta-Carrotina", 
+        "Grass Knuckles", "Green Shadow", "Nightcap", "Rose", 
+        "Solar Flare", "Spudow", "Wall-Knight"
+    ];
+    const zombieHeroes = [
+        "Brain Freeze", "Electric Boogaloo", "Immorticia", "Impfinity", 
+        "Neptuna", "Professor Brainstorm", "Rustbolt", "Super Brainz / HG", 
+        "The Smash", "Z-Mech"
+    ];
 
-    const getRarityWeight = (r) => {
-        const lower = r.toLowerCase();
-        if (lower.includes('common') && !lower.includes('uncommon')) return 1;
-        if (lower.includes('uncommon')) return 2;
-        if (lower.includes('super')) return 4; 
-        if (lower.includes('rare')) return 3;
-        if (lower.includes('legendary')) return 5;
-        if (lower.includes('event')) return 6;
-        return 99; 
-    };
+    // Helper function to map counts (defaults to 0 if a hero has no decks)
+    const getHeroData = (heroList) => heroList.map(hero => heroCounts[hero] || 0);
 
-    const sortedRarityLabels = Object.keys(rarityCounts).sort((a, b) => getRarityWeight(a) - getRarityWeight(b));
-    const sortedRarityData = sortedRarityLabels.map(label => rarityCounts[label]);
-    const sortedRarityColors = sortedRarityLabels.map(r => {
-        const lower = r.toLowerCase();
-        if (lower.includes('uncommon')) return '#a1aab5'; 
-        if (lower.includes('common')) return '#f8fafd';   
-        if (lower.includes('super')) return '#6B21A8'; 
-        if (lower.includes('rare')) return '#d29922'; 
-        if (lower.includes('legendary')) return sliceGradient; 
-        if (lower.includes('event')) return '#FF4500'; 
-        return '#ffffff';
-    });
-
-    charts.rarity = new Chart(ctx8, {
-        type: 'polarArea', 
-        data: { 
-            labels: sortedRarityLabels,       
-            datasets: [{ 
-                data: sortedRarityData,       
-                backgroundColor: sortedRarityColors, 
-                borderColor: '#161b22', 
+    // 2. Initialize the chart with Plant data
+    const ctx10 = document.getElementById('heroChart').getContext('2d');
+    charts.heroPlayrates = new Chart(ctx10, {
+        type: 'radar', 
+        data: {
+            labels: plantHeroes,
+            datasets: [{
+                label: 'Decks Played',
+                data: getHeroData(plantHeroes),
+                backgroundColor: 'rgba(63, 185, 80, 0.3)', // Green for plants
+                borderColor: '#3fb950',                     
+                pointBackgroundColor: '#ffffff',            
+                pointBorderColor: '#3fb950',                
+                pointHoverBackgroundColor: '#ffffff',
+                pointHoverBorderColor: '#3fb950',
                 borderWidth: 2,
-                hoverOffset: 6 
-            }] 
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                tension: 0.3
+            }]
         },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { 
-                legend: { 
-                    position: 'right', 
-                    labels: { 
-                        generateLabels: function(chart) {
-                            const data = chart.data;
-                            if (data.labels.length && data.datasets.length) {
-                                return data.labels.map((label, i) => {
-                                    const meta = chart.getDatasetMeta(0);
-                                    let fill = data.datasets[0].backgroundColor[i];
-                                    if (label.toLowerCase().includes('legendary')) fill = legendPattern;
-                                    return {
-                                        text: label,
-                                        fillStyle: fill,
-                                        strokeStyle: data.datasets[0].borderColor,
-                                        lineWidth: data.datasets[0].borderWidth,
-                                        fontColor: '#c9d1d9',
-                                        hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
-                                        index: i
-                                    };
-                                });
-                            }
-                            return [];
-                        }
-                    } 
-                } 
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    pointLabels: { color: '#c9d1d9', font: { size: 11 } },
+                    ticks: { display: false, backdropColor: 'transparent' },
+                    suggestedMin: 0 // Prevents the center from shrinking if counts are high
+                }
             },
-            scales: { r: { ticks: { display: false }, grid: { color: '#30363d' } } }
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(22, 27, 34, 0.9)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#c9d1d9',
+                    borderColor: '#30363d',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.raw} Decks`;
+                        }
+                    }
+                }
+            }
         }
     });
 
+    // 3. Tab Click Event Listeners to swap data smoothly
+    document.querySelectorAll('.hero-tab').forEach(tab => {
+        tab.onclick = (e) => {
+            // Remove active class from all tabs, add to clicked tab
+            document.querySelectorAll('.hero-tab').forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const faction = e.target.getAttribute('data-faction');
+            const dataset = charts.heroPlayrates.data.datasets[0];
+
+            if (faction === 'plants') {
+                charts.heroPlayrates.data.labels = plantHeroes;
+                dataset.data = getHeroData(plantHeroes);
+                dataset.backgroundColor = 'rgba(63, 185, 80, 0.3)'; // Plant Green
+                dataset.borderColor = '#3fb950';
+                dataset.pointBorderColor = '#3fb950';
+            } else {
+                charts.heroPlayrates.data.labels = zombieHeroes;
+                dataset.data = getHeroData(zombieHeroes);
+                dataset.backgroundColor = 'rgba(137, 87, 229, 0.3)'; // Zombie Purple
+                dataset.borderColor = '#8957e5';
+                dataset.pointBorderColor = '#8957e5';
+            }
+            
+            // Animate the transition
+            charts.heroPlayrates.update();
+        };
+    });
+    
     // --- CHART 9: Average Deck Formula ---
     const avgEarly = validDeckCountForCurve ? (earlyGameTotal / validDeckCountForCurve).toFixed(1) : 0;
     const avgMid = validDeckCountForCurve ? (midGameTotal / validDeckCountForCurve).toFixed(1) : 0;

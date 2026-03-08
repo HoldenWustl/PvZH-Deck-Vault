@@ -508,3 +508,123 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
         align-items: flex-start;
     }
 }
+
+/* Container & Grid Setup */
+.extremes-box {
+    grid-column: 1 / -1;
+    text-align: center;
+}
+
+.extremes-grid {
+    display: grid;
+    /* This creates exactly 2 columns, max 350px wide each, centered in the box */
+    grid-template-columns: repeat(2, minmax(200px, 350px));
+    justify-content: center; 
+    gap: 40px 30px;
+    padding-top: 20px;
+}
+
+/* Base Card Styling */
+.extreme-card {
+    transition: transform 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.extreme-card:hover {
+    transform: scale(1.05);
+}
+
+/* Typography & Links */
+.extreme-title {
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.extreme-link {
+    text-decoration: none;
+    width: 100%;
+    display: block;
+}
+
+.extreme-img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 2px solid transparent; /* Replaced by specific card classes below */
+}
+
+.extreme-deck-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.extreme-cost {
+    font-size: 1.1rem;
+    margin: 5px 0 0 0;
+}
+
+/* --- Specific Card Colors --- */
+
+/* Whale Deck */
+.whale-card .extreme-title { color: #ff7b72; }
+.whale-card .extreme-img { border-color: #ff7b72; box-shadow: 0 4px 12px rgba(255, 123, 114, 0.2); }
+.whale-card .extreme-cost { color: #d2a8ff; }
+
+/* F2P Deck */
+.f2p-card .extreme-title { color: #3fb950; }
+.f2p-card .extreme-img { border-color: #3fb950; box-shadow: 0 4px 12px rgba(63, 185, 80, 0.2); }
+.f2p-card .extreme-cost { color: #a5d6ff; }
+
+/* Heaviest Curve */
+.heavy-card .extreme-title { color: #ffa657; }
+.heavy-card .extreme-img { border-color: #ffa657; box-shadow: 0 4px 12px rgba(255, 166, 87, 0.2); }
+.heavy-card .extreme-cost { color: #ffd8a8; }
+
+/* Lightest Curve */
+.light-card .extreme-title { color: #79c0ff; }
+.light-card .extreme-img { border-color: #79c0ff; box-shadow: 0 4px 12px rgba(121, 192, 255, 0.2); }
+.light-card .extreme-cost { color: #cce5ff; }
+
+/* Hero Faction Tabs */
+.hero-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.hero-tab {
+    background-color: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    padding: 6px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.hero-tab:hover {
+    background-color: #30363d;
+}
+
+/* Active states dynamically change based on faction */
+.hero-tab.active[data-faction="plants"] {
+    background-color: #3fb950;
+    color: #ffffff;
+    border-color: #3fb950;
+}
+
+.hero-tab.active[data-faction="zombies"] {
+    background-color: #8957e5;
+    color: #ffffff;
+    border-color: #8957e5;
+}
