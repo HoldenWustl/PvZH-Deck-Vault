@@ -2531,8 +2531,8 @@
         "Set": "Galactic",
         "Set #": 2.0
     },
-    "Sweet Potato": {
-        "Name": "Sweet Potato",
+    "Sweet_Potato": {
+        "Name": "Sweet_Potato",
         "Class": "Mega-Grow",
         "Cost": 1,
         "Strength": 0.0,
