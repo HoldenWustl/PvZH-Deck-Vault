@@ -11,7 +11,41 @@ let charts = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+    // --- Random Funny Adjectives ---
+    const adjectives = [
+        "glorious",
+        "delicious",
+        "unhinged",
+        "questionable",
+        "spicy",
+        "illegal",
+        "sweaty",
+        "bricked",
+        "starchy", // A little Starch Lord nod
+        "absolutely stacked",
+        "big brain",
+        "toxic",
+        "beautiful",
+        "chaotic",
+        "cursed",
+        "devious",
+        "high-rolling",
+        "diabolical",
+        "scrumptious",
+        "Weenie Beanie approved",
+        "legendary",
+        "mildly infuriating",
+        "tryhard",
+        "S-tier",
+        "Ra Zombie approved"
+    ];
+
+    // Pick a random adjective and inject it
+    const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const adjElement = document.getElementById('randomAdjective');
+    if (adjElement) {
+        adjElement.textContent = randomAdj;
+    }
     // --- DOM Elements ---
     const deckGrid = document.getElementById('deckGrid');
     const loadingEl = document.getElementById('loading');
