@@ -3150,6 +3150,25 @@
         "youtube_url": "https://www.youtube.com/watch?v=mO_Hm4bVxLw",
         "upload_date": "Aug 8, 2024"
     },
+    "deck_200": {
+        "name": "Ramp Starch Lord",
+        "cards": [
+            "x3 Garlic",
+            "x4 Primal_Sunflower",
+            "x4 Tricarrotops",
+            "x4 Twin_Sunflower",
+            "x4 Ketchup_Mechanic",
+            "x3 Blockbuster",
+            "x4 Starch_Lord",
+            "x2 Cross-Pollination",
+            "x4 Aloesaurus",
+            "x4 Astrocado",
+            "x4 Cob_Cannon"
+        ],
+        "youtube_title": "Ramp to Starch Lord",
+        "youtube_url": "https://www.youtube.com/watch?v=4v6LlzIl3QE",
+        "upload_date": "Aug 6, 2024"
+    },
     "deck_202": {
         "name": "Snakesta's Paradise",
         "cards": [
@@ -5176,6 +5195,24 @@
         "youtube_title": "Toxicity At Its Finest",
         "youtube_url": "https://www.youtube.com/watch?v=GlQjnJewcco",
         "upload_date": "Aug 13, 2023"
+    },
+    "deck_345": {
+        "name": "Heal Finish For Me",
+        "cards": [
+            "x4 Li'l_Buddy",
+            "x4 Primal_Sunflower",
+            "x4 Sweet_Potato",
+            "x4 Doubled_Mint",
+            "x4 Pepper_M.D.",
+            "x4 Ketchup_Mechanic",
+            "x4 Muscle_Sprout",
+            "x4 Cross-Pollination",
+            "x4 Aloesaurus",
+            "x4 Tactical_Cuke"
+        ],
+        "youtube_title": "The Best \"Finish For Me\" Deck EVER",
+        "youtube_url": "https://www.youtube.com/watch?v=dZPBRXx-Ayc",
+        "upload_date": "Aug 10, 2023"
     },
     "deck_346": {
         "name": "Sgt. Starchberry",
