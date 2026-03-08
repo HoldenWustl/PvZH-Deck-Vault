@@ -2147,6 +2147,24 @@
         "youtube_url": "https://www.youtube.com/watch?v=UQT0_LW40Ak",
         "upload_date": "Feb 27, 2025"
     },
+    "deck_129": {
+        "name": "Mr. Burns",
+        "cards": [
+            "x4 Astro_Shroom",
+            "x4 Kernel-Pult",
+            "x4 Berry_Blast",
+            "x4 Imitater",
+            "x4 Ketchup_Mechanic",
+            "x4 Sunnier_Shroom",
+            "x4 Pear's_Paradise",
+            "x4 Sergeant_Strongberry",
+            "x4 Sonic_Bloom",
+            "x4 Dandy_Lion_King"
+        ],
+        "youtube_title": "Burning Their Health Straight to the Ground",
+        "youtube_url": "https://www.youtube.com/watch?v=Upamz7FNJN4",
+        "upload_date": "Feb 25, 2025"
+    },
     "deck_130": {
         "name": "Flag Leftovers",
         "cards": [
@@ -6116,6 +6134,25 @@
         "youtube_url": "https://www.youtube.com/watch?v=Wpo5Z2Eg2co",
         "upload_date": "Jun 15, 2023"
     },
+    "deck_372": {
+        "name": "Doge Moon Rising",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Mystery_Egg",
+            "x4 Quickdraw_Con_Man",
+            "x4 Unlife_of_the_Party",
+            "x4 Barrel_Of_Deadbeards",
+            "x2 Exploding_Fruitcake",
+            "x4 Final_Mission",
+            "x4 Quazard",
+            "x3 Zombie's_Best_Friend",
+            "x3 Medulla_Nebula",
+            "x4 Bad_Moon_Rising"
+        ],
+        "youtube_title": "Doge Moon Rising [Highlight Country]",
+        "youtube_url": "https://www.youtube.com/watch?v=ihhzM8uuUoE",
+        "upload_date": "Jun 11, 2023"
+    },
     "deck_373": {
         "name": "New Dawn of Gargs",
         "cards": [
@@ -8213,6 +8250,25 @@
         "youtube_url": "https://www.youtube.com/watch?v=SYWAUc00ubU",
         "upload_date": "Aug 15, 2022"
     },
+    "deck_512": {
+        "name": "Conjure Leap 3.0",
+        "cards": [
+            "x4 Buried_Treasure",
+            "x3 Interdimensional_Zombie",
+            "x4 Dr._Spacetime",
+            "x4 Evolutionary_Leap",
+            "x3 Teleportation_Zombie",
+            "x4 Transformation_Station",
+            "x3 Duckstache",
+            "x3 Gentleman_Zombie",
+            "x4 Raiding_Raptor",
+            "x4 Pogo_Zombie",
+            "x4 Thinking_Cap"
+        ],
+        "youtube_title": "The Brand New Conjure Leap (Highlight Universe)",
+        "youtube_url": "https://www.youtube.com/watch?v=NPrJ_wOmI4U",
+        "upload_date": "Aug 11, 2022"
+    },
     "deck_513": {
         "name": "Frealz",
         "cards": [
@@ -8502,6 +8558,25 @@
         "youtube_title": "Finally Figured Out How To Make Freeze Decks Good",
         "youtube_url": "https://www.youtube.com/watch?v=RS0JDq2InDI",
         "upload_date": "Jul 15, 2022"
+    },
+    "deck_530": {
+        "name": "Maniacal Gadget",
+        "cards": [
+            "x3 Cheese_Cutter",
+            "x2 Neutron_Imp",
+            "x4 Teleport",
+            "x4 Cyborg_Zombie",
+            "x4 Teleportation_Zombie",
+            "x4 Area_22",
+            "x3 Rocket_Science",
+            "x4 Wormhole_Gatekeeper",
+            "x4 Bounty_Hunter",
+            "x4 Gadget_Scientist",
+            "x4 Maniacal_Laugh"
+        ],
+        "youtube_title": "Maniacal Gadget Combo Wins the Game Instantly",
+        "youtube_url": "https://www.youtube.com/watch?v=klE4Pekw_S8",
+        "upload_date": "Jul 13, 2022"
     },
     "deck_531": {
         "name": "Glass Cannon Bucket Bay",
@@ -9725,6 +9800,26 @@
         "youtube_url": "https://www.youtube.com/watch?v=SLl0w4tOfDk",
         "upload_date": "Mar 11, 2022"
     },
+    "deck_603": {
+        "name": "Tele-imps Shark",
+        "cards": [
+            "x4 Imposter",
+            "x4 Neutron_Imp",
+            "x4 Teleport",
+            "x4 Imp_Throwing_Imp",
+            "x2 Lurch_For_Lunch",
+            "x4 Teleportation_Zombie",
+            "x4 Toxic_Waste_Imp",
+            "x2 Backyard_Bounce",
+            "x4 Imp_Commander",
+            "x2 Zom-Blob",
+            "x3 Space_Cowboy",
+            "x3 Zombot_Sharktronic_Sub"
+        ],
+        "youtube_title": "Grandpa Shark Do-DO-Do-DO-Do-Do",
+        "youtube_url": "https://www.youtube.com/watch?v=ZeessAtfpdI",
+        "upload_date": "Mar 10, 2022"
+    },
     "deck_604": {
         "name": "Conjure Trickster",
         "cards": [
@@ -10498,6 +10593,25 @@
         "youtube_url": "https://www.youtube.com/watch?v=lKEX-UPk1Ak",
         "upload_date": "Dec 9, 2021"
     },
+    "deck_650": {
+        "name": "Meme- Tron",
+        "cards": [
+            "x4 Forget-Me-Nuts",
+            "x4 Lima_Pleurodon",
+            "x4 Mars_Flytrap",
+            "x4 Photosynthesizer",
+            "x4 Rotobaga",
+            "x4 Tricarrotops",
+            "x3 Spring_Bean",
+            "x3 Blockbuster",
+            "x3 Shrinking_Violet",
+            "x4 Starch_Lord",
+            "x3 Tough_Beets"
+        ],
+        "youtube_title": "I Turned Countertron Into a Meme Deck (And It's Still OP)",
+        "youtube_url": "https://www.youtube.com/watch?v=mpsLCGFKNOM",
+        "upload_date": "Dec 7, 2021"
+    },
     "deck_652": {
         "name": "Midtuna",
         "cards": [
@@ -11037,6 +11151,25 @@
         "youtube_title": "OTK INSTEAD",
         "youtube_url": "https://www.youtube.com/watch?v=rGBGdNz40xQ",
         "upload_date": "Sep 15, 2021"
+    },
+    "deck_688": {
+        "name": "Valkro",
+        "cards": [
+            "x4 Disco-Naut",
+            "x4 Grave_Robber",
+            "x4 Quickdraw_Con_Man",
+            "x4 Aerobics_Instructor",
+            "x4 Disco_Dance_Floor",
+            "x3 Exploding_Fruitcake",
+            "x4 Teleportation_Zombie",
+            "x4 Jester",
+            "x3 Moon_Base_Z",
+            "x2 Mustache_Monument",
+            "x4 Valkyrie"
+        ],
+        "youtube_title": "Valk-ggro",
+        "youtube_url": "https://www.youtube.com/watch?v=I_VTCa1zNB8",
+        "upload_date": "Sep 13, 2021"
     },
     "deck_689": {
         "name": "Sneeze-Bot",
@@ -12821,6 +12954,25 @@
         "youtube_title": "Cat Lady Blob Hybrid",
         "youtube_url": "https://www.youtube.com/watch?v=ALoz2nmroV8",
         "upload_date": "Jan 25, 2021"
+    },
+    "deck_789": {
+        "name": "Rampspacito",
+        "cards": [
+            "x1 Swabbie",
+            "x4 Buried_Treasure",
+            "x4 Interdimensional_Zombie",
+            "x4 Cryo-Brain",
+            "x4 Dr._Spacetime",
+            "x4 Evolutionary_Leap",
+            "x4 Brain_Vendor",
+            "x3 Medulla_Nebula",
+            "x4 Pogo_Zombie",
+            "x4 Mixed-Up_Gravedigger",
+            "x4 Bad_Moon_Rising"
+        ],
+        "youtube_title": "RAMPSPACITO (My New Favorite Combo)",
+        "youtube_url": "https://www.youtube.com/watch?v=Gvu8vINoHRs",
+        "upload_date": "Jan 23, 2021"
     },
     "deck_790": {
         "name": "Rampspresso",
