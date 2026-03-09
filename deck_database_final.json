@@ -15792,6 +15792,26 @@
         "youtube_url": "https://www.youtube.com/watch?v=qwn4mmdy2mw",
         "upload_date": "May 16, 2024"
     },
+    "deck_1007": {
+        "name": "Mustache Ramp",
+        "cards": [
+            "x4 Cheese_Cutter",
+            "x4 Interdimensional_Zombie",
+            "x4 Mustache_Waxer",
+            "x4 Teleport",
+            "x3 Lurch_For_Lunch",
+            "x2 Synchronized_Swimmer",
+            "x4 Teleportation_Zombie",
+            "x4 Duckstache",
+            "x3 Medulla_Nebula",
+            "x2 Rocket_Science",
+            "x3 Viking",
+            "x3 Kitchen_Sink_Zombie"
+        ],
+        "youtube_title": "PvZ Heroes Highlights that Kept My Mewing Streak Alive",
+        "youtube_url": "https://www.youtube.com/watch?v=gANLUChtc8A",
+        "upload_date": "Mar 30, 2024"
+    },
     "deck_1010": {
         "name": "Ramp Plank Leap",
         "cards": [
@@ -15910,6 +15930,25 @@
         "youtube_url": "https://www.youtube.com/watch?v=750j6Q94lUA",
         "upload_date": "Dec 25, 2023"
     },
+    "deck_1017": {
+        "name": "Ice Pour",
+        "cards": [
+            "x4 Forget-Me-Nuts",
+            "x4 Haunted_Pumpking",
+            "x4 Kernel-Pult",
+            "x4 Photosynthesizer",
+            "x4 Primal_Sunflower",
+            "x3 Eyespore",
+            "x4 Tricarrotops",
+            "x2 Blockbuster",
+            "x3 Elderberry",
+            "x4 Astrocado",
+            "x4 Cob_Cannon"
+        ],
+        "youtube_title": "Bro Didn't Live Up to His Name...",
+        "youtube_url": "https://www.youtube.com/watch?v=h1zbGFI5hGo",
+        "upload_date": "Dec 24, 2023"
+    },
     "deck_1018": {
         "name": "Troll Feet",
         "cards": [
@@ -15987,6 +16026,26 @@
         "youtube_title": "A Totally 100% Fair and Balanced Match of PvZ Heroes",
         "youtube_url": "https://www.youtube.com/watch?v=G_O7jSEvAC0",
         "upload_date": "Dec 10, 2023"
+    },
+    "deck_1023": {
+        "name": "Cornhub",
+        "cards": [
+            "x3 Kernel-Pult",
+            "x4 Primal_Sunflower",
+            "x4 Berry_Blast",
+            "x2 Eyespore",
+            "x4 Twin_Sunflower",
+            "x2 Solar_Winds",
+            "x3 Sunnier_Shroom",
+            "x4 Metal_Petal_Sunflower",
+            "x4 Cob_Cannon",
+            "x4 Toadstool",
+            "x4 Kernel_Corn",
+            "x2 Cornucopia"
+        ],
+        "youtube_title": "The FAIL of the Century",
+        "youtube_url": "https://www.youtube.com/watch?v=P8Xlui3bpJI",
+        "upload_date": "Dec 5, 2023"
     },
     "deck_1024": {
         "name": "Cornucopium",
@@ -16597,6 +16656,24 @@
         "youtube_url": "https://www.youtube.com/watch?v=1Qp1pgdtK8g",
         "upload_date": "Aug 7, 2023"
     },
+    "deck_1057": {
+        "name": "Professor Brainswarm",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Interdimensional_Zombie",
+            "x4 Mystery_Egg",
+            "x4 Neutron_Imp",
+            "x4 Quickdraw_Con_Man",
+            "x4 Unlife_of_the_Party",
+            "x4 Evolutionary_Leap",
+            "x4 Exploding_Fruitcake",
+            "x4 Quazard",
+            "x4 Transformation_Station"
+        ],
+        "youtube_title": "Get Whaled LMAO",
+        "youtube_url": "https://www.youtube.com/watch?v=lG0Y6WBa_MA",
+        "upload_date": "Jul 31, 2023"
+    },
     "deck_1058": {
         "name": "Mechasaur Garg Yeet",
         "cards": [
@@ -16655,6 +16732,26 @@
         "youtube_url": "https://www.youtube.com/watch?v=mK6NfRlt6wc",
         "upload_date": "Jul 17, 2023"
     },
+    "deck_1061": {
+        "name": "New Dawn Pets",
+        "cards": [
+            "x4 Camel_Crossing",
+            "x4 Cat_Lady",
+            "x4 Fraidy_Cat",
+            "x2 Kangaroo_Rider",
+            "x3 Dolphin_Rider",
+            "x3 Hunting_Grounds",
+            "x4 Pied_Piper",
+            "x2 Skunk_Punk",
+            "x4 Zookeeper",
+            "x4 Going_Viral",
+            "x4 Locust_Swarm",
+            "x2 Primeval_Yeti"
+        ],
+        "youtube_title": "I'm Only Posting This Because You Guys Enjoy Watching Me Suffer",
+        "youtube_url": "https://www.youtube.com/watch?v=P4oUcry_C5E",
+        "upload_date": "Jul 8, 2023"
+    },
     "deck_1062": {
         "name": "Once Upon a Starch Lord",
         "cards": [
@@ -16674,6 +16771,24 @@
         "youtube_title": "The Greatest PvZ Heroes Ohio Moments EVER",
         "youtube_url": "https://www.youtube.com/watch?v=PUuUUBytLtg",
         "upload_date": "Jul 2, 2023"
+    },
+    "deck_1063": {
+        "name": "Trollekale",
+        "cards": [
+            "x4 Li'l_Buddy",
+            "x4 Reincarnation",
+            "x4 Pepper_M.D.",
+            "x4 2nd-Best_Taco_of_All_Time",
+            "x4 Ketchup_Mechanic",
+            "x4 Molekale",
+            "x4 Pear's_Paradise",
+            "x4 Aloesaurus",
+            "x4 Cob_Cannon",
+            "x4 Astro_Vera"
+        ],
+        "youtube_title": "My Massive Brain-Fart Almost Lost Me This Game on Turn 1",
+        "youtube_url": "https://www.youtube.com/watch?v=XgIinXVRAks",
+        "upload_date": "Jun 30, 2023"
     },
     "deck_1064": {
         "name": "Excavator? | hardly know her",
@@ -16714,6 +16829,25 @@
         "youtube_title": "New Mod, New Dawn, New Highlight Match",
         "youtube_url": "https://www.youtube.com/watch?v=H1tcf7eN9QM",
         "upload_date": "Jun 24, 2023"
+    },
+    "deck_1066": {
+        "name": "Doge Moon Rising",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Mystery_Egg",
+            "x4 Quickdraw_Con_Man",
+            "x4 Unlife_of_the_Party",
+            "x4 Barrel_Of_Deadbeards",
+            "x2 Exploding_Fruitcake",
+            "x4 Final_Mission",
+            "x4 Quazard",
+            "x3 Zombie's_Best_Friend",
+            "x3 Medulla_Nebula",
+            "x4 Bad_Moon_Rising"
+        ],
+        "youtube_title": "When Miracles Happen in PvZ Heroes",
+        "youtube_url": "https://www.youtube.com/watch?v=xB78X5HDu4o",
+        "upload_date": "Jun 20, 2023"
     },
     "deck_1067": {
         "name": "Doge Moon Rising",
@@ -16772,6 +16906,45 @@
         "youtube_title": "Here's Why You Should NOT Transmogrify a 1-Cost Card",
         "youtube_url": "https://www.youtube.com/watch?v=LROCJzijwPo",
         "upload_date": "May 30, 2023"
+    },
+    "deck_1071": {
+        "name": "100% Flowers",
+        "cards": [
+            "x2 Li'l_Buddy",
+            "x4 Forget-Me-Nuts",
+            "x2 Galacta-Cactus",
+            "x4 Primal_Sunflower",
+            "x2 Sunflower",
+            "x4 Twin_Sunflower",
+            "x2 Bloomerang",
+            "x4 Elderberry",
+            "x4 Briar_Rose",
+            "x4 Power_Flower",
+            "x4 Poppin'_Poppies",
+            "x4 Soul_Patch"
+        ],
+        "youtube_title": "The Greatest Comeback in PvZ Heroes History",
+        "youtube_url": "https://www.youtube.com/watch?v=S4YZKPqJfkM",
+        "upload_date": "May 26, 2023"
+    },
+    "deck_1072": {
+        "name": "Lower Your Plants",
+        "cards": [
+            "x4 Kernel-Pult",
+            "x4 Bog_of_Enlightenment",
+            "x4 Ketchup_Mechanic",
+            "x4 Sunnier_Shroom",
+            "x3 Whack-a-Zombie",
+            "x4 Shrinking_Violet",
+            "x2 Aloesaurus",
+            "x3 Brainana",
+            "x4 Cob_Cannon",
+            "x4 Toadstool",
+            "x4 The_Great_Zucchini"
+        ],
+        "youtube_title": "How Long Can I Survive With 1 Health Against The Most Aggressive Deck In The Game?",
+        "youtube_url": "https://www.youtube.com/watch?v=Zaz2QWqW1T0",
+        "upload_date": "May 20, 2023"
     },
     "deck_1073": {
         "name": "Cornspresso Ciesta",
@@ -16886,6 +17059,25 @@
         "youtube_url": "https://www.youtube.com/watch?v=O1qx7GpZJ-o",
         "upload_date": "Apr 20, 2023"
     },
+    "deck_1079": {
+        "name": "Transformation Nation",
+        "cards": [
+            "x4 Kernel-Pult",
+            "x4 Li'l_Buddy",
+            "x4 Puff_Shroom",
+            "x4 Sunflower",
+            "x4 Shroom_For_Two",
+            "x3 Mushroom_Grotto",
+            "x3 Invasive_Species",
+            "x3 Gloom-Shroom",
+            "x4 Reincarnation",
+            "x3 Petal-Morphosis",
+            "x4 Molekale"
+        ],
+        "youtube_title": "Top INSANE Highlights From the PvZ Heroes Ohio Mod",
+        "youtube_url": "https://www.youtube.com/watch?v=f0nQqv1MTDo",
+        "upload_date": "Apr 14, 2023"
+    },
     "deck_1080": {
         "name": "Conjurecuplication",
         "cards": [
@@ -16903,6 +17095,24 @@
         "youtube_title": "That Time I Had So Many Cards In My Hand, I Couldn't Even See Half of Them",
         "youtube_url": "https://www.youtube.com/watch?v=b3mlgczGqX4",
         "upload_date": "Apr 13, 2023"
+    },
+    "deck_1082": {
+        "name": "Ramp Conjure Mania",
+        "cards": [
+            "x4 Kernel-Pult",
+            "x4 Li'l_Buddy",
+            "x4 Sunflower",
+            "x4 Twin_Sunflower",
+            "x4 Cabbage_Pult",
+            "x4 Typical_Beanstalk",
+            "x4 Cosmic_Sunflower",
+            "x4 Cosmic_Peashooter",
+            "x4 Captain_Cucumber",
+            "x4 Pod_Fighter"
+        ],
+        "youtube_title": "EZ Ohio Mod Turn-1 Lethal",
+        "youtube_url": "https://www.youtube.com/watch?v=_ncxKT6SMgc",
+        "upload_date": "Apr 3, 2023"
     },
     "deck_1083": {
         "name": "Ohio Cyclecap",
@@ -17655,6 +17865,25 @@
         "youtube_url": "https://www.youtube.com/watch?v=_k1xMrReF4U",
         "upload_date": "Nov 6, 2021"
     },
+    "deck_1139": {
+        "name": "Valkaloo",
+        "cards": [
+            "x4 Goat",
+            "x4 Cheese_Cutter",
+            "x4 Quickdraw_Con_Man",
+            "x3 Secret_Agent",
+            "x4 Barrel_Of_Deadbeards",
+            "x3 Exploding_Fruitcake",
+            "x3 Final_Mission",
+            "x4 Synchronized_Swimmer",
+            "x3 Area_22",
+            "x4 Hover-Goat_3000",
+            "x4 Valkyrie"
+        ],
+        "youtube_title": "PvZ Heroes Fails That Make You Say \"Errhh?\"",
+        "youtube_url": "https://www.youtube.com/watch?v=OoIW1Q9tSTs",
+        "upload_date": "Oct 8, 2021"
+    },
     "deck_1140": {
         "name": "Thice Anti-Hero",
         "cards": [
@@ -17749,6 +17978,26 @@
         "youtube_title": "XXL PvZ Heroes Highlights",
         "youtube_url": "https://www.youtube.com/watch?v=KuiJAaANBmU",
         "upload_date": "Jun 4, 2021"
+    },
+    "deck_1147": {
+        "name": "Binary Trick-Stars",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Teleport",
+            "x2 Trapper_Territory",
+            "x4 Barrel_Of_Deadbeards",
+            "x4 Exploding_Fruitcake",
+            "x3 Final_Mission",
+            "x3 Teleportation_Zombie",
+            "x3 Fun-Dead_Raiser",
+            "x3 Mustache_Monument",
+            "x2 The_Chickening",
+            "x4 Binary_Stars",
+            "x4 Trickster"
+        ],
+        "youtube_title": "PvZ Heroes Fails Built Like a Convertible",
+        "youtube_url": "https://www.youtube.com/watch?v=8oPL6x3O-2g",
+        "upload_date": "May 23, 2021"
     },
     "deck_1150": {
         "name": "Leap Moon Rusting",
@@ -17863,6 +18112,43 @@
         "youtube_title": "PvZ Heroes Fails That Got Stuck In The Suez Canal",
         "youtube_url": "https://www.youtube.com/watch?v=ak2lMRqHcr0",
         "upload_date": "Mar 30, 2021"
+    },
+    "deck_1156": {
+        "name": "Unlimited Fire Rooster",
+        "cards": [
+            "x4 Swabbie",
+            "x4 Imp",
+            "x4 Imposter",
+            "x4 Mini_Ninja",
+            "x4 Fire_Rooster",
+            "x4 Fishy_Imp",
+            "x4 Frosty_Mustache",
+            "x4 Sugary_Treat",
+            "x4 Imp_Commander",
+            "x4 Binary_Stars"
+        ],
+        "youtube_title": "The \"Infinite\" Fig Vs. Fire Rooster Combo Challenge",
+        "youtube_url": "https://www.youtube.com/watch?v=dfiyrI-qUxo",
+        "upload_date": "Mar 24, 2021"
+    },
+    "deck_1157": {
+        "name": "Mill-Finityv",
+        "cards": [
+            "x4 Quickdraw_Con_Man",
+            "x4 Trapper_Territory",
+            "x4 Dr._Spacetime",
+            "x4 Exploding_Fruitcake",
+            "x3 Monkey_Smuggler",
+            "x4 Backyard_Bounce",
+            "x4 Excavator_Zombie",
+            "x4 Pogo_Zombie",
+            "x4 Mixed-Up_Gravedigger",
+            "x3 Zombot_Stomp",
+            "x2 Gargantuars'_Feast"
+        ],
+        "youtube_title": "PvZ Heroes Highlights That Grew More Than GameStop Stonks",
+        "youtube_url": "https://www.youtube.com/watch?v=6lewlJqmZb4",
+        "upload_date": "Mar 2, 2021"
     },
     "deck_1158": {
         "name": "Teleport Plank",
@@ -18227,6 +18513,24 @@
         "youtube_url": "https://www.youtube.com/watch?v=YLR4Bt-HCPY",
         "upload_date": "Feb 19, 2020"
     },
+    "deck_1213": {
+        "name": "Splash Or Pass",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Graveyard",
+            "x4 Barrel_of_Barrels",
+            "x4 Barrel_Of_Deadbeards",
+            "x4 Final_Mission",
+            "x4 Ice_Pirate",
+            "x4 Space_Ninja",
+            "x4 Tankylosaurus",
+            "x4 Zombot_Sharktronic_Sub",
+            "x4 Zombot_Plank_Walker"
+        ],
+        "youtube_title": "1 Damage = YO DEAD!",
+        "youtube_url": "https://www.youtube.com/watch?v=ZWKuAFIyC_E",
+        "upload_date": "Feb 14, 2020"
+    },
     "deck_1214": {
         "name": "Banana COnjure",
         "cards": [
@@ -18267,6 +18571,25 @@
         "youtube_url": "https://www.youtube.com/watch?v=lba2szl4Vkg",
         "upload_date": "Feb 5, 2020"
     },
+    "deck_1216": {
+        "name": "Hah, More Like, Super Hole",
+        "cards": [
+            "x2 Arm_Wrestler",
+            "x3 Black_Hole",
+            "x4 Planetary_Gladiator",
+            "x4 Sumo_Wrestler",
+            "x4 Going_Viral",
+            "x3 Rocket_Science",
+            "x4 Team_Mascot",
+            "x4 Parasol_Zombie",
+            "x4 Zombie_Coach",
+            "x4 All-Star_Zombie",
+            "x4 Defensive_End"
+        ],
+        "youtube_title": "High Tier Sports Deck In 2020 + My Super Bowl Prediction",
+        "youtube_url": "https://www.youtube.com/watch?v=A2LRtSpzsy0",
+        "upload_date": "Feb 3, 2020"
+    },
     "deck_1217": {
         "name": "Budget Blob",
         "cards": [
@@ -18284,6 +18607,25 @@
         "youtube_title": "PvZ Heroes Moments That Simply Blew My Mind",
         "youtube_url": "https://www.youtube.com/watch?v=2WDZROm9sOM",
         "upload_date": "Jan 29, 2020"
+    },
+    "deck_1221": {
+        "name": "Graveyard Zombot GOs4(",
+        "cards": [
+            "x4 Cheese_Cutter",
+            "x4 Graveyard",
+            "x3 Nibble",
+            "x4 Cyborg_Zombie",
+            "x3 Extinction_Event",
+            "x4 Excavator_Zombie",
+            "x4 Line_Dancing_Zombie",
+            "x4 Pogo_Zombie",
+            "x4 Mixed-Up_Gravedigger",
+            "x3 Nurse_Garg",
+            "x3 Zombot_1000"
+        ],
+        "youtube_title": "PvZ Heroes Highlights So Epic, They Prevented WW3",
+        "youtube_url": "https://www.youtube.com/watch?v=ld41LNMt2s4",
+        "upload_date": "Jan 11, 2020"
     },
     "deck_1223": {
         "name": "Yes-Nut November",
@@ -18455,6 +18797,43 @@
         "youtube_title": "Best Plant Deck 2019?!",
         "youtube_url": "https://www.youtube.com/watch?v=syw6ZpfNGS4",
         "upload_date": "Nov 30, 2019"
+    },
+    "deck_1233": {
+        "name": "LOOP Con ytire:",
+        "cards": [
+            "x4 Buried_Treasure",
+            "x2 Imposter",
+            "x4 Barrel_of_Barrels",
+            "x4 Cosmic_Scientist",
+            "x4 Dr._Spacetime",
+            "x4 Frosty_Mustache",
+            "x4 Raiding_Raptor",
+            "x4 Trick-or-Treater",
+            "x4 Mad_Chemist",
+            "x4 Thinking_Cap",
+            "x2 Triplication"
+        ],
+        "youtube_title": "PvZ Heroes Highlights That Turned All The Frogs Happy",
+        "youtube_url": "https://www.youtube.com/watch?v=P7-WQ8aV_Xo",
+        "upload_date": "Nov 28, 2019"
+    },
+    "deck_1234": {
+        "name": "[acters Gardener's Pets,",
+        "cards": [
+            "x4 Cheese_Cutter",
+            "x4 Fraidy_Cat",
+            "x4 Smoke_Bomb",
+            "x4 Botanist",
+            "x4 Fire_Rooster",
+            "x4 Hunting_Grounds",
+            "x4 Vimpire",
+            "x4 Ancient_Vimpire",
+            "x4 Space_Cowboy",
+            "x4 Maniacal_Laugh"
+        ],
+        "youtube_title": "Dracula's Gardner's Pets",
+        "youtube_url": "https://www.youtube.com/watch?v=juAlyvY--Mc",
+        "upload_date": "Nov 21, 2019"
     },
     "deck_1235": {
         "name": "Ovycletron 3000",
@@ -18741,6 +19120,25 @@
         "youtube_url": "https://www.youtube.com/watch?v=H-QPgQnWSSA",
         "upload_date": "Sep 13, 2019"
     },
+    "deck_1256": {
+        "name": "IVEIKC IVE? LAY. LAMY",
+        "cards": [
+            "x4 Li'l_Buddy",
+            "x3 Eyespore",
+            "x4 Pepper_M.D.",
+            "x3 Sweet_Pea",
+            "x4 2nd-Best_Taco_of_All_Time",
+            "x3 Flourish",
+            "x4 Ketchup_Mechanic",
+            "x4 Heartichoke",
+            "x3 Cross-Pollination",
+            "x4 Venus_Flytrap",
+            "x4 Onion_Rings"
+        ],
+        "youtube_title": "Make Me Cry, Daddy!",
+        "youtube_url": "https://www.youtube.com/watch?v=7kQiCmPXkKs",
+        "upload_date": "Sep 7, 2019"
+    },
     "deck_1257": {
         "name": "Aggro St woos",
         "cards": [
@@ -18987,6 +19385,25 @@
         "youtube_title": "The OP Secret Swimmer Deck",
         "youtube_url": "https://www.youtube.com/watch?v=NDOHvATZawc",
         "upload_date": "Jul 22, 2019"
+    },
+    "deck_1273": {
+        "name": "OlK Bixuy Stars",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Teleport",
+            "x2 Barrel_Of_Deadbeards",
+            "x4 Beam_Me_Up",
+            "x4 Exploding_Fruitcake",
+            "x4 Final_Mission",
+            "x2 Quazard",
+            "x4 Kite_Flyer",
+            "x4 Mustache_Monument",
+            "x4 Binary_Stars",
+            "x4 Trickster"
+        ],
+        "youtube_title": "200 IQ Moments In PvZ Heroes",
+        "youtube_url": "https://www.youtube.com/watch?v=eiwkNytFx7s",
+        "upload_date": "Jul 18, 2019"
     },
     "deck_1277": {
         "name": "bt MW] D2acichy!",
@@ -19327,6 +19744,26 @@
         "youtube_url": "https://www.youtube.com/watch?v=qKlV4jzR6Sk",
         "upload_date": "Jul 10, 2018"
     },
+    "deck_1477": {
+        "name": "Savae",
+        "cards": [
+            "x4 Bonk_Choy",
+            "x2 Lily_Pad",
+            "x4 Primal_Peashooter",
+            "x3 Shellery",
+            "x3 Black_Eyed_Pea",
+            "x2 Coffee_Grounds",
+            "x3 Pea_Patch",
+            "x4 Captain_Cucumber",
+            "x4 Bananasaurus_Rex",
+            "x3 Plant_Food",
+            "x4 Savage_Spinach",
+            "x4 Gatling_Pea"
+        ],
+        "youtube_title": "PvZ Heroes: The Hunt Control Deck",
+        "youtube_url": "https://www.youtube.com/watch?v=smvGUDVThRo",
+        "upload_date": "Jun 24, 2018"
+    },
     "deck_1483": {
         "name": "Tato Dns",
         "cards": [
@@ -19595,6 +20032,24 @@
         "youtube_title": "Citron Is Not Dead",
         "youtube_url": "https://www.youtube.com/watch?v=CnBoyjDLzy4",
         "upload_date": "Jan 5, 2018"
+    },
+    "deck_1599": {
+        "name": "Ray to Bad Moon Rising",
+        "cards": [
+            "x4 Swabbie",
+            "x4 Leprechaun_Imp",
+            "x4 Evolutionary_Leap",
+            "x4 Regifting_Zombie",
+            "x4 Brain_Vendor",
+            "x4 Medulla_Nebula",
+            "x4 Pogo_Zombie",
+            "x4 Mixed-Up_Gravedigger",
+            "x4 Bad_Moon_Rising",
+            "x4 Zombot_Plank_Walker"
+        ],
+        "youtube_title": "The Best Zombie Decks - Every Hero",
+        "youtube_url": "https://www.youtube.com/watch?v=X885kJ_uae4",
+        "upload_date": "Jan 3, 2018"
     },
     "deck_1600": {
         "name": "Fadlar Throttle Peay",
