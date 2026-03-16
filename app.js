@@ -1672,9 +1672,13 @@ function generateDeckName(deck, isPlant) {
 
 
 // 4. Render the Resulting Deck (UPDATED WITH NAMING ENGINE)
+// Variable to store the formatted text for the clipboard
+let currentClipboardText = "";
+
 function renderGeneratedDeck(deck) {
     const resultsContainer = document.getElementById('generatedDeckList');
     const title = document.getElementById('generatedDeckTitle');
+    const copyBtn = document.getElementById('copyDeckBtn'); // Grab the new button
     
     resultsContainer.innerHTML = '';
     title.classList.remove('hidden');
@@ -1696,11 +1700,14 @@ function renderGeneratedDeck(deck) {
     const isPlant = currentFaction === "Plant";
     const aiDeckName = generateDeckName(deck, isPlant);
 
-    // Update Title with the AI Name AND the Hero!
+    // Update Title with the AI Name AND the Hero
     title.innerHTML = `
         <div style="font-size: 1.2em; color: var(--accent); font-style: italic;">"${aiDeckName}"</div>
         <div style="font-size: 0.75em; color: var(--text-secondary); margin-top: 5px;">A Deck for ${heroName}</div>
     `;
+
+    // --- START BUILDING THE CLIPBOARD STRING ---
+    currentClipboardText = `Deck: ${aiDeckName}\nHero: ${heroName}\n\n`;
 
     const manaSymbol = isPlant ? '☀️' : '🧠';
     const manaColor = isPlant ? '#e3c800' : '#b259db';
@@ -1708,7 +1715,6 @@ function renderGeneratedDeck(deck) {
     deck.forEach(card => {
         const div = document.createElement('div');
         div.className = 'generated-card-item';
-        // Note: I swapped these hardcoded colors to use your CSS variables from earlier so it matches the theme perfectly!
         div.style.padding = '10px';
         div.style.background = 'var(--card-bg)';
         div.style.border = '1px solid rgba(255, 255, 255, 0.05)';
@@ -1725,8 +1731,35 @@ function renderGeneratedDeck(deck) {
             <span style="font-weight: bold; color: var(--accent);">x${card.count}</span>
         `;
         resultsContainer.appendChild(div);
+
+        // --- ADD CARD TO CLIPBOARD STRING ---
+        currentClipboardText += `${card.count}x ${displayName}\n`;
     });
+
+    // Show the copy button and reset its text just in case
+    copyBtn.classList.remove('hidden');
+    copyBtn.innerText = "Copy to Clipboard";
 }
+
+// --- ADD THE CLICK LISTENER ---
+document.getElementById('copyDeckBtn').addEventListener('click', (e) => {
+    if (!currentClipboardText) return;
+
+    // Use the modern Clipboard API
+    navigator.clipboard.writeText(currentClipboardText).then(() => {
+        // Give the user visual feedback!
+        const btn = e.target;
+        btn.innerText = "Copied!";
+        btn.style.background = "#4CAF50"; // Turn it green briefly
+
+        setTimeout(() => {
+            btn.innerText = "Copy to Clipboard";
+            btn.style.background = ""; // Reset to your CSS class default
+        }, 2000);
+    }).catch(err => {
+        console.error("Failed to copy text: ", err);
+    });
+});
 
 // --- ROUTING LOGIC ---
 
