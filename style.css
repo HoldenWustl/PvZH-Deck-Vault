@@ -377,10 +377,12 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 .chart-subtitle { font-size: 0.85rem; color: #8b949e; margin: 0 0 15px 0; }
 
 .canvas-wrapper {
-    position: relative;
+    position: relative; /* Crucial: Tells the chart exactly what to size itself against */
     width: 100%;
-    flex-grow: 1; /* Pushes the canvas to fill the box */
-    min-height: 350px; /* Big, readable charts! */
+    max-width: 100vw;
+    height: 300px; /* Set a fixed height so it never grows infinitely */
+    overflow-x: auto; 
+    box-sizing: border-box;
 }
 
 /* =========================================
@@ -1077,22 +1079,6 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     z-index: 11;
 }
 
-.card-quantity {
-    position: absolute;
-    bottom: 8px;
-    left: 6px;
-    background: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    padding: 3px 7px;
-    border-radius: 4px;
-    /* Clean, matching font style */
-    font-family: inherit; 
-    font-size: 0.75rem;
-    font-weight: 600; 
-    text-transform: uppercase;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    pointer-events: none;
-}
 
 
 /* Clean text-only hover effect */
@@ -1168,19 +1154,21 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Ensure the quantity badge stays in the right spot */
 .card-quantity {
+    /* Keep your existing colors, borders, and z-index */
     position: absolute;
-    bottom: 10px; /* Overlayed on the bottom of the image */
-    left: 8px;
-    background: rgba(0, 0, 0, 0.85); /* Deep dark background */
+    bottom: 4px; /* Moved down closer to the edge (was 10px) */
+    left: 4px;   /* Moved left closer to the edge (was 8px) */
+    padding: 1px 6px; /* Reduced horizontal padding to shrink the box */
+    font-size: 11px;  /* Slightly smaller font to save space */
+    
+    background: rgba(0, 0, 0, 0.85);
     color: #ffffff;
-    padding: 2px 8px;
     border-radius: 4px;
-    font-size: 12px;
     font-weight: 900;
     letter-spacing: 0.5px;
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle edge to make it pop */
-    z-index: 5;
-    pointer-events: none; /* Clicks pass through to the image */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 11;
+    pointer-events: none;
     box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
@@ -1337,4 +1325,25 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     /* Custom Scrollbar for a cleaner look */
     scrollbar-width: thin;
     scrollbar-color: var(--accent) #222;
+}
+/* Constrain the chart box and allow internal scrolling */
+.chart-box, 
+.canvas-wrapper {
+    width: 100%;
+    max-width: 100vw; /* Prevents it from breaking the screen width */
+    overflow-x: auto; /* Adds a scrollbar ONLY to the chart if it overflows */
+    box-sizing: border-box;
+}
+@media (max-width: 600px) {
+    /* Reduce modal padding to give the cards more screen real estate */
+    .deck-modal-content {
+        width: 95%;
+        padding: 15px 10px; 
+    }
+
+    /* Drop to 3 columns (or change to 2 if you want them even bigger) */
+    .visual-deck-grid {
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 8px; /* Slightly smaller gap on mobile */
+    }
 }
