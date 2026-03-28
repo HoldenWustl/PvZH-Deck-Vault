@@ -65,6 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const backBtn = document.getElementById('backBtn');
     const crafterBtn = document.getElementById('crafterBtn');
     const crafterView = document.getElementById('crafterView');
+    const gamesView = document.getElementById('gamesView');
+const gamesBtn = document.getElementById('gamesBtn');
 
     // --- Fetch Database ---
    // --- 1. SET UP A "DATA LOADED" FLAG ---
@@ -106,37 +108,45 @@ Promise.all([
 });
 function handleRouting() {
     // IMPORTANT: If the data hasn't finished downloading yet, stop right here!
-    // The Promise.all block above will call handleRouting() again once it is ready.
     if (!isDataLoaded) return; 
 
     const hash = window.location.hash;
 
-    // Hide absolutely everything first
+    // 1. Hide absolutely everything first
     deckView.classList.add('hidden');
     statsView.classList.add('hidden');
     crafterView.classList.add('hidden');
+    gamesView.classList.add('hidden'); // <-- NEW
     searchWrapper.classList.add('hidden');
     statsBtn.classList.add('hidden');
     crafterBtn.classList.add('hidden');
+    gamesBtn.classList.add('hidden');  // <-- NEW
     if (typeof backBtn !== 'undefined') backBtn.classList.add('hidden');
 
+    // 2. Determine what to show based on the hash
     if (hash === '#stats') {
         statsView.classList.remove('hidden');
         if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
         
-        // It is now safe to render the chart because we know fullDatabase exists!
         const currentLimit = document.getElementById('deckLimitFilter') ? document.getElementById('deckLimitFilter').value : 'all';
-        renderStatsChart(currentLimit);
+        if (typeof renderStatsChart === 'function') renderStatsChart(currentLimit);
 
     } else if (hash === '#crafter') {
         crafterView.classList.remove('hidden');
         if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
 
+    } else if (hash === '#games') { // <-- NEW ROUTE
+        gamesView.classList.remove('hidden');
+        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+        if (typeof renderGames === 'function') renderGames();
+
     } else {
+        // Default Home UI
         deckView.classList.remove('hidden');
         searchWrapper.classList.remove('hidden');
         statsBtn.classList.remove('hidden');
         crafterBtn.classList.remove('hidden');
+        gamesBtn.classList.remove('hidden'); // <-- NEW
     }
 }
     // --- Helper Functions ---
@@ -161,6 +171,7 @@ function handleRouting() {
     deckGrid.classList.add('hidden'); // Hide the grid while building
     if (statsBtn) statsBtn.disabled = true;
     if (crafterBtn) crafterBtn.disabled = true;
+    if (gamesBtn) gamesBtn.disabled = true;
 
     // Use a setTimeout so the browser has a split second to paint the loading 
     // spinner and disable the buttons before locking up to do the heavy rendering
@@ -237,6 +248,7 @@ function handleRouting() {
         deckGrid.classList.remove('hidden');
         if (statsBtn) statsBtn.disabled = false;
         if (crafterBtn) crafterBtn.disabled = false;
+        if (gamesBtn) gamesBtn.disabled = false;
 
     }, 50); // 50ms delay allows the UI to show the loading state first
 }
@@ -276,33 +288,6 @@ function handleRouting() {
         if (event.target === infoModal) infoModal.style.display = 'none';
     });
 
-    // --- Tab Switching Logic (Decks <-> Stats) ---
-    statsBtn.addEventListener('click', () => {
-    // Hide Main UI & Crafter Button
-    deckView.classList.add('hidden');
-    searchWrapper.classList.add('hidden');
-    statsBtn.classList.add('hidden');
-    crafterBtn.classList.add('hidden'); // Hide the new button
-
-    // Show Stats UI
-    statsView.classList.remove('hidden');
-    backBtn.classList.remove('hidden');
-
-    // Read the dropdown value when opening stats
-    const currentLimit = document.getElementById('deckLimitFilter') ? document.getElementById('deckLimitFilter').value : 'all';
-    renderStatsChart(currentLimit);
-});
-crafterBtn.addEventListener('click', () => {
-    // Hide Main UI & Stats Button
-    deckView.classList.add('hidden');
-    searchWrapper.classList.add('hidden');
-    statsBtn.classList.add('hidden');
-    crafterBtn.classList.add('hidden'); 
-
-    // Show Crafter UI
-    crafterView.classList.remove('hidden');
-    backBtn.classList.remove('hidden');
-});
 
     // NEW: Listen for when the user changes the dropdown
     const filterDropdown = document.getElementById('deckLimitFilter');
@@ -1833,6 +1818,10 @@ crafterBtn.addEventListener('click', () => {
     window.location.hash = 'crafter';
 });
 
+gamesBtn.addEventListener('click', () => { // <-- NEW
+    window.location.hash = 'games';
+});
+
 if (typeof backBtn !== 'undefined') {
     backBtn.addEventListener('click', () => {
         window.location.hash = ''; // Clearing the hash triggers the default Home UI
@@ -1916,3 +1905,175 @@ modal.addEventListener('click', (e) => {
         modal.classList.add('hidden');
     }
 });
+function renderGames() {
+    // 1. Setup the Daily Seed
+    const today = new Date();
+    const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    const dateSum = today.getFullYear() + today.getMonth() + today.getDate();
+    
+    // Convert your object to a sorted array of keys so everyone gets the same card
+    const cardKeys = Object.keys(cardDatabase).sort();
+    const dailyCardKey = cardKeys[dateSum % cardKeys.length]; 
+    const dailyCard = cardDatabase[dailyCardKey];
+
+    // 2. Grab DOM Elements
+    const canvas = document.getElementById('silhouetteCanvas');
+    const ctx = canvas.getContext('2d');
+    const inputArea = document.getElementById('silhouetteInputArea');
+    const guessInput = document.getElementById('silhouetteGuess');
+    const submitBtn = document.getElementById('silhouetteSubmitBtn');
+    const feedbackEl = document.getElementById('silhouetteFeedback');
+    const hintsContainer = document.getElementById('silhouetteHints');
+
+    // 3. State Management variables
+    const savedDate = localStorage.getItem('silhouetteDate');
+    const isSolved = localStorage.getItem('silhouetteSolved') === 'true';
+    let wrongGuesses = parseInt(localStorage.getItem('silhouetteGuesses') || '0');
+
+    if (savedDate !== dateString) {
+        // New day! Reset everything.
+        localStorage.setItem('silhouetteDate', dateString);
+        localStorage.setItem('silhouetteSolved', 'false');
+        localStorage.setItem('silhouetteGuesses', '0');
+        wrongGuesses = 0;
+        setupUnsolvedState();
+    } else if (isSolved) {
+        setupSolvedState();
+    } else {
+        setupUnsolvedState();
+    }
+
+    // --- State Helper Functions ---
+   // --- State Helper Functions ---
+    function setupUnsolvedState() {
+        canvas.style.filter = 'blur(10px) grayscale(100%)'; 
+        inputArea.style.display = 'block';
+        feedbackEl.textContent = '';
+        updateHintsDisplay();
+    }
+
+    function setupSolvedState() {
+        canvas.style.filter = 'blur(0px) grayscale(0%)';
+        inputArea.style.display = 'none';
+        feedbackEl.textContent = `You got it! It was ${dailyCard.Name.replace(/_/g, ' ')}!`;
+        feedbackEl.style.color = '#4CAF50';
+        updateHintsDisplay(); 
+    }
+
+    // --- Progressive Hint Logic ---
+    function updateHintsDisplay() {
+        if (wrongGuesses > 0) {
+            hintsContainer.style.display = 'block';
+            
+            // FIXED: Updated hints order to Class -> Rarity -> Cost
+            if (wrongGuesses >= 1) {
+                document.getElementById('hint1').classList.remove('hidden');
+                document.getElementById('hint1Text').textContent = `Class: ${dailyCard.Class}`;
+            }
+            if (wrongGuesses >= 2) {
+                document.getElementById('hint2').classList.remove('hidden');
+                document.getElementById('hint2Text').textContent = `Rarity: ${dailyCard.Rarity}`;
+            }
+            if (wrongGuesses >= 3) {
+                document.getElementById('hint3').classList.remove('hidden');
+                document.getElementById('hint3Text').textContent = `Cost: ${dailyCard.Cost}`;
+            }
+        } else {
+            hintsContainer.style.display = 'none';
+            document.getElementById('hint1').classList.add('hidden');
+            document.getElementById('hint2').classList.add('hidden');
+            document.getElementById('hint3').classList.add('hidden');
+        }
+    }
+
+    // --- Autocomplete Logic ---
+    const suggestionsBox = document.getElementById('silhouetteSuggestions');
+    let selectedRawName = null; // Stores the exact DB key when clicked
+
+    guessInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        suggestionsBox.innerHTML = ''; 
+        selectedRawName = null; // Reset selection on typing
+
+        if (query.length < 2) {
+            suggestionsBox.style.display = 'none';
+            return;
+        }
+
+        let matches = 0;
+        Object.keys(cardDatabase).forEach(rawName => {
+            if (matches >= 2) return; // Keep dropdown small
+            
+            const cleanName = rawName.replace(/_/g, ' ');
+            if (cleanName.toLowerCase().includes(query)) {
+                const cardInfo = cardDatabase[rawName];
+                
+                const li = document.createElement('li');
+                // Reusing your exact suggestion styling
+                li.innerHTML = `<span>${cleanName}</span> <span class="suggestion-class">${cardInfo.Class}</span>`;
+                
+                li.onclick = () => {
+                    guessInput.value = cleanName;
+                    selectedRawName = rawName; // Save exact database key
+                    suggestionsBox.style.display = 'none';
+                    newSubmitBtn.click(); // Auto-submit when clicked
+                };
+                
+                suggestionsBox.appendChild(li);
+                matches++;
+            }
+        });
+
+        suggestionsBox.style.display = matches > 0 ? 'block' : 'none';
+    });
+
+    // Hide suggestions if clicking outside
+    document.addEventListener('click', (e) => {
+        if (e.target !== guessInput) suggestionsBox.style.display = 'none';
+    });
+
+    // --- Handle the Guess ---
+    const newSubmitBtn = submitBtn.cloneNode(true);
+    submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
+    
+    newSubmitBtn.addEventListener('click', () => {
+        // Use the selected DB key from autocomplete, or try to format their manual text
+        const actualNameKey = dailyCardKey.toLowerCase();
+        let guessKeyToTest = selectedRawName ? selectedRawName.toLowerCase() : guessInput.value.trim().toLowerCase().replace(/\s+/g, '_');
+
+        if (guessKeyToTest === actualNameKey) {
+            // Correct Guess!
+            localStorage.setItem('silhouetteSolved', 'true');
+            setupSolvedState();
+        } else {
+            // Wrong Guess!
+            wrongGuesses++;
+            localStorage.setItem('silhouetteGuesses', wrongGuesses.toString());
+            
+            feedbackEl.textContent = "Incorrect. Try again!";
+            feedbackEl.style.color = '#f44336';
+            
+            updateHintsDisplay(); 
+            guessInput.value = '';
+            guessInput.focus();
+        }
+    });
+
+   const imgObj = new Image();
+    
+    imgObj.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // This math scales the image perfectly inside the canvas (like background-size: contain)
+        const scale = Math.min(canvas.width / imgObj.width, canvas.height / imgObj.height);
+        const x = (canvas.width / 2) - (imgObj.width / 2) * scale;
+        const y = (canvas.height / 2) - (imgObj.height / 2) * scale;
+        ctx.drawImage(imgObj, x, y, imgObj.width * scale, imgObj.height * scale);
+    };
+
+    imgObj.onerror = function() {
+        this.onerror = null; // Prevent infinite loop
+        this.src = `card_images/${dailyCardKey}.webp`;
+    };
+
+    imgObj.src = `card_images/${dailyCardKey}.png`;
+}
