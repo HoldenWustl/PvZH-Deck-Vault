@@ -15,7 +15,7 @@
             <h1>PvZH Deck Vault</h1>
             <p>Browsing <span id="deckCount" class="highlight">...</span> <span id="randomAdjective">glorious</span> PvZ
                 Heroes decks <button id="infoBtn" class="info-btn">?</button></p>
-            <p class="last-updated">Last updated: Mar 23, 2026</p>
+            <p class="last-updated">Last updated: Mar 28, 2026</p>
 
             <div id="controls" class="controls-container">
                 <div id="searchWrapper">
@@ -323,38 +323,109 @@
         <p>Test your PvZ Heroes knowledge!</p>
     </div>
 
-    <div class="games-grid" style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+    <div class="games-grid" style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 1100px; margin: 0 auto;">
         
-        <div id="silhouetteGameCard" class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; max-width: 350px; width: 100%;">
-            <h3>Daily Silhouette</h3>
-            <p id="silhouetteInstructions">Guess the card based on its outline.</p>
-            
-          <div class="image-wrapper" style="margin: 20px auto; height: 250px; width: 200px; display: flex; justify-content: center; align-items: center; position: relative;">
-    <canvas id="silhouetteCanvas" width="200" height="250" style="transition: filter 0.8s ease;"></canvas>
-</div>
+    <div id="silhouetteGameCard" class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
+        <h3>Daily Silhouette</h3>
+        <p id="silhouetteInstructions">Guess the card based on its outline.</p>
+        
+        <div class="image-wrapper" style="margin: 20px auto; height: 250px; width: 200px; display: flex; justify-content: center; align-items: center; position: relative;">
+            <canvas id="silhouetteCanvas" width="200" height="250" style="transition: filter 0.8s ease;"></canvas>
+        </div>
 
-<div id="silhouetteInputArea" style="position: relative;">
-    <input type="text" id="silhouetteGuess" placeholder="Type card name..." autocomplete="off" style="width: 80%; padding: 8px; margin-bottom: 10px;">
-    <ul id="silhouetteSuggestions" class="suggestions-dropdown" style="display: none; position: absolute; left: 10%; width: 80%; text-align: left; z-index: 100;"></ul>
-    <br>
-    <button id="silhouetteSubmitBtn" class="generate-btn">Guess</button>
-</div>
+        <div id="silhouetteInputArea" style="position: relative;">
+            <input type="text" id="silhouetteGuess" placeholder="Type card name..." autocomplete="off" style="width: 80%; padding: 8px; margin-bottom: 10px;">
+            <ul id="silhouetteSuggestions" class="suggestions-dropdown" style="display: none; position: absolute; left: 10%; width: 80%; text-align: left; z-index: 100; background: #333; border: 1px solid #555; list-style-type: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto;"></ul>
+            <br>
+            <button id="silhouetteSubmitBtn" class="generate-btn">Guess</button>
+        </div>
 
-           <p id="silhouetteFeedback" style="font-weight: bold; margin-top: 10px;"></p>
-            
-            <div id="silhouetteHints" style="margin-top: 15px; font-size: 0.9em; color: #aaa; text-align: left; background: #333; padding: 10px; border-radius: 8px; display: none;">
-                <p id="hint1" class="hidden"><strong>Hint 1:</strong> <span id="hint1Text"></span></p>
-                <p id="hint2" class="hidden"><strong>Hint 2:</strong> <span id="hint2Text"></span></p>
-                <p id="hint3" class="hidden"><strong>Hint 3:</strong> <span id="hint3Text"></span></p>
+        <p id="silhouetteFeedback" style="font-weight: bold; margin-top: 10px;"></p>
+        
+        <div id="silhouetteHints" style="margin-top: 15px; font-size: 0.9em; color: #aaa; text-align: left; background: #333; padding: 10px; border-radius: 8px; display: none;">
+            <p id="hint1" class="hidden"><strong>Hint 1:</strong> <span id="hint1Text"></span></p>
+            <p id="hint2" class="hidden"><strong>Hint 2:</strong> <span id="hint2Text"></span></p>
+            <p id="hint3" class="hidden"><strong>Hint 3:</strong> <span id="hint3Text"></span></p>
+        </div>
+    </div>
+
+    <div id="hlGameCard" class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
+        <h3>Higher or Lower</h3>
+        <p>Click the card that is used in <strong>MORE</strong> decks.</p>
+        
+        <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #aaa; display:flex; justify-content: center; align-items: center; gap: 10px;">
+            Streak: <span id="hlStreak">0</span> 
+            <span style="color: #00b4d8; font-size: 0.8em; margin-left: 10px;">(Best: <span id="hlBest">0</span>)</span>
+        </div>
+
+        <div id="hlGameArea" style="display: flex; justify-content: center; gap: 15px; align-items: center;">
+            <div id="hlCardLeft" class="hl-card" style="flex: 1; cursor: pointer; padding: 10px; border-radius: 8px; background: #333; transition: all 0.2s;">
+                <img id="hlImgLeft" src="" style="height: 140px; width: auto; max-width: 100%; object-fit: contain;" alt="Card Left">
+                <div id="hlNameLeft" style="font-weight: bold; margin-top: 10px; font-size: 0.9em;"></div>
+                <div id="hlCountLeft" style="font-size: 1.2em; color: #4CAF50; font-weight: bold; margin-top: 5px;"></div>
+            </div>
+
+            <div style="font-size: 1.5em; font-weight: bold; color: #aaa;">VS</div>
+
+            <div id="hlCardRight" class="hl-card" style="flex: 1; cursor: pointer; padding: 10px; border-radius: 8px; background: #333; transition: all 0.2s;">
+                <img id="hlImgRight" src="" style="height: 140px; width: auto; max-width: 100%; object-fit: contain;" alt="Card Right">
+                <div id="hlNameRight" style="font-weight: bold; margin-top: 10px; font-size: 0.9em;"></div>
+                <div id="hlCountRight" style="font-size: 1.2em; color: #4CAF50; font-weight: bold; margin-top: 5px;">???</div>
             </div>
         </div>
 
-        <div class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; max-width: 350px; width: 100%;">
-            <h3>Higher or Lower</h3>
-            <p>Coming soon...</p>
+        <div id="hlGameOver" style="display: none; margin-top: 20px;">
+            <p style="color: #f44336; font-weight: bold; font-size: 1.2em;">Incorrect!</p>
+            <button id="hlRestartBtn" class="generate-btn">Play Again</button>
+        </div>
+    </div>
+<div id="redactedGameCard" class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
+    <h3>Daily Redacted</h3>
+    <p>Guess the card from its censored description.</p>
+
+    <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #aaa; display:flex; justify-content: center; align-items: center; gap: 10px;">
+        Attempts: <span id="redactedAttempts">0</span> / 5
+    </div>
+
+    <div id="redactedTextContainer" style="background: #333; padding: 20px; border-radius: 8px; margin-bottom: 20px; min-height: 100px; display: flex; align-items: center; justify-content: center; font-style: italic; font-size: 1.1em; line-height: 1.5; color: #ddd;">
+        <span id="redactedDescriptionText">Loading description...</span>
+    </div>
+
+    <div id="redactedInputArea" style="position: relative;">
+        <input type="text" id="redactedGuess" placeholder="Type card name..." autocomplete="off" style="width: 80%; padding: 8px; margin-bottom: 10px;">
+        <ul id="redactedSuggestions" class="suggestions-dropdown" style="display: none; position: absolute; left: 10%; width: 80%; text-align: left; z-index: 100;"></ul>
+        <br>
+        <button id="redactedSubmitBtn" class="generate-btn">Guess</button>
+    </div>
+
+    <p id="redactedFeedback" style="font-weight: bold; margin-top: 10px;"></p>
+</div>
+    <div id="triviaGameCard" class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
+        <h3>PvZ Heroes Trivia</h3>
+        <p>Test your knowledge of cards, classes, and mechanics!</p>
+
+        <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #aaa; display:flex; justify-content: center; align-items: center; gap: 10px;">
+            Streak: <span id="triviaScore">0</span> 
+            <span style="color: #00b4d8; font-size: 0.8em; margin-left: 10px;">(Best: <span id="triviaBest">0</span>)</span>
         </div>
 
+        <div id="triviaGameArea" style="transition: all 0.3s ease;">
+            <p id="triviaQuestion" style="font-size: 1.1em; font-weight: bold; margin-bottom: 20px; min-height: 50px; display: flex; align-items: center; justify-content: center;"></p>
+            
+            <div id="triviaOptions" style="display: flex; flex-direction: column; gap: 10px;">
+            </div>
+        </div>
+
+        <div id="triviaGameOver" style="display: none; margin-top: 20px;">
+            <p style="color: #f44336; font-weight: bold; font-size: 1.2em;">Incorrect!</p>
+            <button id="triviaRestartBtn" class="generate-btn">Play Again</button>
+        </div>
     </div>
+
+    
+
+</div>
+    
 </section>
     </main>
 
