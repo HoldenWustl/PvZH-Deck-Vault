@@ -632,17 +632,19 @@ function handleRouting() {
                 plugins: { legend: { display: false }, tooltip: { callbacks: { footer: () => '👉 Click to search for this card' } } },
                 onClick: (e, activeElements) => {
                     if (activeElements.length > 0) {
-                        // MAGIC FIX: Read the label from the chart directly, not the static array
-                        const clickedCard = charts.topCards.data.labels[activeElements[0].index];
+                       const clickedCard = charts.topCards.data.labels[activeElements[0].index];
 
-                        document.getElementById('statsView').classList.add('hidden');
-                        document.getElementById('backBtn').classList.add('hidden');
-                        document.getElementById('deckView').classList.remove('hidden');
-                        document.getElementById('searchWrapper').classList.remove('hidden');
-                        document.getElementById('statsBtn').classList.remove('hidden');
-                        const searchInput = document.getElementById('searchInput');
-                        searchInput.value = clickedCard;
-                        searchInput.dispatchEvent(new Event('input'));
+// 1. Change the hash to let the site's router handle the view switching (showing deckView, hiding statsView, etc.)
+window.location.hash = '#'; 
+
+// 2. Wait a split second for the site's view transition to finish, then run the search
+setTimeout(() => {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = clickedCard;
+        searchInput.dispatchEvent(new Event('input'));
+    }
+}, 50);
                     }
                 },
                 onHover: (e, activeElements) => { e.native.target.style.cursor = activeElements.length ? 'pointer' : 'default'; }
