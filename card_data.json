@@ -892,10 +892,10 @@
         "Class": "Kabloom",
         "Cost": 5,
         "Strength": 5.0,
-        "Health": 4.0,
+        "Health": 5.0,
         "Description": null,
         "Type": "Mushroom Plant",
-        "Rarity": "Common",
+        "Rarity": "Legendary",
         "Set": "Basic",
         "Set #": 1.0
     },
