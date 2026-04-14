@@ -1508,7 +1508,7 @@ function initSynergyMatrix() {
         const validTime = isNaN(time) ? 0 : time;
 
         if (validTime >= threshold05) {
-            deckWeight = 5.0; // Top 5% most recent decks count for 5.0x!
+            deckWeight = 4.0; // Top 5% most recent decks count for 4.0x!
         } else if (validTime >= threshold50) {
             deckWeight = 1.0; // Top 50% most recent decks count as standard 1x
         }
