@@ -161,31 +161,60 @@ function handleRouting() {
     }
 
     // --- Render Decks Function ---
-    function renderDecks(data) {
+  function renderDecks(data) {
     const searchInput = document.getElementById('searchInput');
     const statsBtn = document.getElementById('statsBtn');
     const loadingIndicator = document.getElementById('loadingIndicator');
 
     // 1. Show loader and disable controls BEFORE rendering
     if (loadingIndicator) loadingIndicator.classList.remove('hidden');
-    deckGrid.classList.add('hidden'); // Hide the grid while building
+    deckGrid.classList.add('hidden'); 
     if (statsBtn) statsBtn.disabled = true;
     if (crafterBtn) crafterBtn.disabled = true;
     if (gamesBtn) gamesBtn.disabled = true;
 
-    // Use a setTimeout so the browser has a split second to paint the loading 
-    // spinner and disable the buttons before locking up to do the heavy rendering
     setTimeout(() => {
         deckGrid.innerHTML = '';
         
-        // OPTIMIZATION: Create a Document Fragment. 
-        // This builds all HTML in memory first, rather than forcing the browser 
-        // to redraw the page thousands of times inside the loop.
         const fragment = document.createDocumentFragment();
 
         for (const [deckKey, deckInfo] of Object.entries(data)) {
             const cardEl = document.createElement('div');
-            cardEl.className = 'deck-card';
+            
+            // --- UPDATED: FACTION CHECK LOOP ---
+            let factionClass = 'plant-deck'; // Fallback default
+            
+            if (deckInfo.cards && deckInfo.cards.length > 0) {
+                // Loop through cards until we find one that is definitively Plant or Zombie
+                for (const cardRaw of deckInfo.cards) {
+                    // Strip the "x4", "4x", "1x", etc., and any bullet points
+                    let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
+                    
+                    // Format for lookup 
+                    const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
+                    const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
+                    
+                    // Try to find the card in the DB
+                    const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
+                    
+                    if (cardData && (cardData.Type || cardData.type)) {
+                        const typeString = (cardData.Type || cardData.type).toLowerCase();
+                        
+                        // Check for definitive faction keyword
+                        if (typeString.includes('zombie')) {
+                            factionClass = 'zombie-deck';
+                            break; // We found the faction, stop checking this deck's cards
+                        } else if (typeString.includes('plant')) {
+                            factionClass = 'plant-deck';
+                            break; // We found the faction, stop checking this deck's cards
+                        }
+                    }
+                }
+            }
+            
+            // Apply the base class AND the newly calculated faction class
+            cardEl.className = `deck-card ${factionClass}`;
+            // -----------------------------------
 
             let cardsHtml = '<ul class="card-list">';
             deckInfo.cards.forEach(card => {
@@ -236,21 +265,18 @@ function handleRouting() {
                 ${cardsHtml}
             `;
             
-            // Append to the in-memory fragment, not the live DOM
             fragment.appendChild(cardEl);
         }
 
-        // 2. Append everything to the live DOM at once!
         deckGrid.appendChild(fragment);
 
-        // 3. Hide loader and re-enable controls AFTER rendering
         if (loadingIndicator) loadingIndicator.classList.add('hidden');
         deckGrid.classList.remove('hidden');
         if (statsBtn) statsBtn.disabled = false;
         if (crafterBtn) crafterBtn.disabled = false;
         if (gamesBtn) gamesBtn.disabled = false;
 
-    }, 50); // 50ms delay allows the UI to show the loading state first
+    }, 50); 
 }
 
     // --- Smart Live Search ---
