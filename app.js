@@ -1584,7 +1584,7 @@ function buildOptimizedDeck() {
     let workingClasses = new Set(activeClasses);
     let deckFaction = currentFaction;
     
-    const rawWeight = 0.25 + (Math.random() * 0.30);
+    const rawWeight = 0.2 + (Math.random() * 0.40);
     const affinityWeight = 1.0 - rawWeight;
     
     // Check Budget Modes
@@ -1649,7 +1649,7 @@ function buildOptimizedDeck() {
 
             let score = 0;
 
-          workingDeck.forEach(deckCard => {
+         workingDeck.forEach(deckCard => {
     if (synergyMatrix && synergyMatrix[candidateName] && synergyMatrix[candidateName][deckCard.name]) {
         const coOccurrences = synergyMatrix[candidateName][deckCard.name];
         const candidateTotalPlays = cardFrequencies[candidateName] || 1;
@@ -1660,16 +1660,22 @@ function buildOptimizedDeck() {
         
         let blendedSynergy = (rawSynergy * rawWeight) + (affinitySynergy * affinityWeight);
         
-        // 2. Determine the structural bias modifier
+        // 2. Determine the structural bias modifier (Cross-Class fix)
         let classModifier = 1.0;
         if (cardDatabase[candidateName].Class !== cardDatabase[deckCard.name].Class) {
             classModifier = 4.0;  
         }
 
+        // --- THE NEW FIX: Equalize the Voting Power ---
+        // Scale the vote inversely to the deckCard's popularity so 
+        // generic popular cards don't drown out niche synergy cards.
+        const deckCardPlays = cardFrequencies[deckCard.name] || 1;
+        const volumeEqualizer = 1000 / deckCardPlays; 
+
         const isOriginalSeed = currentSeeds.some(s => s.name === deckCard.name);
 
-        // 3. Apply the class modifier to the final blended synergy linearly
-        score += (blendedSynergy * classModifier) * deckCard.count * (isOriginalSeed ? 3 : 1);
+        // 3. Apply modifiers to the blended synergy linearly
+        score += (blendedSynergy * classModifier * volumeEqualizer) * deckCard.count * (isOriginalSeed ? 3 : 1);
     }
 });
 
@@ -1693,7 +1699,6 @@ function buildOptimizedDeck() {
             }
 
             score *= consistencyMultiplier;
-            score *= (0.85 + (Math.random() * 0.3));
 
             if (score > bestScore) {
                 bestScore = score;
