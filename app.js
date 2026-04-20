@@ -1448,39 +1448,40 @@ function renderSeeds() {
     });
 
     displaySeeds.forEach(seed => {
-        const displayName = seed.name.replace(/_/g, ' ');
-        const dbName = displayName.replace(/ /g, '_');
-        const disablePlus = seed.count >= 4 || totalCards >= 40;
+    const displayName = seed.name.replace(/_/g, ' ');
+    const dbName = displayName.replace(/ /g, '_');
+    const disablePlus = seed.count >= 4 || totalCards >= 40;
 
-        const cardDiv = document.createElement('div');
-        cardDiv.className = 'visual-card';
-        
-        const img = document.createElement('img');
-        img.src = `card_images/${dbName}.png`;
-        img.alt = displayName;
-        img.title = displayName;
-        img.onerror = function() { this.onerror = null; this.src = `card_images/${dbName}.webp`; };
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'visual-card';
+    
+    const img = document.createElement('img');
+    img.src = `card_images/${dbName}.png`;
+    img.alt = displayName;
+    img.title = displayName;
+    img.onerror = function() { this.onerror = null; this.src = `card_images/${dbName}.webp`; };
 
-        const badge = document.createElement('div');
-        badge.className = 'card-quantity';
-        badge.textContent = `x${seed.count}`;
+    const badge = document.createElement('div');
+    badge.className = 'card-quantity';
+    badge.textContent = `x${seed.count}`;
 
-        const controls = document.createElement('div');
-        controls.className = 'visual-card-controls';
-        controls.innerHTML = `
-            <button class="seed-btn minus-btn" data-name="${seed.name}">-</button>
-            <button class="seed-btn plus-btn" data-name="${seed.name}" ${disablePlus ? 'disabled' : ''}>+</button>
-        `;
+    const controls = document.createElement('div');
+    controls.className = 'visual-card-controls';
+    controls.innerHTML = `
+        <button class="seed-btn minus-btn" data-name="${seed.name}">-</button>
+        <button class="seed-btn swap-btn" data-name="${seed.name}">↔</button>
+        <button class="seed-btn plus-btn" data-name="${seed.name}" ${disablePlus ? 'disabled' : ''}>+</button>
+    `;
 
-        cardDiv.appendChild(img);
-        cardDiv.appendChild(badge);
-        cardDiv.appendChild(controls);
-        resultsContainer.appendChild(cardDiv);
+    cardDiv.appendChild(img);
+    cardDiv.appendChild(badge);
+    cardDiv.appendChild(controls);
+    resultsContainer.appendChild(cardDiv);
 
-        if (totalCards >= 40) {
-            currentClipboardText += `${seed.count}x ${displayName}\n`;
-        }
-    });
+    if (totalCards >= 40) {
+        currentClipboardText += `${seed.count}x ${displayName}\n`;
+    }
+});
 
     attachQuantityListeners();
     triggerAICoPilot();
@@ -1517,6 +1518,12 @@ function attachQuantityListeners() {
             }
         });
     });
+    document.querySelectorAll('.swap-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const name = e.target.getAttribute('data-name');
+        showSwapSuggestions(name);
+    });
+});
 }
 
 if (clearSeedsBtn) {
@@ -1619,7 +1626,45 @@ const comboDictionary = [
         message: "Playing **Transfiguration** into an **Imitater** gives you TWO massive bodies that will both mutate into more expensive, game-ending threats at the end of the turn!"
     }
 ];
+function parseCardList(cardList) {
+    const map = {};
+    (cardList || []).forEach(entry => {
+        const firstSpace = entry.indexOf(' ');
+        const countStr = entry.substring(0, firstSpace).replace(/x/i, '');
+        const count = parseInt(countStr) || 1;
+        const cardName = entry.substring(firstSpace + 1).trim();
+        map[cardName] = (map[cardName] || 0) + count;
+    });
+    return map;
+}
 
+function getClosestDeckMatch() {
+    if (!fullDatabase) return null;
+
+    const currentMap = {};
+    currentSeeds.forEach(seed => {
+        currentMap[seed.name] = seed.count;
+    });
+
+    let bestDeck = null;
+    let bestScore = -1;
+
+    Object.values(fullDatabase).forEach(deck => {
+        const deckMap = parseCardList(deck.cards);
+
+        let overlap = 0;
+        for (const cardName in currentMap) {
+            overlap += Math.min(currentMap[cardName] || 0, deckMap[cardName] || 0);
+        }
+
+        if (overlap > bestScore) {
+            bestScore = overlap;
+            bestDeck = deck;
+        }
+    });
+
+    return bestDeck;
+}
 // --- LIVE DECK ANALYTICS ENGINE ---
 function updateDeckStats() {
     const hud = document.getElementById('deckStatsHud');
@@ -1746,9 +1791,26 @@ function triggerAICoPilot() {
         return;
     }
 
-    if (getTotalCards() >= 40) {
-         chatFeed.innerHTML = `<div class="ai-message system">Your deck is complete! You can remove cards using the '-' buttons if you want to swap things out.</div>`;
-         return;
+       if (getTotalCards() >= 40) {
+        const closestDeck = getClosestDeckMatch();
+
+        if (!closestDeck) {
+            chatFeed.innerHTML = `<div class="ai-message system">Your deck is complete! I could not find a close match in the deck database.</div>`;
+            return;
+        }
+
+        chatFeed.innerHTML = `
+            <div class="ai-message system">
+                Your deck is complete! Your deck is closest to 
+                <a href="${closestDeck.youtube_url}" target="_blank" rel="noopener noreferrer" style="font-weight: bold; color: var(--accent, #4CAF50); text-decoration: underline;">
+                    ${closestDeck.name}
+                </a>.
+                <div style="margin-top: 6px; font-size: 0.9em; opacity: 0.85;">
+                    Video: ${closestDeck.youtube_title || "YouTube deck video"}
+                </div>
+            </div>
+        `;
+        return;
     }
 
     initSynergyMatrix(); 
@@ -1890,38 +1952,68 @@ function triggerAICoPilot() {
     }, 50); 
 }
 
-function getTopThreeRecommendations() {
+function getTopThreeRecommendations(baseCardName = null) {
     let candidatePool = Object.keys(cardDatabase);
     let scoredCandidates = [];
-    
-    const rawWeight = 0.5; 
+
+    const rawWeight = 0.5;
     const affinityWeight = 0.5;
 
+    const baseSeed = baseCardName ? currentSeeds.find(c => c.name === baseCardName) : null;
+    const baseCount = baseSeed ? baseSeed.count : 0;
+
+    // Build the class set after removing the clicked card entirely
+    let postSwapClasses = new Set();
+    currentSeeds.forEach(card => {
+        if (baseCardName && card.name === baseCardName) return;
+        postSwapClasses.add(card.class);
+    });
+
     candidatePool.forEach(candidateName => {
+        if (baseCardName && candidateName === baseCardName) return;
+
         const candidateData = cardDatabase[candidateName];
         const candidateClass = candidateData.Class;
         const candidateFaction = plantClasses.has(candidateClass) ? "Plant" : "Zombie";
 
-        if (candidateFaction !== currentFaction) return; 
-        if (!activeClasses.has(candidateClass) && activeClasses.size >= 2) return; 
-        
+        if (candidateFaction !== currentFaction) return;
+
+        // Enforce 2-class limit AFTER the swap
+        const trialClasses = new Set(postSwapClasses);
+        trialClasses.add(candidateClass);
+        if (trialClasses.size > 2) return;
+
         const existingCopy = currentSeeds.find(c => c.name === candidateName);
-        if (existingCopy && existingCopy.count >= 4) return;
+
+        // Normal add mode: can't exceed 4 copies
+        // Swap mode: replacement must fit within the copies being removed
+        if (baseCardName) {
+            const existingCandidateCount = existingCopy ? existingCopy.count : 0;
+            if (existingCandidateCount + baseCount > 4) return;
+        } else {
+            if (existingCopy && existingCopy.count >= 4) return;
+            if (!activeClasses.has(candidateClass) && activeClasses.size >= 2) return;
+        }
 
         let score = 0;
+
         currentSeeds.forEach(deckCard => {
+            // In swap mode, ignore the removed card completely
+            if (baseCardName && deckCard.name === baseCardName) return;
+
             if (synergyMatrix && synergyMatrix[candidateName] && synergyMatrix[candidateName][deckCard.name]) {
                 const coOccurrences = synergyMatrix[candidateName][deckCard.name];
                 const candidateTotalPlays = cardFrequencies[candidateName] || 1;
-                
+
                 let rawSynergy = coOccurrences;
                 let affinitySynergy = (coOccurrences * coOccurrences) / candidateTotalPlays;
                 let blendedSynergy = (rawSynergy * rawWeight) + (affinitySynergy * affinityWeight);
+
                 let classModifier = 1.0;
                 if (cardDatabase[candidateName].Class !== cardDatabase[deckCard.name].Class) {
-                    classModifier = 4.0;  
+                    classModifier = 4.0;
                 }
-                
+
                 const deckCardPlays = cardFrequencies[deckCard.name] || 1;
                 const volumeEqualizer = 1000 / deckCardPlays;
 
@@ -1936,6 +2028,97 @@ function getTopThreeRecommendations() {
 
     scoredCandidates.sort((a, b) => b.score - a.score);
     return scoredCandidates.slice(0, 3);
+}
+function showSwapSuggestions(baseCardName) {
+    const chatFeed = document.getElementById('aiChatFeed');
+    if (!chatFeed) return;
+
+    const baseSeed = currentSeeds.find(c => c.name === baseCardName);
+    if (!baseSeed) return;
+
+    const displayName = baseCardName.replace(/_/g, ' ');
+    initSynergyMatrix();
+
+    chatFeed.innerHTML = `<div class="ai-message system"><em>Finding the best replacements for ${displayName}...</em></div>`;
+
+    setTimeout(() => {
+        const replacements = getTopThreeRecommendations(baseCardName);
+
+        if (replacements.length === 0) {
+            chatFeed.innerHTML = `<div class="ai-message system">I could not find any good replacements for <strong>${displayName}</strong>.</div>`;
+            return;
+        }
+
+        let html = `<div class="ai-message system">We might be able to do better than <strong>${displayName}</strong>! Here's my recommendations:</div>`;
+        html += `<div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: space-between; width: 100%; margin-bottom: 10px; box-sizing: border-box;">`;
+
+        replacements.forEach((rec, index) => {
+            const cardName = rec.name.replace(/_/g, ' ');
+            const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+            const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
+
+            html += `
+                <div class="ai-visual-rec" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 5px; position: relative; height: 100%;">
+                    <span style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: ${badgeColor}; color: #fff; font-size: 0.65em; font-weight: bold; padding: 4px 10px; border-radius: 12px; z-index: 2; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.4);">
+                        ${badgeText}
+                    </span>
+
+                    <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; margin: 12px 0 8px 0;">
+                        <img src="card_images/${rec.name}.png" alt="${cardName}" title="${cardName}" onerror="this.onerror=null; this.src='card_images/${rec.name}.webp';" style="max-width: 100%; max-height: 100px; object-fit: contain; filter: drop-shadow(0 5px 8px rgba(0,0,0,0.5));">
+                    </div>
+
+                    <button class="add-rec-btn generate-btn" data-remove="${baseCardName}" data-add="${rec.name}" style="width: 100%; padding: 6px 0; font-size: 0.8em; font-weight: bold; margin: 0; margin-top: auto; border-radius: 6px; white-space: nowrap;">
+                        Swap
+                    </button>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        chatFeed.innerHTML = html;
+
+        chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const removeName = e.target.getAttribute('data-remove');
+                const addName = e.target.getAttribute('data-add');
+                applyFullSwap(removeName, addName);
+            });
+        });
+    }, 50);
+}
+function applyFullSwap(removeName, addName) {
+    const removeSeed = currentSeeds.find(s => s.name === removeName);
+    const addData = cardDatabase[addName];
+    if (!removeSeed || !addData) return;
+
+    const removeCount = removeSeed.count;
+    const existingAdd = currentSeeds.find(s => s.name === addName);
+
+    // If the replacement would exceed 4 copies, do nothing.
+    if (existingAdd && existingAdd.count + removeCount > 4) return;
+
+    // Remove all copies of the chosen card
+    currentSeeds = currentSeeds.filter(s => s.name !== removeName);
+
+    // Add the same number of copies of the replacement
+    if (existingAdd) {
+        existingAdd.count += removeCount;
+    } else {
+        currentSeeds.push({
+            name: addName,
+            count: removeCount,
+            class: addData.Class,
+            faction: plantClasses.has(addData.Class) ? "Plant" : "Zombie",
+            cost: addData.Cost
+        });
+    }
+
+    activeClasses.clear();
+    currentSeeds.forEach(s => activeClasses.add(s.class));
+    if (activeClasses.size < 2) heroAnnounced = false;
+
+    lastAddedCard = addName;
+    renderSeeds();
 }
 
 // --- 4. SYNERGY ENGINE (Background Math) ---
