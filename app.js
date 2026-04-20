@@ -1306,7 +1306,7 @@ if (budgetToggle && superBudgetToggle) {
 }
 
 const getTotalCards = () => currentSeeds.reduce((sum, seed) => sum + seed.count, 0);
-
+renderSeeds(); // Initial render to show empty state
 // --- 1. Smart Autocomplete ---
 seedInput.addEventListener('input', function() {
     const query = this.value.toLowerCase().trim();
@@ -1529,7 +1529,94 @@ if (clearSeedsBtn) {
         renderSeeds();
     });
 }
-
+// --- SPECIFIC COMBO CALLOUTS ---
+const comboDictionary = [
+    {
+        // Pogo + MUG
+        cards: ["Pogo_Zombie", "Mixed-Up_Gravedigger"],
+        message: "**Pogo Zombie** clears a lane, and **Mixed-Up Gravedigger** resets him into a gravestone to do it all over again. Brutal!"
+    },
+    {
+        // Pineclone + Swarm
+        cards: ["Pineclone", "Shroom_for_Two"],
+        message: "**Shroom for Two** gives you two bodies for 1 sun, perfectly setting up a massive board-wide **Pineclone** transformation."
+    },
+    {
+        // Valkyrie + Mustache Monument
+        cards: ["Valkyrie", "Mustache_Monument"],
+        message: "Grow her massive in your hand, then drop her on the **Mustache Monument** for a devastating bonus attack."
+    },
+    {
+        // Hearty Coach + Sports
+        cards: ["Zombie_Coach", "Team_Mascot"],
+        message: "**Team Mascot** buffs your team, and **Zombie Coach** makes them completely invincible. Unstoppable!"
+    },
+    {
+        // Barrel + Mission
+        cards: ["Barrel_of_Deadbeards", "Final_Mission"],
+        message: "**Final Mission** destroys your **Barrel of Deadbeards** to deal 4 damage, which triggers the Barrel to wipe out 1-health plants and spawn a 4/3 pirate. Pure value!"
+    },
+    {
+        // Buddy + Pepper
+        cards: ["Lil_Buddy", "Pepper_M.D."],
+        message: "A 0-cost **Lil Buddy** instantly heals you, immediately triggering **Pepper M.D.**'s ability to give it a massive growth spurt on the exact same turn!"
+    },
+    {
+        // ANB + Jelly
+        cards: ["Admiral_Navy_Bean", "Jelly_Bean"],
+        message: "**Admiral Navy Bean** continuously chips away at the Zombie Hero, and makes the perfect Bean evolution target for **Jelly Bean** to bounce massive threats away!"
+    },
+    {
+        // Photosynthesizer + Tricarrotops
+        cards: ["Photosynthesizer", "Tricarrotops"],
+        message: "**Photosynthesizer** beefs up your **Tricarrotops**'s health, and the card it conjures instantly triggers its Dino-Roar! A massive dino for super cheap."
+    },
+    {
+        // Spinach + Beanstalk
+        cards: ["Savage_Spinach", "Typical_Beanstalk"],
+        message: "Evolving **Savage Spinach** off your Leafy **Typical Beanstalk** gives every Plant in your hand a massive +2/+2 boost. Time to drop some heavy hitters!"
+    },
+    {
+        // Imp-Throwing + Toxic
+        cards: ["Imp_Throwing_Imp", "Toxic_Waste_Imp"],
+        message: "**Toxic Waste Imp** gives all Imps Deadly, turning the tiny Swabbies thrown by your **Imp-Throwing Imp** into lethal, guaranteed removal tools!"
+    },
+    {
+        // Commander + Imp-Throwing
+        cards: ["Imp_Commander", "Imp-Throwing_Imp"],
+        message: "When **Imp-Throwing Imp** tosses buddies into empty water lanes, **Imp Commander** ensures they draw you cards every time they hit the hero. Incredible draw engine!"
+    },
+    {
+        // Pea Patch + Spinach
+        cards: ["Pea_Patch", "Savage_Spinach"],
+        message: "**Pea Patch** is the perfect Leafy target for **Savage Spinach**. Your hand gets the +2/+2 evolution buff, and the Spinach itself gets the Pea Patch stats!"
+    },
+    {
+        // Flag + Manager
+        cards: ["Flag_Zombie", "Middle_Manager"],
+        message: "**Flag Zombie** makes your swarms cheap, and since he's a Professional, he permanently buffs your **Middle Manager** whenever he takes a hit. Synergistic synergy!"
+    },
+    {
+        // Heartichoke + Flytraplanet
+        cards: ["Heartichoke", "Venus_Flytraplanet"],
+        message: "When **Heartichoke** damages the Zombie Hero on a **Venus Flytraplanet**, it heals you. That heal triggers the Heartichoke to deal damage again, creating an endless cycle of healing and pain!"
+    },
+    {
+        // Snowdrop + Winter Squash
+        cards: ["Snowdrop", "Winter_Squash"],
+        message: "**Winter Squash** instantly shatters any Zombie that gets frozen, while **Snowdrop** simultaneously absorbs that freeze to gain a massive +2/+2. Cold and calculated!"
+    },
+    {
+        // Goat + Hover-Goat
+        cards: ["Goat", "Hover-Goat_3000"],
+        message: "**Hover-Goat_3000** gives your regular **Goat** a beefy +2/+2 stats boost, and whenever a Goat takes damage, it just keeps growing stronger!"
+    },
+    {
+        // Fig (Transfiguration) + Imitater
+        cards: ["Fig", "Imitater"], // Change "Transfiguration" to "Fig" if that's how it is named in your cardDatabase!
+        message: "Playing **Transfiguration** into an **Imitater** gives you TWO massive bodies that will both mutate into more expensive, game-ending threats at the end of the turn!"
+    }
+];
 // --- 3. CONVERSATIONAL AI CO-PILOT ---
 function triggerAICoPilot() {
     const chatFeed = document.getElementById('aiChatFeed');
@@ -1586,25 +1673,45 @@ function triggerAICoPilot() {
         let aiDialogue = "";
         
        // 2. Build the Contextual Greeting based on last action
-        if (lastAddedCard) {
-            const lastNameClean = lastAddedCard.replace(/_/g, ' ');
-            const lastCardData = cardDatabase[lastAddedCard];
-            const lastClass = lastCardData ? lastCardData.Class : "Unknown";
-            
-            let popAdj = "a solid, well-played";
-            const myFreq = cardFrequencies[lastAddedCard] || 0;
-            if (myFreq > avgFreq * 2.5) popAdj = "a highly popular, meta-staple";
-            else if (myFreq < avgFreq * 0.4) popAdj = "a rare, spicy";
+        let comboTriggered = false;
 
-            if (currentSeeds.length === 1 && currentSeeds[0].count === getTotalCards()) {
-                aiDialogue = `<strong>${lastNameClean}</strong> is ${popAdj} ${lastClass} card! <br><br>`;
-            } else if (activeClasses.size === 2 && !heroAnnounced) {
-                // Only announce this ONCE
-                aiDialogue = `This is now officially a <strong>${heroName}</strong> deck! <strong>${lastNameClean}</strong> adds some great synergy. <br><br>`;
-                heroAnnounced = true;
-            } else {
-                // Generic response for 3rd, 4th, 5th cards, etc.
-                aiDialogue = `Adding <strong>${lastNameClean}</strong> gives us a great direction! <br><br>`;
+        if (lastAddedCard) {
+            // --- NEW: COMBO DETECTOR ---
+            // Check if the last card added completes any combo in our dictionary
+            const triggeredCombo = comboDictionary.find(combo => 
+                combo.cards.includes(lastAddedCard) && // The card we just added must be part of the combo
+                combo.cards.every(c => currentSeeds.some(s => s.name === c)) // ALL cards in the combo must now be in the deck
+            );
+
+            if (triggeredCombo) {
+                // Convert **bold** to <strong> and *italics* to <em>
+                let formattedMessage = triggeredCombo.message
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                aiDialogue = formattedMessage + "<br><br>";
+                comboTriggered = true;
+            }
+
+            // --- STANDARD GREETING (If no combo was triggered) ---
+            if (!comboTriggered) {
+                const lastNameClean = lastAddedCard.replace(/_/g, ' ');
+                const lastCardData = cardDatabase[lastAddedCard];
+                const lastClass = lastCardData ? lastCardData.Class : "Unknown";
+                
+                let popAdj = "a solid, well-played";
+                const myFreq = cardFrequencies[lastAddedCard] || 0;
+                if (myFreq > avgFreq * 2.5) popAdj = "a highly popular, meta-staple";
+                else if (myFreq < avgFreq * 0.4) popAdj = "a rare, spicy";
+
+                if (currentSeeds.length === 1 && currentSeeds[0].count === getTotalCards()) {
+                    aiDialogue = `<strong>${lastNameClean}</strong> is ${popAdj} ${lastClass} card! <br><br>`;
+                } else if (activeClasses.size === 2 && !heroAnnounced) {
+                    aiDialogue = `This is now officially a <strong>${heroName}</strong> deck! <strong>${lastNameClean}</strong> adds some great synergy. <br><br>`;
+                    heroAnnounced = true;
+                } else {
+                    aiDialogue = `Adding <strong>${lastNameClean}</strong> gives us a great direction! <br><br>`;
+                }
             }
         } else {
              if (activeClasses.size === 2) {
@@ -1624,16 +1731,12 @@ function triggerAICoPilot() {
         // 4. Render HTML without markdown asterisks
         let htmlString = `<div class="ai-message system" style="margin-bottom: 10px;">${aiDialogue}</div>`;
         
-        // Create a horizontal scrollable container for the visual cards
-       // Container: Removed 'overflow-x: auto' and changed gap to fit perfectly
         htmlString += `<div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: space-between; width: 100%; margin-bottom: 10px; box-sizing: border-box;">`;
         
        recData.forEach((rec, index) => {
             const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
             const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
             
-            // REMOVED: Black background and borders
-            // ADDED: height: 100% to ensure columns stretch equally
             htmlString += `
                 <div class="ai-visual-rec" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 5px; position: relative; height: 100%;">
                     
