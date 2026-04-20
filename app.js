@@ -2086,10 +2086,58 @@ function triggerAICoPilot() {
                 const lastCardData = cardDatabase[lastAddedCard];
                 const lastClass = lastCardData ? lastCardData.Class : "Unknown";
                 
-                let popAdj = "a solid, well-played";
                 const myFreq = cardFrequencies[lastAddedCard] || 0;
-                if (myFreq > avgFreq * 2.5) popAdj = "a highly popular, meta-staple";
-                else if (myFreq < avgFreq * 0.4) popAdj = "a rare, spicy";
+
+// Quick helper to pick a random phrase from an array
+const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+let popAdj = "";
+
+// Tier 1: Absolute Meta-Staple (> 3x average)
+if (myFreq > avgFreq * 3.0) {
+    popAdj = pickRandom([
+        "an absolute powerhouse", 
+        "a ridiculously popular", 
+        "an everywhere-all-at-once", 
+        "a top-tier, essential"
+    ]);
+} 
+// Tier 2: Highly Popular (> 1.8x average)
+else if (myFreq > avgFreq * 1.8) {
+    popAdj = pickRandom([
+        "a super reliable", 
+        "a heavy-hitting, competitive", 
+        "a widely-used", 
+        "a trusty, go-to"
+    ]);
+} 
+// Tier 3: The Middle Ground (0.8x to 1.8x average)
+else if (myFreq > avgFreq * 0.8) {
+    popAdj = pickRandom([
+        "a solid, standard", 
+        "a completely reasonable", 
+        "a fair, middle-of-the-road", 
+        "an okay, everyday"
+    ]);
+} 
+// Tier 4: Niche / Questionable (< 0.8x average) - Hinting it's weak
+else if (myFreq > avgFreq * 0.3) {
+    popAdj = pickRandom([
+        "a pretty clunky, situational", 
+        "a definitely off-meta (and maybe a bit weak)", 
+        "a rarely played", 
+        "a somewhat questionable"
+    ]);
+} 
+// Tier 5: Bottom of the Barrel (< 0.3x average) - Calling it out
+else {
+    popAdj = pickRandom([
+        "a bottom-of-the-barrel", 
+        "a straight-up desperate", 
+        "a very, uh... *brave*", 
+        "a highly unpopular (probably for a good reason)"
+    ]);
+}
 
                 if (currentSeeds.length === 1 && currentSeeds[0].count === getTotalCards()) {
                     aiDialogue = `<strong>${lastNameClean}</strong> is ${popAdj} ${lastClass} card! <br><br>`;
