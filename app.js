@@ -1794,23 +1794,47 @@ function updateDeckStats() {
         totalConnection += (cardBestConnection * seedA.count);
     });
 
-    // 2. Render Mana Curve Histogram
+    // 2. Render Mana Curve (Smooth Area Chart)
     const chart = document.getElementById('manaCurveChart');
-    chart.innerHTML = '';
     const maxCurveVal = Math.max(...Object.values(curve), 1); 
-
-    Object.values(curve).forEach(count => {
-        const heightPct = (count / maxCurveVal) * 100;
-        const bar = document.createElement('div');
-        bar.style.flex = "1";
-        bar.style.margin = "0 2px";
-        bar.style.backgroundColor = count > 0 ? "var(--accent, #4CAF50)" : "rgba(255,255,255,0.05)";
-        bar.style.height = count > 0 ? `${Math.max(heightPct, 5)}%` : "2px"; 
-        bar.style.borderRadius = "3px 3px 0 0";
-        bar.style.transition = "height 0.3s ease";
-        bar.title = `${count} cards`;
-        chart.appendChild(bar);
+    
+    // Extract the counts in order
+    const counts = [curve[1], curve[2], curve[3], curve[4], curve[5], curve["6+"]];
+    
+    // Dynamically grab the exact pixel width of the container to prevent stretching!
+    // (We provide a fallback of 300 just in case it can't read the width yet)
+    const width = chart.clientWidth > 0 ? chart.clientWidth : 300; 
+    const height = 40;
+    const xStep = width / (counts.length - 1);
+    
+    let pathD = `M 0,${height} `; 
+    const points = [];
+    
+    counts.forEach((count, i) => {
+        const x = i * xStep;
+        const y = height - ((count / maxCurveVal) * (height - 4)) - 2; 
+        points.push({x, y});
+        pathD += `L ${x},${y} `; 
     });
+    
+    pathD += `L ${width},${height} Z`; 
+    
+    // Inject the inline SVG with the exact width so nothing gets distorted
+    chart.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible; display: block;">
+            <defs>
+                <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#4CAF50" stop-opacity="0.5"/>
+                    <stop offset="100%" stop-color="#4CAF50" stop-opacity="0.0"/>
+                </linearGradient>
+            </defs>
+            <path d="${pathD}" fill="url(#curveGradient)" stroke="#4CAF50" stroke-width="2" stroke-linejoin="round" />
+            
+            ${points.map(p => `
+                <circle cx="${p.x}" cy="${p.y}" r="3" fill="#1e1e24" stroke="#4CAF50" stroke-width="1.5" />
+            `).join('')}
+        </svg>
+    `;
 
     // 3. Render Deck Speed (Average Cost Slider)
     const avgCost = totalCost / totalCards;
