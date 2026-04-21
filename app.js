@@ -1307,6 +1307,7 @@ if (budgetToggle && superBudgetToggle) {
 
 const getTotalCards = () => currentSeeds.reduce((sum, seed) => sum + seed.count, 0);
 renderSeeds(); // Initial render to show empty state
+
 // --- 1. Smart Autocomplete ---
 seedInput.addEventListener('input', function() {
     const query = this.value.toLowerCase().trim();
@@ -1885,6 +1886,106 @@ function updateDeckStats() {
         fillBar.style.background = "#ff4b4b"; // Red (Bad/Scattered - under 50)
     }
 }
+document.getElementById('shareDeckBtn').addEventListener('click', function() {
+    const cardDictionary = Object.keys(cardDatabase).sort();
+
+    const minimalDeckString = currentSeeds.map(card => {
+        const cardIndex = cardDictionary.indexOf(card.name).toString(36); 
+        // Use a DOT for counts, and omit it entirely if the count is 4
+        return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
+    }).join('-'); // Use a HYPHEN to separate cards (100% URL safe!)
+    
+    // NO MORE btoa() OR encodeURIComponent() needed!
+    const shareUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}#crafter`;
+    
+    navigator.clipboard.writeText(shareUrl);
+    
+    const originalBg = this.style.background;
+    this.innerText = "Link Copied!";
+    this.style.background = "#4CAF50"; 
+    
+    setTimeout(() => {
+        this.innerText = "Share Link";
+        this.style.background = originalBg; 
+    }, 2000);
+});
+window.addEventListener('DOMContentLoaded', () => {
+    const deckCode = new URLSearchParams(window.location.search).get('deck');
+    if (!deckCode) return;
+
+    let attempts = 0;
+    const dataWatcher = setInterval(() => {
+        attempts++;
+        
+        if (typeof cardDatabase !== 'undefined' && cardDatabase && Object.keys(cardDatabase).length > 0) {
+            clearInterval(dataWatcher);
+            if (typeof initSynergyMatrix === 'function') initSynergyMatrix();
+
+            try {
+                const cardDictionary = Object.keys(cardDatabase).sort();
+                
+                // Set up validation trackers
+                let totalCards = 0;
+                let isDeckValid = true;
+                const parsedSeeds = [];
+                
+                const pairs = deckCode.split('-');
+                
+                for (const pair of pairs) {
+                    const [indexStr, countStr] = pair.split('.');
+                    const cardIndex = parseInt(indexStr, 36); 
+                    const cardName = cardDictionary[cardIndex];
+                    const fullCardData = cardDatabase[cardName];
+                    
+                    if (fullCardData) {
+                        const count = countStr ? parseInt(countStr, 10) : 4;
+                        
+                        // Rule 1: Reject if any card count is not 1, 2, 3, or 4
+                        if (isNaN(count) || count < 1 || count > 4) {
+                            isDeckValid = false;
+                            break; // Stop parsing immediately
+                        }
+                        
+                        totalCards += count;
+                        
+                        // Rule 2: Reject if total deck size exceeds 40
+                        if (totalCards > 40) {
+                            isDeckValid = false;
+                            break; // Stop parsing immediately
+                        }
+                        
+                        if (!currentFaction) currentFaction = fullCardData.Faction || fullCardData.faction || "Plant";
+                        
+                        parsedSeeds.push({ 
+                            ...fullCardData, 
+                            name: cardName,
+                            count: count,
+                            class: fullCardData.Class,
+                            cost: fullCardData.Cost
+                        });
+                    }
+                }
+                
+                // If validation failed, silently exit and do nothing to the UI
+                if (!isDeckValid) return;
+
+                // If we get here, the URL is safe and valid. Apply it.
+                currentSeeds = parsedSeeds;
+                
+                const crafterView = document.getElementById('crafterView');
+                if (crafterView) crafterView.classList.remove('hidden');
+                
+                if (typeof updateDeckStats === 'function') updateDeckStats();
+                if (typeof renderSeeds === 'function') renderSeeds();
+                
+            } catch (error) {
+                // Silently catch manual URL tampering
+            }
+        } else if (attempts > 50) {
+            clearInterval(dataWatcher);
+        }
+    }, 100);
+});
 // --- 3. CONVERSATIONAL AI CO-PILOT ---
 function triggerAICoPilot() {
     window.activeSwapTarget = null;
@@ -2685,7 +2786,7 @@ if (copyDeckBtn) {
             btn.innerText = "Copied!";
             btn.style.background = "#4CAF50"; 
             setTimeout(() => {
-                btn.innerText = "Copy to Clipboard";
+                btn.innerText = "Copy Text";
                 btn.style.background = ""; 
             }, 2000);
         }).catch(err => console.error("Failed to copy text: ", err));
