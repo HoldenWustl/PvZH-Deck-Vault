@@ -103,10 +103,45 @@ button:hover { background-color: #0096b4; }
 button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 
 #backBtn {
-    background-color: #30363d;
-    color: white;
+    /* Layout & Alignment */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    
+    /* Typography & Visuals */
+    background-color: transparent; /* Blends nicely into the background initially */
+    color: var(--text-secondary);
+    border: 1px solid var(--card-bg);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    
+    /* Smooth transition for all interactive states */
+    transition: all 0.2s ease-in-out;
 }
-#backBtn:hover { background-color: #484f58; }
+
+#backBtn:hover {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--accent); /* Pulls in your cyan accent */
+    box-shadow: 0 0 8px rgba(0, 180, 216, 0.15); /* Subtle accent glow */
+    
+    /* A slight structural nudge to the left to emphasize the "back" action */
+    transform: translateX(-4px); 
+}
+
+#backBtn:active {
+    /* Slight compression when clicked */
+    transform: translateX(-4px) scale(0.97); 
+}
+
+/* Optional: If you keep the hidden class, make sure it applies cleanly */
+#backBtn.hidden {
+    display: none;
+}
 
 /* =========================================
    DECK GRID & CARDS
@@ -1612,4 +1647,113 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 .visual-card.show-controls .visual-card-controls {
     opacity: 1;
     pointer-events: auto;
+}
+/* Target all three buttons to share the same styling */
+#crafterBtn, #statsBtn, #gamesBtn {
+    /* Layout & Alignment */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    
+    /* Typography & Visuals */
+    background-color: transparent; 
+    color: var(--text-secondary);
+    border: 1px solid var(--card-bg);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    
+    /* Smooth transition for all interactive states */
+    transition: all 0.2s ease-in-out;
+}
+
+#crafterBtn:hover, #statsBtn:hover, #gamesBtn:hover {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--accent); 
+    box-shadow: 0 0 8px rgba(0, 180, 216, 0.15); 
+    
+    /* A slight structural lift upwards to emphasize an interactive menu item */
+    transform: translateY(-3px); 
+}
+
+#crafterBtn:active, #statsBtn:active, #gamesBtn:active {
+    /* Slight compression and return to base height when clicked */
+    transform: translateY(0) scale(0.97); 
+}
+#searchWrapper {
+    /* Optional: Controls the maximum footprint of the search bar in your layout */
+    width: 100%;
+    max-width: 400px; 
+}
+
+#searchInput {
+    /* The magic unit: makes the input wide enough for ~40 characters */
+    width: 40ch; 
+    
+    /* Alternatively, if you want it to fill the #searchWrapper completely, use: */
+    /* width: 100%; */
+
+    /* Match the layout and visuals of your buttons */
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--card-bg);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    
+    /* Ensures the padding doesn't accidentally make the element wider than intended */
+    box-sizing: border-box; 
+    
+    /* Smooth transition for focus states */
+    transition: all 0.2s ease-in-out;
+}
+
+/* Style the placeholder text specifically so it isn't too bold */
+#searchInput::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+/* Add that same nice cyan glow when the user clicks into the search bar */
+#searchInput:focus {
+    outline: none; /* Removes default browser outline */
+    border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(0, 180, 216, 0.15);
+}
+.info-btn {
+    /* 1. Alignment Fix */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle; /* Aligns the button's middle with the text's x-height */
+    
+    /* 2. Sizing (Ensures a perfect circle) */
+    width: 20px;
+    height: 20px;
+    padding: 0; /* Resetting padding prevents it from pushing the text away */
+    
+    /* 3. Visuals (Matching your current theme) */
+    background-color: var(--card-bg);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 50%; /* Makes it a circle */
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    
+    /* 4. Fine-tuning */
+    margin-bottom: 2px; /* Micro-adjustment if it still looks a hair too low */
+    transition: all 0.2s ease;
+}
+
+.info-btn:hover {
+    background-color: var(--accent);
+    color: white;
+    transform: scale(1.1);
 }
