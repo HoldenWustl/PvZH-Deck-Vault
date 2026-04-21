@@ -1757,3 +1757,32 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     color: white;
     transform: scale(1.1);
 }
+/* Apply this to all buttons, including the back button */
+#crafterBtn, #statsBtn, #gamesBtn, #backBtn {
+    /* 1. Prevents the button from growing to fill the flex row */
+    flex: none; 
+    
+    /* 2. Ensures it only stays as wide as its text/padding */
+    width: max-content; 
+    
+    /* 3. Standardizes the appearance */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Specific fix for the search bar on mobile so it stays on its own top row */
+@media (max-width: 599px) {
+    #searchWrapper {
+        width: 100%; /* Forces the search bar to take the full top width */
+    }
+    
+    #searchInput {
+        width: 100%; /* Ensures the input fills that wrapper */
+    }
+    
+    .controls-container {
+        /* This keeps the back button centered when it's alone on a row */
+        justify-content: center; 
+    }
+}
