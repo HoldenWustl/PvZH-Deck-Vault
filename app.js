@@ -2348,17 +2348,17 @@ const base = (curveNumeric * 0.35)
 
 // Consistency penalty: nothing if it's "good" (70+), but ramps up sharply below that.
 // Bad consistency genuinely breaks decks, so this needs teeth.
-const consistencyPenalty = consistencyScore < 70 ? (70 - consistencyScore) * 0.6 : 0;
+const consistencyPenalty = consistencyScore < 70 ? (70 - consistencyScore) * 0.8 : 0;
 
 const overallPercent = Math.max(0, base - consistencyPenalty);
-const allTopTier = curveNumeric >= 85 && synergyScore >= 85 && consistencyScore >= 85 && powerScore >= 85;
+const allTopTier = curveNumeric >= 87.5 && synergyScore >= 87.5 && consistencyScore >= 87.5 && powerScore >= 87.5;
 
     // Map to letter grade. S requires both a high average AND no weak stat —
     // keeps S genuinely rare instead of handing it out for one carrying score.
     let grade, gradeColor;
 if (totalCards < 6)                          { grade = "—"; gradeColor = "rgba(255,255,255,0.3)"; }
 else if (overallPercent >= 90 && allTopTier) { grade = "S"; gradeColor = "#00E5FF"; }
-else if (overallPercent >= 85)               { grade = "A"; gradeColor = "#4CAF50"; }
+else if (overallPercent >= 87.5)               { grade = "A"; gradeColor = "#4CAF50"; }
 else if (overallPercent >= 75)               { grade = "B"; gradeColor = "#8BC34A"; }
 else if (overallPercent >= 65)               { grade = "C"; gradeColor = "#ffb300"; }
 else if (overallPercent >= 50)               { grade = "D"; gradeColor = "#ff8800"; }
