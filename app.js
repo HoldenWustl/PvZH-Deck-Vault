@@ -432,7 +432,7 @@ cardEl.innerHTML = `
         let totalUniqueCardSlots = 0;
 
         // --- NEW: Trending Data Variables ---
-        const RECENT_DECK_COUNT = 50;
+        const RECENT_DECK_COUNT = 100;
         const recentCardFreq = {};
 
         // --- FIX: Safely sort allDecks from newest to oldest ---
