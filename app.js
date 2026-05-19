@@ -1920,7 +1920,8 @@ function updateDeckStats() {
     currentSeeds.forEach(seedA => {
         totalCards += seedA.count;
         
-        const cost = parseInt(seedA.cost) || 1; 
+        const parsedCost = parseInt(seedA.cost);
+        const cost = isNaN(parsedCost) ? 1 : parsedCost;
         totalCost += (cost * seedA.count);
 
         // --- NEW: Calculate Sparks based on Rarity ---
@@ -2329,6 +2330,84 @@ function updateDeckStats() {
 
     powerLabelEl.style.color = powerColor;
     powerFillEl.style.backgroundColor = powerColor;
+
+   // ==========================================
+    // 7. VERDICT GRADE + CALLOUTS
+    // ==========================================
+    const curveHealthText = document.getElementById('curveHealthLabel').innerText;
+
+    // Convert curve label to a 0–100 score so all four dims average cleanly
+    const curveNumeric = ({"Excellent":100, "Good":80, "Playable":55, "Awkward":20, "Unique":65})[curveHealthText] ?? 55;
+
+    // Weighted base: curve and synergy carry the deck; power matters less;
+// consistency contributes only a little here — its real role is the penalty below.
+const base = (curveNumeric * 0.35)
+           + (synergyScore  * 0.35)
+           + (powerScore    * 0.20)
+           + (consistencyScore * 0.10);
+
+// Consistency penalty: nothing if it's "good" (70+), but ramps up sharply below that.
+// Bad consistency genuinely breaks decks, so this needs teeth.
+const consistencyPenalty = consistencyScore < 70 ? (70 - consistencyScore) * 0.6 : 0;
+
+const overallPercent = Math.max(0, base - consistencyPenalty);
+const allTopTier = curveNumeric >= 85 && synergyScore >= 85 && consistencyScore >= 85 && powerScore >= 85;
+
+    // Map to letter grade. S requires both a high average AND no weak stat —
+    // keeps S genuinely rare instead of handing it out for one carrying score.
+    let grade, gradeColor;
+if (totalCards < 6)                          { grade = "—"; gradeColor = "rgba(255,255,255,0.3)"; }
+else if (overallPercent >= 90 && allTopTier) { grade = "S"; gradeColor = "#00E5FF"; }
+else if (overallPercent >= 85)               { grade = "A"; gradeColor = "#4CAF50"; }
+else if (overallPercent >= 75)               { grade = "B"; gradeColor = "#8BC34A"; }
+else if (overallPercent >= 65)               { grade = "C"; gradeColor = "#ffb300"; }
+else if (overallPercent >= 50)               { grade = "D"; gradeColor = "#ff8800"; }
+else                                         { grade = "F"; gradeColor = "#ff4b4b"; }
+
+    const gradeEl = document.getElementById('verdictGrade');
+    gradeEl.innerText = grade;
+    gradeEl.style.color = gradeColor;
+
+    const archetype = speedLabel.split('/')[0]; // "Aggro/Rush" → "Aggro"
+    document.getElementById('verdictArchetype').innerText = archetype;
+    document.getElementById('verdictSubtitle').innerText =
+        `${totalCards} cards · avg cost ${avgCost.toFixed(1)} · ${costLabel.toLowerCase()}`;
+    const callouts = [];
+    if (totalCards >= 6) {
+        if      (synergyScore     >= 85) callouts.push({dir:'up',   text:'Elite synergy',      val:synergyScore+'%',     pri:5});
+        else if (synergyScore     >= 70) callouts.push({dir:'up',   text:'Strong synergy',     val:synergyScore+'%',     pri:3});
+        else if (synergyScore     <  30) callouts.push({dir:'down', text:'Weak synergy',       val:synergyScore+'%',     pri:5});
+        else if (synergyScore     <  50) callouts.push({dir:'down', text:'Low synergy',        val:synergyScore+'%',     pri:3});
+
+        if      (consistencyScore >= 85) callouts.push({dir:'up',   text:'Highly consistent',  val:consistencyScore+'%', pri:4});
+        else if (consistencyScore <  40) callouts.push({dir:'down', text:'Inconsistent',       val:consistencyScore+'%', pri:5});
+        else if (consistencyScore <  55) callouts.push({dir:'down', text:'Low consistency',    val:consistencyScore+'%', pri:3});
+
+        if      (powerScore       >= 85) callouts.push({dir:'up',   text:'Meta powerhouse',    val:powerScore+'%',       pri:4});
+        else if (powerScore       <  30) callouts.push({dir:'down', text:'Off-meta',           val:powerScore+'%',       pri:2});
+
+        if      (curveHealthText === "Excellent") callouts.push({dir:'up',   text:'Excellent curve', val:'', pri:4});
+        else if (curveHealthText === "Awkward")   callouts.push({dir:'down', text:'Awkward curve',   val:'', pri:5});
+
+        if      (costLabel === "P2W")    callouts.push({dir:'down', text:'P2W cost',           val:'', pri:2});
+        else if (costLabel === "Budget" && powerScore >= 60)
+                                         callouts.push({dir:'up',   text:'Budget powerhouse',  val:'', pri:3});
+    }
+
+    callouts.sort((a,b) => b.pri - a.pri);
+    const top = callouts.slice(0, 3);
+    const calloutHost = document.getElementById('verdictCallouts');
+    calloutHost.innerHTML = top.length === 0
+        ? (totalCards >= 6
+            ? '<div style="font-size:0.7em; color:rgba(255,255,255,0.3); padding:2px 0;">No notable highs or lows.</div>'
+            : '')
+        : top.map(c => `
+            <div style="display:flex; align-items:center; gap:8px; font-size:0.72em;">
+                <span style="width:12px; color:${c.dir==='up' ? '#4CAF50' : '#ffb300'}; font-weight:600; text-align:center;">${c.dir==='up' ? '↑' : '↓'}</span>
+                <span style="color:rgba(255,255,255,0.85);">${c.text}</span>
+                ${c.val ? `<span style="color:rgba(255,255,255,0.35); margin-left:auto;">${c.val}</span>` : ''}
+            </div>
+        `).join('');
 }
 document.getElementById('shareDeckBtn').addEventListener('click', function() {
     const cardDictionary = Object.keys(cardDatabase).sort();
@@ -2478,29 +2557,33 @@ function triggerAICoPilot() {
         baseHtml = `<div class="ai-message system">Your deck is complete! I could not find a close match in the deck database.</div>`;
     } else {
         // Check if the youtube_url exists and is not an empty string
-        if (closestDeck.youtube_url) {
-            baseHtml = `
-                <div class="ai-message system">
-                    Your deck is complete! Your deck is closest to 
-                    <a href="${closestDeck.youtube_url}" target="_blank" rel="noopener noreferrer" style="font-weight: bold; color: var(--accent, #4CAF50); text-decoration: underline;">
-                        ${closestDeck.name}
-                    </a>.
-                    <div style="margin-top: 6px; font-size: 0.9em; opacity: 0.85;">
-                        Video: ${closestDeck.youtube_title || "YouTube deck video"}
-                    </div>
-                </div>
-            `;
-        } else {
-            // Fallback for no URL: just text, no link, no underline
-            baseHtml = `
-                <div class="ai-message system">
-                    Your deck is complete! Your deck is closest to 
-                    <span style="font-weight: bold; color: var(--accent, #4CAF50);">
-                        ${closestDeck.name}
-                    </span>.
-                </div>
-            `;
-        }
+        const deckName = (closestDeck.name || "").trim();
+const uploadDate = closestDeck.upload_date || "Unknown date";
+
+if (closestDeck.youtube_url) { 
+    baseHtml = `
+        <div class="ai-message system">
+            Your deck is complete! Your deck is closest to 
+            <a href="${closestDeck.youtube_url}" target="_blank" rel="noopener noreferrer" style="font-weight: bold; color: var(--accent, #4CAF50);">
+                ${deckName}
+            </a>
+            (from ${uploadDate}).
+            <div style="margin-top: 6px; font-size: 0.9em; opacity: 0.85;">
+                Video: ${closestDeck.youtube_title || "YouTube deck video"}
+            </div>
+        </div>
+    `;
+} else {
+    baseHtml = `
+        <div class="ai-message system">
+            Your deck is complete! Your deck is closest to 
+            <span style="font-weight: bold; color: var(--accent, #4CAF50);">
+                ${deckName}
+            </span>
+            (from ${uploadDate}).
+        </div>
+    `;
+}
     }
 
         // --- FIXED: Evaluate ALL possible swaps to find the highest net synergy gain ---
@@ -2562,14 +2645,14 @@ function triggerAICoPilot() {
             const topName = bestSwapIdea.addCard.replace(/_/g, ' ');
 
             swapHtml = `
-                <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
                     I found a way to make this deck even better!
                     Swapping out <strong>${weakName}</strong> for <strong>${topName}</strong> would give your deck a nice boost!
                 </div>
                 
                 <div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: center; width: 100%; margin-top: 10px;">
                     <div class="ai-visual-rec" style="flex: 0 1 240px; display: flex; flex-direction: column; align-items: center; padding: 10px; position: relative;">
-                        <span style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: #ffb300; color: #fff; font-size: 0.65em; font-weight: bold; padding: 4px 10px; border-radius: 12px; z-index: 2; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.4);">
+                        <span style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: rgba(255,179,0,0.15); color: #ffb300; font-size: 0.6em; font-weight: 600; padding: 3px 9px; border-radius: 10px; z-index: 2; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid rgba(255,179,0,0.3);">
                             Top Swap Idea
                         </span>
                         
@@ -2578,7 +2661,7 @@ function triggerAICoPilot() {
                             
                             <span style="font-size: 1.4em; color: #ffb300; font-weight: bold;">➔</span>
                             
-                            <img src="card_images/${bestSwapIdea.addCard}.png" alt="${topName}" title="${topName}" onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.addCard}.webp';" style="flex: 1; max-width: 45%; max-height: 90px; object-fit: contain; filter: drop-shadow(0 5px 8px rgba(0,0,0,0.5));">
+                            <img src="card_images/${bestSwapIdea.addCard}.png" alt="${topName}" title="${topName}" onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.addCard}.webp';" style="flex: 1; max-width: 45%; max-height: 90px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
                         </div>
                         
                         <button class="add-rec-btn generate-btn" data-remove="${bestSwapIdea.removeCard}" data-add="${bestSwapIdea.addCard}" style="width: 100%; padding: 6px 0; font-size: 0.9em; font-weight: bold; margin: 0; margin-top: auto; border-radius: 6px; white-space: nowrap;">
@@ -2590,7 +2673,7 @@ function triggerAICoPilot() {
         } else {
             // ONLY triggers if literally no card has a replacement with a higher score
             swapHtml = `
-                <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
                     Great job on such a cohesive deck!
                 </div>
             `;
@@ -2762,15 +2845,18 @@ else {
             const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
             const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
             
-            htmlString += `
-                <div class="ai-visual-rec" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 5px; position: relative; height: 100%;">
-                    
-                    <span style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: ${badgeColor}; color: #fff; font-size: 0.65em; font-weight: bold; padding: 4px 10px; border-radius: 12px; z-index: 2; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.4);">
-                        ${badgeText}
-                    </span>
+            // Derive an RGB tuple from the hex so we can build a transparent bg
+const badgeRgb = index === 0 ? '255,179,0' : '76,175,80';
+
+htmlString += `
+    <div class="ai-visual-rec" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 10px 5px; position: relative; height: 100%;">
+        
+        <span style="position: absolute; top: -7px; left: 50%; transform: translateX(-50%); background: rgba(${badgeRgb},0.15); color: ${badgeColor}; font-size: 0.6em; font-weight: 600; padding: 3px 9px; border-radius: 10px; z-index: 2; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid rgba(${badgeRgb},0.3);">
+            ${badgeText}
+        </span>
                     
                     <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; margin: 12px 0 8px 0;">
-                        <img src="card_images/${rec.name}.png" alt="${rec.displayName}" title="${rec.displayName}" onerror="this.onerror=null; this.src='card_images/${rec.name}.webp';" style="max-width: 100%; max-height: 100px; object-fit: contain; filter: drop-shadow(0 5px 8px rgba(0,0,0,0.5));">
+                        <img src="card_images/${rec.name}.png" alt="${rec.displayName}" title="${rec.displayName}" onerror="this.onerror=null; this.src='card_images/${rec.name}.webp';" style="max-width: 100%; max-height: 100px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
                     </div>
                     
                     <button class="add-rec-btn generate-btn" data-name="${rec.name}" data-class="${rec.data.Class}" data-amount="${rec.targetCopies}" style="width: 100%; padding: 6px 0; font-size: 0.8em; font-weight: bold; margin: 0; margin-top: auto; border-radius: 6px; white-space: nowrap;">
@@ -2951,7 +3037,7 @@ function showSwapSuggestions(baseCardName) {
                     </span>
                     
                     <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; margin: 12px 0 8px 0;">
-                        <img src="card_images/${rec.name}.png" alt="${cardName}" title="${cardName}" onerror="this.onerror=null; this.src='card_images/${rec.name}.webp';" style="max-width: 100%; max-height: 100px; object-fit: contain; filter: drop-shadow(0 5px 8px rgba(0,0,0,0.5));">
+                        <img src="card_images/${rec.name}.png" alt="${cardName}" title="${cardName}" onerror="this.onerror=null; this.src='card_images/${rec.name}.webp';" style="max-width: 100%; max-height: 100px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
                     </div>
                     
                     <button class="add-rec-btn generate-btn" data-remove="${baseCardName}" data-add="${rec.name}" style="width: 100%; padding: 6px 0; font-size: 0.8em; font-weight: bold; margin: 0; margin-top: auto; border-radius: 6px; white-space: nowrap;">

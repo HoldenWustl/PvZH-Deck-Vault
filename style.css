@@ -1558,22 +1558,80 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     margin-bottom: 15px;
 }
 
+/* === AI Chat Feed — unified with the analytics panel === */
 .ai-chat-feed {
     flex-grow: 1;
     overflow-y: auto;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
+/* Messages: no stripe, no card bg — just typography */
 .ai-message {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 12px;
-    border-radius: 8px;
-    border-left: 3px solid var(--accent, #4CAF50);
-    font-size: 0.9em;
+    background: transparent;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-size: 0.8em;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.55;
 }
 
+.ai-message strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+.ai-message em {
+    color: rgba(255,255,255,0.6);
+    font-style: italic;
+}
+.ai-message a {
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block; /* key fix */
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.ai-message a:hover {
+    border-bottom-color: currentColor;
+}
+
+/* Recommendation cards: subtle nested panel feel */
+.ai-visual-rec {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 8px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.ai-visual-rec:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.08);
+}
+
+/* Buttons: ghost style, matching the muted accent pattern */
+.add-rec-btn,
+.ai-visual-rec .generate-btn {
+    background: rgba(76,175,80,0.12) !important;
+    color: #4CAF50 !important;
+    border: 1px solid rgba(76,175,80,0.25) !important;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+.add-rec-btn:hover,
+.ai-visual-rec .generate-btn:hover {
+    background: rgba(76,175,80,0.2) !important;
+    border-color: rgba(76,175,80,0.5) !important;
+}
 /* Control Panel Cleanup */
 .panel-controls {
     display: flex;
@@ -1923,3 +1981,4 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     transform: translateY(1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
+
