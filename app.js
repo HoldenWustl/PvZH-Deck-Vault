@@ -2374,17 +2374,17 @@ else                                         { grade = "F"; gradeColor = "#ff4b4
         `${totalCards} cards · avg cost ${avgCost.toFixed(1)} · ${costLabel.toLowerCase()}`;
     const callouts = [];
     if (totalCards >= 6) {
-        if      (synergyScore     >= 85) callouts.push({dir:'up',   text:'Elite synergy',      val:synergyScore+'%',     pri:5});
-        else if (synergyScore     >= 70) callouts.push({dir:'up',   text:'Strong synergy',     val:synergyScore+'%',     pri:3});
-        else if (synergyScore     <  30) callouts.push({dir:'down', text:'Weak synergy',       val:synergyScore+'%',     pri:5});
+        if      (synergyScore     >= 88) callouts.push({dir:'up',   text:'Elite synergy',      val:synergyScore+'%',     pri:5});
+        else if (synergyScore     >= 75) callouts.push({dir:'up',   text:'Strong synergy',     val:synergyScore+'%',     pri:3});
+        else if (synergyScore     <  65) callouts.push({dir:'down', text:'Weak synergy',       val:synergyScore+'%',     pri:5});
         else if (synergyScore     <  50) callouts.push({dir:'down', text:'Low synergy',        val:synergyScore+'%',     pri:3});
 
         if      (consistencyScore >= 85) callouts.push({dir:'up',   text:'Highly consistent',  val:consistencyScore+'%', pri:4});
         else if (consistencyScore <  40) callouts.push({dir:'down', text:'Inconsistent',       val:consistencyScore+'%', pri:5});
-        else if (consistencyScore <  55) callouts.push({dir:'down', text:'Low consistency',    val:consistencyScore+'%', pri:3});
+        else if (consistencyScore <  65) callouts.push({dir:'down', text:'Low consistency',    val:consistencyScore+'%', pri:3});
 
         if      (powerScore       >= 85) callouts.push({dir:'up',   text:'Meta powerhouse',    val:powerScore+'%',       pri:4});
-        else if (powerScore       <  30) callouts.push({dir:'down', text:'Off-meta',           val:powerScore+'%',       pri:2});
+        else if (powerScore       <  50) callouts.push({dir:'down', text:'Off-meta',           val:powerScore+'%',       pri:2});
 
         if      (curveHealthText === "Excellent") callouts.push({dir:'up',   text:'Excellent curve', val:'', pri:4});
         else if (curveHealthText === "Awkward")   callouts.push({dir:'down', text:'Awkward curve',   val:'', pri:5});
