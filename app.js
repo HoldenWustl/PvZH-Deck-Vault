@@ -109,6 +109,7 @@ Promise.all([
     loadingEl.textContent = `Error loading data: ${error.message}`;
     console.error("Fetch error:", error);
 });
+const gradeFilter = document.getElementById('gradeFilter');
 function handleRouting() {
     // IMPORTANT: If the data hasn't finished downloading yet, stop right here!
     if (!isDataLoaded) return; 
@@ -116,6 +117,7 @@ function handleRouting() {
     const hash = window.location.hash;
 
     // 1. Hide absolutely everything first
+    gradeFilter.classList.add('hidden');
     deckView.classList.add('hidden');
     statsView.classList.add('hidden');
     crafterView.classList.add('hidden');
@@ -161,6 +163,7 @@ function handleRouting() {
         crafterBtn.classList.remove('hidden');
         gamesBtn.classList.remove('hidden');
         synergyBtn.classList.remove('hidden');
+        gradeFilter.classList.remove('hidden');
     }
 }
     // --- Helper Functions ---
@@ -173,7 +176,283 @@ function handleRouting() {
     function escapeRegExp(string) {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
+    function parseCardEntry(cardString) {
+    if (!cardString || typeof cardString !== "string") return null;
+    const parts = cardString.trim().split(/\s+/);
+    if (parts.length === 0 || !parts[0]) return null;
 
+    let count = 1;
+    let nameParts = parts;
+    const first = parts[0];
+    const m1 = first.match(/^x(\d+)$/i);
+    const m2 = first.match(/^(\d+)x$/i);
+    const m3 = first.match(/^(\d+)$/);
+
+    if (m1)                       { count = parseInt(m1[1], 10); nameParts = parts.slice(1); }
+    else if (m2)                  { count = parseInt(m2[1], 10); nameParts = parts.slice(1); }
+    else if (m3 && parts.length > 1) { count = parseInt(m3[1], 10); nameParts = parts.slice(1); }
+
+    const rawName = nameParts.join(" ").trim();
+    if (!rawName) return null;
+
+    const name = rawName.replace(/_/g, " ").replace(/\s+/g, " ").trim();
+    const key  = name.replace(/ /g, "_");
+    return { name, key, count: Number.isFinite(count) ? count : 1 };
+}
+
+let _verdictContext = null;
+let _verdictContextSource = null;
+
+function getVerdictContext() {
+    if (_verdictContext && _verdictContextSource === fullDatabase) return _verdictContext;
+
+    const ctx = { cardPopularity: {}, maxMetaCopies: 0, dbDecks: {} };
+    if (typeof fullDatabase === "undefined") {
+        _verdictContext = ctx;
+        _verdictContextSource = fullDatabase;
+        return ctx;
+    }
+
+    for (const deckKey in fullDatabase) {
+        const dbDeck = fullDatabase[deckKey];
+        if (!dbDeck || !Array.isArray(dbDeck.cards)) continue;
+
+        const seedCounts = new Map(); // spaced name -> count (used for overlap)
+        let dbTotalCards = 0;
+        const dbCurve = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, "6+": 0 };
+
+        for (const cardString of dbDeck.cards) {
+            // EXACT live-builder parsing — do not "improve" this
+            const parts = (cardString || "").split(" ");
+            if (parts.length < 2) continue;
+
+            const count        = parseInt(parts[0].replace('x', '')) || 0; // live: curve uses || 0
+            const copiesPower  = parseInt(parts[0].replace('x', '')) || 1; // live: power uses || 1
+            const rawName      = parts.slice(1).join(" ");
+            const cleanName    = rawName.replace(/_/g, ' ');
+
+            seedCounts.set(cleanName, (seedCounts.get(cleanName) || 0) + count);
+            dbTotalCards += count;
+            ctx.cardPopularity[cleanName] = (ctx.cardPopularity[cleanName] || 0) + copiesPower;
+
+            // Mirror the live builder's cost lookup EXACTLY, including the
+            // "NaN cost falls to 6+" quirk. Do NOT normalize NaN to 1 here.
+            const cardData = cardDatabase[cleanName] || cardDatabase[rawName];
+            const cost = cardData ? parseInt(cardData.Cost) : 1;
+
+            if      (cost <= 1)  dbCurve[1]    += count;
+            else if (cost === 2) dbCurve[2]    += count;
+            else if (cost === 3) dbCurve[3]    += count;
+            else if (cost === 4) dbCurve[4]    += count;
+            else if (cost === 5) dbCurve[5]    += count;
+            else                 dbCurve["6+"] += count;
+        }
+
+        if (dbTotalCards === 0) continue;
+
+        ctx.dbDecks[deckKey] = {
+            seedCounts,
+            totalCards: dbTotalCards,
+            shape: [
+                dbCurve[1]    / dbTotalCards,
+                dbCurve[2]    / dbTotalCards,
+                dbCurve[3]    / dbTotalCards,
+                dbCurve[4]    / dbTotalCards,
+                dbCurve[5]    / dbTotalCards,
+                dbCurve["6+"] / dbTotalCards,
+            ],
+        };
+    }
+
+    const metaValues = Object.values(ctx.cardPopularity);
+    ctx.maxMetaCopies = metaValues.length > 0 ? Math.max(...metaValues) : 0;
+
+    _verdictContext = ctx;
+    _verdictContextSource = fullDatabase;
+    return ctx;
+}
+
+function getDeckVerdictFromCards(deckCards, selfDeckKey, ctx) {
+    if (typeof initSynergyMatrix === "function") {
+        initSynergyMatrix();
+    }
+    ctx = ctx || getVerdictContext();
+
+    // --- Parse own deck ---
+    const seedMap = new Map(); // name -> {name, key, count, cost}
+    for (const cardString of deckCards || []) {
+        const parsed = parseCardEntry(cardString);
+        if (!parsed) continue;
+        const { name, key, count } = parsed;
+
+        const existing = seedMap.get(name) || { name, key, count: 0, cost: 1 };
+        existing.count += count;
+        const cardData = cardDatabase?.[key] || cardDatabase?.[name] || {};
+        const parsedCost = parseInt(cardData.Cost, 10);
+        existing.cost = Number.isFinite(parsedCost) ? parsedCost : 1;
+        seedMap.set(name, existing);
+    }
+    const seeds = [...seedMap.values()];
+
+    // --- Totals, curve, sparks, synergy ---
+    let totalCards = 0, totalCost = 0, totalSparks = 0, totalConnection = 0;
+    const curve = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, "6+": 0 };
+
+    seeds.forEach(seedA => {
+        totalCards += seedA.count;
+        const cost = seedA.cost || 1;
+        totalCost  += cost * seedA.count;
+
+        const cardData = cardDatabase?.[seedA.key] || cardDatabase?.[seedA.name] || {};
+        const rarity = cardData.Rarity || "Common";
+        let sparks = 0;
+        if      (rarity === "Uncommon")                              sparks = 50;
+        else if (rarity === "Rare")                                  sparks = 250;
+        else if (rarity === "Super-Rare" || rarity === "Event")      sparks = 1000;
+        else if (rarity === "Legendary")                             sparks = 4000;
+        totalSparks += sparks * seedA.count;
+
+        if      (cost <= 1) curve[1]    += seedA.count;
+        else if (cost === 2) curve[2]   += seedA.count;
+        else if (cost === 3) curve[3]   += seedA.count;
+        else if (cost === 4) curve[4]   += seedA.count;
+        else if (cost === 5) curve[5]   += seedA.count;
+        else                 curve["6+"] += seedA.count;
+        
+        let cardBestConnection = 0;
+const freqA = cardFrequencies?.[seedA.key] || 1;
+seeds.forEach(seedB => {
+    if (seedA.key === seedB.key) return;
+    const coOccurrences = synergyMatrix?.[seedA.key]?.[seedB.key] || 0;
+    const freqB = cardFrequencies?.[seedB.key] || 1;
+    const cs = coOccurrences / Math.sqrt(freqA * freqB);
+    if (cs > cardBestConnection) cardBestConnection = cs;
+});
+totalConnection += cardBestConnection * seedA.count;
+    });
+
+    const avgCost   = totalCards > 0 ? totalCost   / totalCards : 0;
+    const avgSparks = totalCards > 0 ? totalSparks / totalCards : 0;
+
+    let costLabel = "Budget";
+    if      (avgSparks <=  250) costLabel = "Budget";
+    else if (avgSparks <=  600) costLabel = "Moderate";
+    else if (avgSparks <= 1400) costLabel = "Expensive";
+    else                        costLabel = "P2W";
+
+    // --- Synergy ---
+    let synergyScore = 0;
+    if (totalCards > 0 && seeds.length > 1) {
+        const rawAvg = totalConnection / totalCards;
+        synergyScore = Math.min(Math.round(rawAvg * 100), 100);
+        if (totalCards < 6) synergyScore = Math.round(synergyScore * (totalCards / 6));
+    } else if (totalCards === 1) {
+        synergyScore = 5;
+    }
+
+    // --- Consistency ---
+    let consistencyScore = 0;
+    if (totalCards > 0 && seeds.length > 0) {
+        let pts = 0;
+        seeds.forEach(s => {
+            if      (s.count === 1)  pts += 0;
+            else if (s.count === 2)  pts += 50;
+            else if (s.count === 3)  pts += 80;
+            else if (s.count >= 4)   pts += 100;
+        });
+        consistencyScore = Math.round(pts / seeds.length);
+    }
+
+    // --- Power (uses precomputed popularity) ---
+    let powerScore = 0;
+    if (totalCards > 0 && ctx.maxMetaCopies > 0) {
+        let totalPowerPoints = 0;
+        const curveFactor = 1;
+        seeds.forEach(seed => {
+            const metaCopies = ctx.cardPopularity[seed.name] || 0;
+            const rawRatio = metaCopies / ctx.maxMetaCopies;
+            totalPowerPoints += Math.pow(rawRatio, curveFactor) * 100 * seed.count;
+        });
+        powerScore = Math.min(100, Math.round((totalPowerPoints * 3) / totalCards));
+    }
+
+    // --- Curve health (full archetype envelope, like the live builder) ---
+    let curveHealthText = "...";
+    let curveNumeric = 55;
+
+    if (totalCards >= 10) {
+        const userShape = [
+            curve[1] / totalCards, curve[2] / totalCards, curve[3] / totalCards,
+            curve[4] / totalCards, curve[5] / totalCards, curve["6+"] / totalCards,
+        ];
+
+        const userSeedCounts = new Map();
+        seeds.forEach(s => userSeedCounts.set(s.name, s.count));
+
+        const dbComparisons = [];
+        for (const dbKey in ctx.dbDecks) {
+            // don't compare a deck to itself
+            const db = ctx.dbDecks[dbKey];
+            let overlap = 0;
+            // iterate the smaller side
+            const [a, b] = userSeedCounts.size < db.seedCounts.size
+                ? [userSeedCounts, db.seedCounts]
+                : [db.seedCounts, userSeedCounts];
+            for (const [name, c] of a) {
+                const other = b.get(name);
+                if (other !== undefined) overlap += Math.min(c, other);
+            }
+            if (overlap >= 6) dbComparisons.push({ overlap, shape: db.shape });
+        }
+
+        dbComparisons.sort((a, b) => b.overlap - a.overlap);
+
+        let closestDecks = [];
+        if (dbComparisons.length > 0) {
+            const best = dbComparisons[0].overlap;
+            closestDecks = dbComparisons.filter(d => d.overlap >= best * 0.85).slice(0, 10);
+            if (closestDecks.length < 4 && dbComparisons.length >= 4) {
+                closestDecks = dbComparisons.slice(0, 4);
+            }
+        }
+
+        if (closestDecks.length > 0) {
+            let totalWeight = 0;
+            closestDecks.forEach(d => totalWeight += d.overlap);
+
+            const idealShape = [0, 0, 0, 0, 0, 0];
+            closestDecks.forEach(d => {
+                const w = d.overlap / totalWeight;
+                for (let i = 0; i < 6; i++) idealShape[i] += d.shape[i] * w;
+            });
+
+            const tolerance = 0.05;
+            let totalPenalty = 0;
+            for (let i = 0; i < 6; i++) {
+                const diff = Math.abs(userShape[i] - idealShape[i]);
+                if (diff > tolerance) totalPenalty += diff - tolerance;
+            }
+            const deviationPercent = (totalPenalty / 6) * 100;
+
+            if      (deviationPercent <= 2.0) { curveHealthText = "Excellent"; curveNumeric = 100; }
+            else if (deviationPercent <= 3.0) { curveHealthText = "Good";      curveNumeric = 80;  }
+            else if (deviationPercent <= 5.0) { curveHealthText = "Playable";  curveNumeric = 55;  }
+            else                              { curveHealthText = "Awkward";   curveNumeric = 20;  }
+        } else {
+            curveHealthText = "Unique";
+            curveNumeric = 65;
+        }
+    }
+
+    // --- Verdict ---
+    const base = (curveNumeric * 0.3) + (synergyScore * 0.35) + (powerScore * 0.3) + (consistencyScore * 0.05);
+    const consistencyPenalty = consistencyScore < 70 ? (70 - consistencyScore) * 0.8 : 0;
+    const overallPercent = Math.max(0, base - consistencyPenalty);
+    const allTopTier = curveNumeric >= 87.5 && synergyScore >= 87.5 && consistencyScore >= 87.5 && powerScore >= 87.5;
+
+    const { grade, gradeColor } = getVerdictGrade(overallPercent, allTopTier, totalCards);
+    return { grade, gradeColor, score: overallPercent, costLabel, synergyScore, consistencyScore, powerScore, avgCost, curveHealthText };
+}
     // --- Render Decks Function ---
   function renderDecks(data) {
     const searchInput = document.getElementById('searchInput');
@@ -189,11 +468,11 @@ function handleRouting() {
     if (synergyBtn) synergyBtn.disabled = true;
 
     setTimeout(() => {
-        deckGrid.innerHTML = '';
-        
-        const fragment = document.createDocumentFragment();
+    deckGrid.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    const ctx = getVerdictContext(); // built once, reused for the whole loop
 
-        for (const [deckKey, deckInfo] of Object.entries(data)) {
+    for (const [deckKey, deckInfo] of Object.entries(data)) {
             const cardEl = document.createElement('div');
             
             // --- UPDATED: FACTION CHECK LOOP ---
@@ -236,6 +515,7 @@ function handleRouting() {
                 const cleanCardName = card.replace(/_/g, ' ');
                 cardsHtml += `<li>${cleanCardName}</li>`;
             });
+            
             cardsHtml += '</ul>';
 
            const dateStr = deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
@@ -269,14 +549,23 @@ const videoPreviewHtml = isFryVideo ? `
             <div class="video-title-overlay">${deckInfo.youtube_title}</div>
         </a>
     </div>` : '';
-
+const verdict = deckInfo.verdict
+            || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
+deckInfo.verdict = verdict;
 cardEl.innerHTML = `
     <div class="deck-card-inner">
         <div class="deck-header">
             <div class="deck-title-group">
-                <h3 class="deck-title">${deckInfo.name}</h3>
-                <span class="deck-credit" title="${creditStr}">${creditStr}</span>
-            </div>
+    <h3 class="deck-title">${deckInfo.name}</h3>
+    <div class="deck-badges">
+        <span class="deck-credit" title="${creditStr}">${creditStr}</span>
+        <span class="deck-rating deck-rating-${deckInfo.verdict.grade}"
+      style="color:${deckInfo.verdict.gradeColor}"
+      title="Deck rating">
+    ${deckInfo.verdict.grade}
+</span>
+    </div>
+</div>
             <span class="deck-date">${dateStr}</span>
         </div>
        
@@ -314,33 +603,74 @@ cardEl.innerHTML = `
     }, 50); 
 }
 
-    // --- Smart Live Search ---
-    searchInput.addEventListener('input', (e) => {
-        const rawSearchTerm = e.target.value.trim();
+    // --- Combined Search + Grade Filter ---
 
-        if (!rawSearchTerm) {
-            renderDecks(fullDatabase);
-            return;
-        }
+let currentSearchTerm = "";
+let currentGradeFilter = "";
 
-        const searchRegex = new RegExp('\\b' + escapeRegExp(rawSearchTerm), 'i');
-        const filteredData = {};
 
-        for (const [deckKey, deckInfo] of Object.entries(fullDatabase)) {
-            const deckName = deckInfo.name || "";
-            const ytTitle = deckInfo.youtube_title || "";
+const gradeButtons = document.querySelectorAll(".grade-chip");
 
-            const hasMatchingCard = deckInfo.cards.some(card => {
-                const cleanName = card.replace(/_/g, ' ');
-                return searchRegex.test(cleanName);
-            });
+function matchesSearch(deckInfo, searchRegex) {
+    const deckName = deckInfo.name || "";
+    const ytTitle = deckInfo.youtube_title || "";
+    const credit = deckInfo.credit || "";
 
-            if (searchRegex.test(deckName) || searchRegex.test(ytTitle) || hasMatchingCard) {
-                filteredData[deckKey] = deckInfo;
-            }
-        }
-        renderDecks(filteredData);
+    const creditMatches = credit
+        .split(",")
+        .some(author => searchRegex.test(author.trim()));
+
+    const hasMatchingCard = Array.isArray(deckInfo.cards) && deckInfo.cards.some(card => {
+        const cleanName = card.replace(/_/g, " ");
+        return searchRegex.test(cleanName);
     });
+
+    return (
+        searchRegex.test(deckName) ||
+        searchRegex.test(ytTitle) ||
+        creditMatches ||
+        hasMatchingCard
+    );
+}
+
+function applyFilters() {
+    const filteredData = {};
+
+    const searchRegex = currentSearchTerm
+        ? new RegExp("\\b" + escapeRegExp(currentSearchTerm), "i")
+        : null;
+
+    for (const [deckKey, deckInfo] of Object.entries(fullDatabase)) {
+        const grade = deckInfo.verdict?.grade || "—";
+
+        // Grade filter
+        if (currentGradeFilter && grade !== currentGradeFilter) continue;
+
+        // Search filter
+        if (searchRegex && !matchesSearch(deckInfo, searchRegex)) continue;
+
+        filteredData[deckKey] = deckInfo;
+    }
+
+    renderDecks(filteredData);
+}
+
+// --- Search input ---
+searchInput.addEventListener("input", (e) => {
+    currentSearchTerm = e.target.value.trim();
+    applyFilters();
+});
+
+// --- Grade buttons ---
+gradeButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        gradeButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+
+        currentGradeFilter = button.dataset.grade; // "" = All
+        applyFilters();
+    });
+});
 
     // --- Modal Logic ---
     infoBtn.addEventListener('click', () => infoModal.style.display = 'block');
@@ -1899,6 +2229,34 @@ function getClosestDeckMatch() {
 
     return bestDeck;
 }
+function getVerdictGrade(overallPercent, allTopTier, totalCards) {
+    let grade, gradeColor;
+
+    if (totalCards <= 8) {
+        grade = "—";
+        gradeColor = "rgba(255,255,255,0.3)";
+    } else if (overallPercent >= 90 && allTopTier) {
+        grade = "S";
+        gradeColor = "#00E5FF";
+    } else if (overallPercent >= 87.5) {
+        grade = "A";
+        gradeColor = "#4CAF50";
+    } else if (overallPercent >= 75) {
+        grade = "B";
+        gradeColor = "#8BC34A";
+    } else if (overallPercent >= 65) {
+        grade = "C";
+        gradeColor = "#ffb300";
+    } else if (overallPercent >= 50) {
+        grade = "D";
+        gradeColor = "#ff8800";
+    } else {
+        grade = "F";
+        gradeColor = "#ff4b4b";
+    }
+
+    return { grade, gradeColor };
+}
 // --- LIVE DECK ANALYTICS ENGINE ---
 function updateDeckStats() {
     const hud = document.getElementById('deckStatsHud');
@@ -2341,9 +2699,9 @@ function updateDeckStats() {
 
     // Weighted base: curve and synergy carry the deck; power matters less;
 // consistency contributes only a little here — its real role is the penalty below.
-const base = (curveNumeric * 0.35)
+const base = (curveNumeric * 0.3)
            + (synergyScore  * 0.35)
-           + (powerScore    * 0.25)
+           + (powerScore    * 0.3)
            + (consistencyScore * 0.05);
 
 // Consistency penalty: nothing if it's "good" (70+), but ramps up sharply below that.
@@ -2355,14 +2713,7 @@ const allTopTier = curveNumeric >= 87.5 && synergyScore >= 87.5 && consistencySc
 
     // Map to letter grade. S requires both a high average AND no weak stat —
     // keeps S genuinely rare instead of handing it out for one carrying score.
-    let grade, gradeColor;
-if (totalCards < 6)                          { grade = "—"; gradeColor = "rgba(255,255,255,0.3)"; }
-else if (overallPercent >= 90 && allTopTier) { grade = "S"; gradeColor = "#00E5FF"; }
-else if (overallPercent >= 87.5)               { grade = "A"; gradeColor = "#4CAF50"; }
-else if (overallPercent >= 75)               { grade = "B"; gradeColor = "#8BC34A"; }
-else if (overallPercent >= 65)               { grade = "C"; gradeColor = "#ffb300"; }
-else if (overallPercent >= 50)               { grade = "D"; gradeColor = "#ff8800"; }
-else                                         { grade = "F"; gradeColor = "#ff4b4b"; }
+  const { grade, gradeColor } = getVerdictGrade(overallPercent, allTopTier, totalCards);
 
     const gradeEl = document.getElementById('verdictGrade');
     gradeEl.innerText = grade;

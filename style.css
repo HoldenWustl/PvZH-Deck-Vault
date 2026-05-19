@@ -87,7 +87,7 @@ button {
 /* Once the screen is wider than 600px, put everything back on one single line */
 @media (min-width: 600px) {
     .controls-container {
-        flex-wrap: nowrap; 
+        flex-wrap: wrap; 
     }
     
     #searchWrapper {
@@ -98,7 +98,40 @@ button {
         flex: none; /* Buttons go back to their natural size */
     }
 }
+#searchWrapper {
+    width: 100%;
+}
 
+#searchInput {
+    width: 100%;
+}
+.controls-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.controls-container > button {
+    flex: none;
+}
+#topControls {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* <-- THIS centers everything */
+    width: 100%;
+}
+#searchWrapper,
+#gradeFilter {
+    width: 100%;
+    max-width: 500px; /* match your layout feel */
+}
+#gradeFilter {
+    display: flex;
+    justify-content: center; /* <-- centers chips */
+    flex-wrap: wrap;
+    gap: 8px;
+}
 button:hover { background-color: #0096b4; }
 button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -955,6 +988,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     cursor: not-allowed;
 }
 
+
 .seed-count {
     font-size: 15px;
     font-weight: bold;
@@ -968,7 +1002,55 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     display: flex;
     gap: 15px;
 }
+.deck-badges {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
 
+.deck-rating {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+.grade-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.grade-chip {
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.15s ease;
+}
+
+.grade-chip:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.grade-chip.active {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.35);
+}
+
+.deck-rating-S { background: rgba(0,229,255,0.18); color: #00E5FF; }
+.deck-rating-A { background: rgba(76,175,80,0.18); color: #4CAF50; }
+.deck-rating-B { background: rgba(139,195,74,0.18); color: #8BC34A; }
+.deck-rating-C { background: rgba(255,179,0,0.18); color: #ffb300; }
+.deck-rating-D { background: rgba(255,136,0,0.18); color: #ff8800; }
+.deck-rating-F { background: rgba(255,75,75,0.18); color: #ff4b4b; }
+.deck-rating-unknown { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
 .generate-btn {
     flex: 1;
     padding: 14px;
@@ -1855,6 +1937,11 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
         justify-content: center; 
     }
 }
+#topControls {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
 @keyframes cardPopIn {
     0% {
         opacity: 0;
@@ -1969,4 +2056,3 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     transform: translateY(1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
-

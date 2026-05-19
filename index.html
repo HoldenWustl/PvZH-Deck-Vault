@@ -18,8 +18,20 @@
             <p class="last-updated">Last updated: May 19, 2026</p>
 
             <div id="controls" class="controls-container">
+                <div id="topControls">
                 <div id="searchWrapper">
-                    <input type="text" id="searchInput" placeholder="Search decks, cards, or videos...">
+                    <input type="text" id="searchInput" placeholder="Search decks, cards, authors, or videos...">
+                </div>
+
+                <div id="gradeFilter" class="grade-filter">
+                    <button class="grade-chip active" data-grade="">All</button>
+                    <button class="grade-chip" data-grade="S">S</button>
+                    <button class="grade-chip" data-grade="A">A</button>
+                    <button class="grade-chip" data-grade="B">B</button>
+                    <button class="grade-chip" data-grade="C">C</button>
+                    <button class="grade-chip" data-grade="D">D</button>
+                    <button class="grade-chip" data-grade="F">F</button>
+                </div>
                 </div>
                 <button id="crafterBtn">Deck Builder</button>
                 <button id="statsBtn">View Stats</button>
@@ -239,315 +251,428 @@
                     </div>
 
                     <div class="chart-box extremes-box">
-    <h3>The Deck Extremes</h3>
-    <p class="chart-subtitle">Most extreme decks by Spark cost and Mana curve. Click to watch!</p>
+                        <h3>The Deck Extremes</h3>
+                        <p class="chart-subtitle">Most extreme decks by Spark cost and Mana curve. Click to watch!</p>
 
-    <div class="extremes-grid">
+                        <div class="extremes-grid">
 
-        <div class="extreme-card whale-card">
-            <h4 class="extreme-title">Ultimate Whale Deck</h4>
-            <a id="mostP2wLink" href="#" target="_blank" class="video-preview extreme-preview">
-                <img id="mostP2wImg" src="" alt="Whale Deck Thumbnail" loading="lazy">
-                <div id="mostP2wDeck" class="video-title-overlay">-</div>
-            </a>
-            <p id="mostP2wCost" class="extreme-cost">- Sparks</p>
-        </div>
+                            <div class="extreme-card whale-card">
+                                <h4 class="extreme-title">Ultimate Whale Deck</h4>
+                                <a id="mostP2wLink" href="#" target="_blank" class="video-preview extreme-preview">
+                                    <img id="mostP2wImg" src="" alt="Whale Deck Thumbnail" loading="lazy">
+                                    <div id="mostP2wDeck" class="video-title-overlay">-</div>
+                                </a>
+                                <p id="mostP2wCost" class="extreme-cost">- Sparks</p>
+                            </div>
 
-        <div class="extreme-card f2p-card">
-            <h4 class="extreme-title">F2P Champion</h4>
-            <a id="leastP2wLink" href="#" target="_blank" class="video-preview extreme-preview">
-                <img id="leastP2wImg" src="" alt="F2P Deck Thumbnail" loading="lazy">
-                <div id="leastP2wDeck" class="video-title-overlay">-</div>
-            </a>
-            <p id="leastP2wCost" class="extreme-cost">- Sparks</p>
-        </div>
+                            <div class="extreme-card f2p-card">
+                                <h4 class="extreme-title">F2P Champion</h4>
+                                <a id="leastP2wLink" href="#" target="_blank" class="video-preview extreme-preview">
+                                    <img id="leastP2wImg" src="" alt="F2P Deck Thumbnail" loading="lazy">
+                                    <div id="leastP2wDeck" class="video-title-overlay">-</div>
+                                </a>
+                                <p id="leastP2wCost" class="extreme-cost">- Sparks</p>
+                            </div>
 
-        <div class="extreme-card heavy-card">
-            <h4 class="extreme-title">Heaviest Curve</h4>
-            <a id="heaviestLink" href="#" target="_blank" class="video-preview extreme-preview">
-                <img id="heaviestImg" src="" alt="Heaviest Deck Thumbnail" loading="lazy">
-                <div id="heaviestDeck" class="video-title-overlay">-</div>
-            </a>
-            <p id="heaviestCost" class="extreme-cost">- Avg Cost</p>
-        </div>
+                            <div class="extreme-card heavy-card">
+                                <h4 class="extreme-title">Heaviest Curve</h4>
+                                <a id="heaviestLink" href="#" target="_blank" class="video-preview extreme-preview">
+                                    <img id="heaviestImg" src="" alt="Heaviest Deck Thumbnail" loading="lazy">
+                                    <div id="heaviestDeck" class="video-title-overlay">-</div>
+                                </a>
+                                <p id="heaviestCost" class="extreme-cost">- Avg Cost</p>
+                            </div>
 
-        <div class="extreme-card light-card">
-            <h4 class="extreme-title">Lightest Curve</h4>
-            <a id="lightestLink" href="#" target="_blank" class="video-preview extreme-preview">
-                <img id="lightestImg" src="" alt="Lightest Deck Thumbnail" loading="lazy">
-                <div id="lightestDeck" class="video-title-overlay">-</div>
-            </a>
-            <p id="lightestCost" class="extreme-cost">- Avg Cost</p>
-        </div>
+                            <div class="extreme-card light-card">
+                                <h4 class="extreme-title">Lightest Curve</h4>
+                                <a id="lightestLink" href="#" target="_blank" class="video-preview extreme-preview">
+                                    <img id="lightestImg" src="" alt="Lightest Deck Thumbnail" loading="lazy">
+                                    <div id="lightestDeck" class="video-title-overlay">-</div>
+                                </a>
+                                <p id="lightestCost" class="extreme-cost">- Avg Cost</p>
+                            </div>
 
-    </div>
-</div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
         </section>
 
         <section id="crafterView" class="split-layout hidden">
-    
-    <div class="deck-pane">
-        <div class="crafter-header">
-            <h2><span class="version-effect">Deck Builder</span></h2>
-            <p>Build your deck — guided, completed, and graded.</p>
-        </div>
 
-        <div class="crafter-input-container" style="position: relative;">
-            <input type="text" id="seedSearchInput" placeholder="Type a card name to add..." autocomplete="off">
-            <ul id="smartSuggestions" class="suggestions-dropdown" style="display: none;"></ul>
-        </div>
-
-        <div class="crafter-seeds-container">
-            <h3>Current Deck: <span id="cardCountTracker">0/40</span></h3>
-        </div>
-
-        <div class="crafter-controls panel-controls">
-            <div class="toggles">
-                <div class="toggle-group">
-                    <input type="checkbox" id="budgetToggle">
-                    <label for="budgetToggle">Budget</label>
+            <div class="deck-pane">
+                <div class="crafter-header">
+                    <h2><span class="version-effect">Deck Builder</span></h2>
+                    <p>Build your deck — guided, completed, and graded.</p>
                 </div>
-                <div class="toggle-group">
-                    <input type="checkbox" id="superBudgetToggle">
-                    <label for="superBudgetToggle">Super Budget</label>
+
+                <div class="crafter-input-container" style="position: relative;">
+                    <input type="text" id="seedSearchInput" placeholder="Type a card name to add..." autocomplete="off">
+                    <ul id="smartSuggestions" class="suggestions-dropdown" style="display: none;"></ul>
+                </div>
+
+                <div class="crafter-seeds-container">
+                    <h3>Current Deck: <span id="cardCountTracker">0/40</span></h3>
+                </div>
+
+                <div class="crafter-controls panel-controls">
+                    <div class="toggles">
+                        <div class="toggle-group">
+                            <input type="checkbox" id="budgetToggle">
+                            <label for="budgetToggle">Budget</label>
+                        </div>
+                        <div class="toggle-group">
+                            <input type="checkbox" id="superBudgetToggle">
+                            <label for="superBudgetToggle">Super Budget</label>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="clearSeedsBtn" class="clear-btn">Clear All</button>
+                        <button id="generateDeckBtn" class="generate-btn finish-btn" disabled>Finish For Me ✨</button>
+                    </div>
+                </div>
+
+                <div class="crafter-results-container">
+                    <h3 id="generatedDeckTitle" class="hidden">Final Deck</h3>
+                    <div id="generatedDeckList" class="generated-deck-grid"></div>
+                    <div id="deckActionContainer" class="hidden"
+                        style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; width: 100%;">
+                        <button id="copyDeckBtn" class="generate-btn"
+                            style="flex: 1 1 auto; min-width: 100px; white-space: nowrap; margin: 0; font-size: 0.9em;">Copy
+                            Text</button>
+                        <button id="downloadImageBtn" class="generate-btn"
+                            style="flex: 1 1 auto; min-width: 100px; white-space: nowrap; margin: 0; font-size: 0.9em;">Save
+                            Image</button>
+                        <button id="shareDeckBtn" class="generate-btn"
+                            style="flex: 1 1 auto; min-width: 100px; white-space: nowrap; margin: 0; font-size: 0.9em; background: #2196F3;">Share
+                            Link</button>
+                    </div>
                 </div>
             </div>
-            
-            <div class="action-buttons">
-                <button id="clearSeedsBtn" class="clear-btn">Clear All</button>
-                <button id="generateDeckBtn" class="generate-btn finish-btn" disabled>Finish For Me ✨</button>
+
+            <div class="ai-pane">
+                <div class="ai-header"
+                    style="display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 2px solid rgba(76, 175, 80, 0.2); margin-bottom: 15px;">
+
+                    <img src="crazydave.webp" alt="Crazy Dave"
+                        style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: top center; background: #2a2a35; border: 2px solid #4CAF50; box-shadow: 0 0 12px rgba(76, 175, 80, 0.15);">
+
+                    <div>
+                        <h3
+                            style="margin: 0; color: #fff; font-size: 1.2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                            Crazy Dave</h3>
+                        <div style="color: #aaaaaa; font-size: 0.85rem; margin-top: 3px; font-style: italic;">Ready to
+                            plant! 🌱</div>
+                    </div>
+
+                </div>
+
+                <div id="deckStatsHud"
+                    style="display: none; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
+
+                    <!-- Header / collapse toggle -->
+                    <div onclick="const body = document.getElementById('deckStatsBody'); const icon = document.getElementById('statsToggleIcon'); if(body.style.display === 'none'){ body.style.display = 'block'; icon.innerText = '▼'; } else { body.style.display = 'none'; icon.innerText = '▶'; }"
+                        style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                        <span
+                            style="font-size: 0.7em; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 500;">Deck
+                            Analytics</span>
+                        <span id="statsToggleIcon" style="color: rgba(255,255,255,0.3); font-size: 0.65em;">▼</span>
+                    </div>
+
+                    <div id="deckStatsBody" style="display: block; margin-top: 12px;">
+
+                        <!-- VERDICT: letter grade + archetype -->
+                        <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 14px;">
+                            <div id="verdictGrade"
+                                style="font-size: 2.4em; font-weight: 700; line-height: 1; color: rgba(255,255,255,0.3); min-width: 36px; text-align: center; letter-spacing: -1px;">
+                                —</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div id="verdictArchetype"
+                                    style="font-size: 0.95em; color: rgba(255,255,255,0.95); font-weight: 500; line-height: 1.2;">
+                                    —</div>
+                                <div id="verdictSubtitle"
+                                    style="font-size: 0.65em; color: rgba(255,255,255,0.4); margin-top: 2px;">add cards
+                                    to begin</div>
+                            </div>
+                        </div>
+
+                        <!-- MANA CURVE: only chart that earns its space -->
+                        <div style="margin-bottom: 12px;">
+                            <div id="manaCurveChart"
+                                style="height: 36px; border-bottom: 1px solid rgba(255,255,255,0.08);"></div>
+                            <div style="display: flex; gap: 4px; margin-top: 3px;">
+                                <span
+                                    style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">1</span>
+                                <span
+                                    style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">2</span>
+                                <span
+                                    style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">3</span>
+                                <span
+                                    style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">4</span>
+                                <span
+                                    style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">5</span>
+                                <span
+                                    style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">6+</span>
+                            </div>
+                        </div>
+
+                        <!-- CALLOUTS: dynamic, only notable highs/lows -->
+                        <div id="verdictCallouts"
+                            style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;"></div>
+
+                        <!-- DETAILS TOGGLE -->
+                        <div onclick="const grid = document.getElementById('statsDetailGrid'); const tog = document.getElementById('statsDetailToggle'); if(grid.style.display === 'none'){ grid.style.display = 'grid'; tog.innerText = 'Hide details ▴'; } else { grid.style.display = 'none'; tog.innerText = 'Show all stats ▾'; }"
+                            id="statsDetailToggle"
+                            style="font-size: 0.6em; color: rgba(255,255,255,0.4); cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">
+                            Show all stats ▾</div>
+
+                        <!-- HIDDEN DETAILED GRID: all original IDs preserved so updateDeckStats() keeps working -->
+                        <div id="statsDetailGrid"
+                            style="display: none; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-top: 10px;">
+
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span
+                                    style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Curve</span>
+                                <div
+                                    style="flex:1; height:2px; background:rgba(255,255,255,0.06); border-radius:1px; overflow:hidden;">
+                                    <div id="curveHealthFill"
+                                        style="height:100%; width:0%; background:#4CAF50; transition:width 0.4s ease;">
+                                    </div>
+                                </div>
+                                <span id="curveHealthLabel"
+                                    style="width:54px; font-size:0.6em; text-align:right; color:#4CAF50; font-weight:500;">...</span>
+                            </div>
+
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span
+                                    style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Speed</span>
+                                <div
+                                    style="flex:1; height:2px; background:linear-gradient(90deg,#ff4b4b,#ffb300,#4CAF50,#2196F3); border-radius:1px; position:relative; opacity:0.55;">
+                                    <div id="speedPointer"
+                                        style="position:absolute; top:-3px; left:50%; width:2px; height:8px; background:#fff; border-radius:1px; transition:left 0.3s ease;">
+                                    </div>
+                                </div>
+                                <span id="deckSpeedLabel"
+                                    style="width:54px; font-size:0.6em; text-align:right; color:rgba(255,255,255,0.85); font-weight:500;">Midrange</span>
+                            </div>
+
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span
+                                    style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Consist.</span>
+                                <div
+                                    style="flex:1; height:2px; background:rgba(255,255,255,0.06); border-radius:1px; overflow:hidden;">
+                                    <div id="consistencyFill"
+                                        style="height:100%; width:0%; background:#2196F3; transition:width 0.4s ease;">
+                                    </div>
+                                </div>
+                                <span id="consistencyPercent"
+                                    style="width:54px; font-size:0.6em; text-align:right; color:#2196F3; font-weight:500;">0%</span>
+                            </div>
+
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span
+                                    style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Synergy</span>
+                                <div
+                                    style="flex:1; height:2px; background:rgba(255,255,255,0.06); border-radius:1px; overflow:hidden;">
+                                    <div id="synergyFill"
+                                        style="height:100%; width:0%; background:#ffb300; transition:width 0.4s ease;">
+                                    </div>
+                                </div>
+                                <span id="synergyPercent"
+                                    style="width:54px; font-size:0.6em; text-align:right; color:#ffb300; font-weight:500;">0%</span>
+                            </div>
+
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span
+                                    style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Power</span>
+                                <div
+                                    style="flex:1; height:2px; background:rgba(255,255,255,0.06); border-radius:1px; overflow:hidden;">
+                                    <div id="powerFill"
+                                        style="height:100%; width:0%; background:#9c27b0; transition:width 0.4s ease;">
+                                    </div>
+                                </div>
+                                <span id="powerLabel"
+                                    style="width:54px; font-size:0.6em; text-align:right; color:#9c27b0; font-weight:500;">0%</span>
+                            </div>
+
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span
+                                    style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Cost</span>
+                                <div
+                                    style="flex:1; height:2px; background:linear-gradient(90deg,#4CAF50,#ffb300,#ff4b4b,#e91e63); border-radius:1px; position:relative; opacity:0.55;">
+                                    <div id="costPointer"
+                                        style="position:absolute; top:-3px; left:0%; width:2px; height:8px; background:#fff; border-radius:1px; transition:left 0.3s ease;">
+                                    </div>
+                                </div>
+                                <span id="deckCostLabel"
+                                    style="width:54px; font-size:0.6em; text-align:right; color:#4CAF50; font-weight:500;">Budget</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="ai-chat-feed" id="aiChatFeed">
+                </div>
             </div>
-        </div>
-        
-        <div class="crafter-results-container">
-            <h3 id="generatedDeckTitle" class="hidden">Final Deck</h3>
-            <div id="generatedDeckList" class="generated-deck-grid"></div>
-          <div id="deckActionContainer" class="hidden" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; width: 100%;">
-    <button id="copyDeckBtn" class="generate-btn" style="flex: 1 1 auto; min-width: 100px; white-space: nowrap; margin: 0; font-size: 0.9em;">Copy Text</button>
-    <button id="downloadImageBtn" class="generate-btn" style="flex: 1 1 auto; min-width: 100px; white-space: nowrap; margin: 0; font-size: 0.9em;">Save Image</button>
-    <button id="shareDeckBtn" class="generate-btn" style="flex: 1 1 auto; min-width: 100px; white-space: nowrap; margin: 0; font-size: 0.9em; background: #2196F3;">Share Link</button>
-</div>
-        </div>
-    </div>
 
-    <div class="ai-pane">
-       <div class="ai-header" style="display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 2px solid rgba(76, 175, 80, 0.2); margin-bottom: 15px;">
-    
-    <img src="crazydave.webp" alt="Crazy Dave" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: top center; background: #2a2a35; border: 2px solid #4CAF50; box-shadow: 0 0 12px rgba(76, 175, 80, 0.15);">
-    
-    <div>
-        <h3 style="margin: 0; color: #fff; font-size: 1.2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Crazy Dave</h3>
-        <div style="color: #aaaaaa; font-size: 0.85rem; margin-top: 3px; font-style: italic;">Ready to plant! 🌱</div>
-    </div>
+        </section>
 
-</div>
-        
-       <div id="deckStatsHud" style="display: none; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
-
-    <!-- Header / collapse toggle -->
-    <div onclick="const body = document.getElementById('deckStatsBody'); const icon = document.getElementById('statsToggleIcon'); if(body.style.display === 'none'){ body.style.display = 'block'; icon.innerText = '▼'; } else { body.style.display = 'none'; icon.innerText = '▶'; }" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
-        <span style="font-size: 0.7em; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 500;">Deck Analytics</span>
-        <span id="statsToggleIcon" style="color: rgba(255,255,255,0.3); font-size: 0.65em;">▼</span>
-    </div>
-
-    <div id="deckStatsBody" style="display: block; margin-top: 12px;">
-
-        <!-- VERDICT: letter grade + archetype -->
-<div style="margin-bottom: 14px; display: flex; align-items: center; gap: 14px;">
-    <div id="verdictGrade" style="font-size: 2.4em; font-weight: 700; line-height: 1; color: rgba(255,255,255,0.3); min-width: 36px; text-align: center; letter-spacing: -1px;">—</div>
-    <div style="flex: 1; min-width: 0;">
-        <div id="verdictArchetype" style="font-size: 0.95em; color: rgba(255,255,255,0.95); font-weight: 500; line-height: 1.2;">—</div>
-        <div id="verdictSubtitle" style="font-size: 0.65em; color: rgba(255,255,255,0.4); margin-top: 2px;">add cards to begin</div>
-    </div>
-</div>
-
-        <!-- MANA CURVE: only chart that earns its space -->
-        <div style="margin-bottom: 12px;">
-            <div id="manaCurveChart" style="height: 36px; border-bottom: 1px solid rgba(255,255,255,0.08);"></div>
-            <div style="display: flex; gap: 4px; margin-top: 3px;">
-                <span style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">1</span>
-                <span style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">2</span>
-                <span style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">3</span>
-                <span style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">4</span>
-                <span style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">5</span>
-                <span style="flex:1; text-align:center; font-size:0.55em; color:rgba(255,255,255,0.3);">6+</span>
-            </div>
-        </div>
-
-        <!-- CALLOUTS: dynamic, only notable highs/lows -->
-        <div id="verdictCallouts" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;"></div>
-
-        <!-- DETAILS TOGGLE -->
-        <div onclick="const grid = document.getElementById('statsDetailGrid'); const tog = document.getElementById('statsDetailToggle'); if(grid.style.display === 'none'){ grid.style.display = 'grid'; tog.innerText = 'Hide details ▴'; } else { grid.style.display = 'none'; tog.innerText = 'Show all stats ▾'; }" id="statsDetailToggle" style="font-size: 0.6em; color: rgba(255,255,255,0.4); cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">Show all stats ▾</div>
-
-        <!-- HIDDEN DETAILED GRID: all original IDs preserved so updateDeckStats() keeps working -->
-        <div id="statsDetailGrid" style="display: none; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-top: 10px;">
-
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Curve</span>
-                <div style="flex:1; height:2px; background:rgba(255,255,255,0.06); border-radius:1px; overflow:hidden;"><div id="curveHealthFill" style="height:100%; width:0%; background:#4CAF50; transition:width 0.4s ease;"></div></div>
-                <span id="curveHealthLabel" style="width:54px; font-size:0.6em; text-align:right; color:#4CAF50; font-weight:500;">...</span>
+        <section id="gamesView" class="hidden">
+            <div class="crafter-header" style="text-align: center; margin-bottom: 20px;">
+                <h2>Mini-Games</h2>
+                <p>Test your PvZ Heroes knowledge!</p>
             </div>
 
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Speed</span>
-                <div style="flex:1; height:2px; background:linear-gradient(90deg,#ff4b4b,#ffb300,#4CAF50,#2196F3); border-radius:1px; position:relative; opacity:0.55;"><div id="speedPointer" style="position:absolute; top:-3px; left:50%; width:2px; height:8px; background:#fff; border-radius:1px; transition:left 0.3s ease;"></div></div>
-                <span id="deckSpeedLabel" style="width:54px; font-size:0.6em; text-align:right; color:rgba(255,255,255,0.85); font-weight:500;">Midrange</span>
+            <div class="games-grid"
+                style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 1100px; margin: 0 auto;">
+
+                <div id="silhouetteGameCard" class="game-container"
+                    style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
+                    <h3>Daily Silhouette</h3>
+                    <p id="silhouetteInstructions">Guess the card based on its outline.</p>
+
+                    <div class="image-wrapper"
+                        style="margin: 20px auto; height: 250px; width: 200px; display: flex; justify-content: center; align-items: center; position: relative;">
+                        <canvas id="silhouetteCanvas" width="200" height="250"
+                            style="transition: filter 0.8s ease;"></canvas>
+                    </div>
+
+                    <div id="silhouetteInputArea" style="position: relative;">
+                        <input type="text" id="silhouetteGuess" placeholder="Type card name..." autocomplete="off"
+                            style="width: 80%; padding: 8px; margin-bottom: 10px;">
+                        <ul id="silhouetteSuggestions" class="suggestions-dropdown"
+                            style="display: none; position: absolute; left: 10%; width: 80%; text-align: left; z-index: 100; background: #333; border: 1px solid #555; list-style-type: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto;">
+                        </ul>
+                        <br>
+                        <button id="silhouetteSubmitBtn" class="generate-btn">Guess</button>
+                    </div>
+
+                    <p id="silhouetteFeedback" style="font-weight: bold; margin-top: 10px;"></p>
+                </div>
+
+                <div id="hlGameCard" class="game-container"
+                    style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
+                    <h3>Higher or Lower</h3>
+                    <p>Click the card that is used in <strong>MORE</strong> decks.</p>
+
+                    <div
+                        style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #aaa; display:flex; justify-content: center; align-items: center; gap: 10px;">
+                        Streak: <span id="hlStreak">0</span>
+                        <span style="color: #00b4d8; font-size: 0.8em; margin-left: 10px;">(Best: <span
+                                id="hlBest">0</span>)</span>
+                    </div>
+
+                    <div id="hlGameArea"
+                        style="display: flex; justify-content: center; gap: 15px; align-items: center;">
+                        <div id="hlCardLeft" class="hl-card"
+                            style="flex: 1; cursor: pointer; padding: 10px; border-radius: 8px; background: #333; transition: all 0.2s;">
+                            <img id="hlImgLeft" src=""
+                                style="height: 140px; width: auto; max-width: 100%; object-fit: contain;"
+                                alt="Card Left">
+                            <div id="hlNameLeft" style="font-weight: bold; margin-top: 10px; font-size: 0.9em;"></div>
+                            <div id="hlCountLeft"
+                                style="font-size: 1.2em; color: #4CAF50; font-weight: bold; margin-top: 5px;"></div>
+                        </div>
+
+                        <div style="font-size: 1.5em; font-weight: bold; color: #aaa;">VS</div>
+
+                        <div id="hlCardRight" class="hl-card"
+                            style="flex: 1; cursor: pointer; padding: 10px; border-radius: 8px; background: #333; transition: all 0.2s;">
+                            <img id="hlImgRight" src=""
+                                style="height: 140px; width: auto; max-width: 100%; object-fit: contain;"
+                                alt="Card Right">
+                            <div id="hlNameRight" style="font-weight: bold; margin-top: 10px; font-size: 0.9em;"></div>
+                            <div id="hlCountRight"
+                                style="font-size: 1.2em; color: #4CAF50; font-weight: bold; margin-top: 5px;">???</div>
+                        </div>
+                    </div>
+
+                    <div id="hlGameOver" style="display: none; margin-top: 20px;">
+                        <p style="color: #f44336; font-weight: bold; font-size: 1.2em;">Incorrect!</p>
+                        <button id="hlRestartBtn" class="generate-btn">Play Again</button>
+                    </div>
+                </div>
+                <div id="redactedGameCard" class="game-container"
+                    style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
+                    <h3>Daily Redacted</h3>
+                    <p>Guess the card from its censored description.</p>
+
+                    <div
+                        style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #aaa; display:flex; justify-content: center; align-items: center; gap: 10px;">
+                        Attempts: <span id="redactedAttempts">0</span> / 5
+                    </div>
+
+                    <div id="redactedTextContainer"
+                        style="background: #333; padding: 20px; border-radius: 8px; margin-bottom: 20px; min-height: 100px; display: flex; align-items: center; justify-content: center; font-style: italic; font-size: 1.1em; line-height: 1.5; color: #ddd;">
+                        <span id="redactedDescriptionText">Loading description...</span>
+                    </div>
+
+                    <div id="redactedInputArea" style="position: relative;">
+                        <input type="text" id="redactedGuess" placeholder="Type card name..." autocomplete="off"
+                            style="width: 80%; padding: 8px; margin-bottom: 10px;">
+                        <ul id="redactedSuggestions" class="suggestions-dropdown"
+                            style="display: none; position: absolute; left: 10%; width: 80%; text-align: left; z-index: 100;">
+                        </ul>
+                        <br>
+                        <button id="redactedSubmitBtn" class="generate-btn">Guess</button>
+                    </div>
+
+                    <p id="redactedFeedback" style="font-weight: bold; margin-top: 10px;"></p>
+                </div>
+                <div id="triviaGameCard" class="game-container"
+                    style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
+                    <h3>PvZ Heroes Trivia</h3>
+                    <p>Test your knowledge of cards, classes, and mechanics!</p>
+
+                    <div
+                        style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #aaa; display:flex; justify-content: center; align-items: center; gap: 10px;">
+                        Streak: <span id="triviaScore">0</span>
+                        <span style="color: #00b4d8; font-size: 0.8em; margin-left: 10px;">(Best: <span
+                                id="triviaBest">0</span>)</span>
+                    </div>
+
+                    <div id="triviaGameArea" style="transition: all 0.3s ease;">
+                        <p id="triviaQuestion"
+                            style="font-size: 1.1em; font-weight: bold; margin-bottom: 20px; min-height: 50px; display: flex; align-items: center; justify-content: center;">
+                        </p>
+
+                        <div id="triviaOptions" style="display: flex; flex-direction: column; gap: 10px;">
+                        </div>
+                    </div>
+
+                    <div id="triviaGameOver" style="display: none; margin-top: 20px;">
+                        <p style="color: #f44336; font-weight: bold; font-size: 1.2em;">Incorrect!</p>
+                        <button id="triviaRestartBtn" class="generate-btn">Play Again</button>
+                    </div>
+                </div>
+
+
+
             </div>
 
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Consist.</span>
-                <div style="flex:1; height:2px; background:rgba(255,255,255,0.06); border-radius:1px; overflow:hidden;"><div id="consistencyFill" style="height:100%; width:0%; background:#2196F3; transition:width 0.4s ease;"></div></div>
-                <span id="consistencyPercent" style="width:54px; font-size:0.6em; text-align:right; color:#2196F3; font-weight:500;">0%</span>
+        </section>
+
+        <section id="synergyView" class="hidden">
+            <div id="synergyCanvasContainer"
+                style="width: 100%; height: calc(100vh - 80px); background-color: #0f172a; position: relative;">
+
+                <div id="synergyLoadingOverlay"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #0f172a; z-index: 10; transition: opacity 0.5s;">
+                    <div id="synergyLoadingText"
+                        style="color: #fff; font-size: 1.5rem; margin-bottom: 20px; font-weight: bold;">Analyzing 1,600
+                        Decks...</div>
+                    <div
+                        style="width: 60%; max-width: 400px; height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
+                        <div id="synergyProgressBar"
+                            style="width: 0%; height: 100%; background: linear-gradient(90deg, #4CAF50, #81C784); transition: width 0.1s;">
+                        </div>
+                    </div>
+                </div>
+
             </div>
-
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Synergy</span>
-                <div style="flex:1; height:2px; background:rgba(255,255,255,0.06); border-radius:1px; overflow:hidden;"><div id="synergyFill" style="height:100%; width:0%; background:#ffb300; transition:width 0.4s ease;"></div></div>
-                <span id="synergyPercent" style="width:54px; font-size:0.6em; text-align:right; color:#ffb300; font-weight:500;">0%</span>
-            </div>
-
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Power</span>
-                <div style="flex:1; height:2px; background:rgba(255,255,255,0.06); border-radius:1px; overflow:hidden;"><div id="powerFill" style="height:100%; width:0%; background:#9c27b0; transition:width 0.4s ease;"></div></div>
-                <span id="powerLabel" style="width:54px; font-size:0.6em; text-align:right; color:#9c27b0; font-weight:500;">0%</span>
-            </div>
-
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="width:64px; font-size:0.55em; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">Cost</span>
-                <div style="flex:1; height:2px; background:linear-gradient(90deg,#4CAF50,#ffb300,#ff4b4b,#e91e63); border-radius:1px; position:relative; opacity:0.55;"><div id="costPointer" style="position:absolute; top:-3px; left:0%; width:2px; height:8px; background:#fff; border-radius:1px; transition:left 0.3s ease;"></div></div>
-                <span id="deckCostLabel" style="width:54px; font-size:0.6em; text-align:right; color:#4CAF50; font-weight:500;">Budget</span>
-            </div>
-
-        </div>
-    </div>
-</div>
-        <div class="ai-chat-feed" id="aiChatFeed">
-            </div>
-    </div>
-
-</section>
-
-      <section id="gamesView" class="hidden">
-    <div class="crafter-header" style="text-align: center; margin-bottom: 20px;">
-        <h2>Mini-Games</h2>
-        <p>Test your PvZ Heroes knowledge!</p>
-    </div>
-
-    <div class="games-grid" style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 1100px; margin: 0 auto;">
-        
-    <div id="silhouetteGameCard" class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
-    <h3>Daily Silhouette</h3>
-    <p id="silhouetteInstructions">Guess the card based on its outline.</p>
-    
-    <div class="image-wrapper" style="margin: 20px auto; height: 250px; width: 200px; display: flex; justify-content: center; align-items: center; position: relative;">
-        <canvas id="silhouetteCanvas" width="200" height="250" style="transition: filter 0.8s ease;"></canvas>
-    </div>
-
-    <div id="silhouetteInputArea" style="position: relative;">
-        <input type="text" id="silhouetteGuess" placeholder="Type card name..." autocomplete="off" style="width: 80%; padding: 8px; margin-bottom: 10px;">
-        <ul id="silhouetteSuggestions" class="suggestions-dropdown" style="display: none; position: absolute; left: 10%; width: 80%; text-align: left; z-index: 100; background: #333; border: 1px solid #555; list-style-type: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto;"></ul>
-        <br>
-        <button id="silhouetteSubmitBtn" class="generate-btn">Guess</button>
-    </div>
-
-    <p id="silhouetteFeedback" style="font-weight: bold; margin-top: 10px;"></p>
-</div>
-
-    <div id="hlGameCard" class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
-        <h3>Higher or Lower</h3>
-        <p>Click the card that is used in <strong>MORE</strong> decks.</p>
-        
-        <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #aaa; display:flex; justify-content: center; align-items: center; gap: 10px;">
-            Streak: <span id="hlStreak">0</span> 
-            <span style="color: #00b4d8; font-size: 0.8em; margin-left: 10px;">(Best: <span id="hlBest">0</span>)</span>
-        </div>
-
-        <div id="hlGameArea" style="display: flex; justify-content: center; gap: 15px; align-items: center;">
-            <div id="hlCardLeft" class="hl-card" style="flex: 1; cursor: pointer; padding: 10px; border-radius: 8px; background: #333; transition: all 0.2s;">
-                <img id="hlImgLeft" src="" style="height: 140px; width: auto; max-width: 100%; object-fit: contain;" alt="Card Left">
-                <div id="hlNameLeft" style="font-weight: bold; margin-top: 10px; font-size: 0.9em;"></div>
-                <div id="hlCountLeft" style="font-size: 1.2em; color: #4CAF50; font-weight: bold; margin-top: 5px;"></div>
-            </div>
-
-            <div style="font-size: 1.5em; font-weight: bold; color: #aaa;">VS</div>
-
-            <div id="hlCardRight" class="hl-card" style="flex: 1; cursor: pointer; padding: 10px; border-radius: 8px; background: #333; transition: all 0.2s;">
-                <img id="hlImgRight" src="" style="height: 140px; width: auto; max-width: 100%; object-fit: contain;" alt="Card Right">
-                <div id="hlNameRight" style="font-weight: bold; margin-top: 10px; font-size: 0.9em;"></div>
-                <div id="hlCountRight" style="font-size: 1.2em; color: #4CAF50; font-weight: bold; margin-top: 5px;">???</div>
-            </div>
-        </div>
-
-        <div id="hlGameOver" style="display: none; margin-top: 20px;">
-            <p style="color: #f44336; font-weight: bold; font-size: 1.2em;">Incorrect!</p>
-            <button id="hlRestartBtn" class="generate-btn">Play Again</button>
-        </div>
-    </div>
-<div id="redactedGameCard" class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
-    <h3>Daily Redacted</h3>
-    <p>Guess the card from its censored description.</p>
-
-    <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #aaa; display:flex; justify-content: center; align-items: center; gap: 10px;">
-        Attempts: <span id="redactedAttempts">0</span> / 5
-    </div>
-
-    <div id="redactedTextContainer" style="background: #333; padding: 20px; border-radius: 8px; margin-bottom: 20px; min-height: 100px; display: flex; align-items: center; justify-content: center; font-style: italic; font-size: 1.1em; line-height: 1.5; color: #ddd;">
-        <span id="redactedDescriptionText">Loading description...</span>
-    </div>
-
-    <div id="redactedInputArea" style="position: relative;">
-        <input type="text" id="redactedGuess" placeholder="Type card name..." autocomplete="off" style="width: 80%; padding: 8px; margin-bottom: 10px;">
-        <ul id="redactedSuggestions" class="suggestions-dropdown" style="display: none; position: absolute; left: 10%; width: 80%; text-align: left; z-index: 100;"></ul>
-        <br>
-        <button id="redactedSubmitBtn" class="generate-btn">Guess</button>
-    </div>
-
-    <p id="redactedFeedback" style="font-weight: bold; margin-top: 10px;"></p>
-</div>
-    <div id="triviaGameCard" class="game-container" style="background: #222; padding: 20px; border-radius: 12px; text-align: center; flex: 1 1 calc(50% - 20px); min-width: 320px; max-width: 500px; box-sizing: border-box;">
-        <h3>PvZ Heroes Trivia</h3>
-        <p>Test your knowledge of cards, classes, and mechanics!</p>
-
-        <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #aaa; display:flex; justify-content: center; align-items: center; gap: 10px;">
-            Streak: <span id="triviaScore">0</span> 
-            <span style="color: #00b4d8; font-size: 0.8em; margin-left: 10px;">(Best: <span id="triviaBest">0</span>)</span>
-        </div>
-
-        <div id="triviaGameArea" style="transition: all 0.3s ease;">
-            <p id="triviaQuestion" style="font-size: 1.1em; font-weight: bold; margin-bottom: 20px; min-height: 50px; display: flex; align-items: center; justify-content: center;"></p>
-            
-            <div id="triviaOptions" style="display: flex; flex-direction: column; gap: 10px;">
-            </div>
-        </div>
-
-        <div id="triviaGameOver" style="display: none; margin-top: 20px;">
-            <p style="color: #f44336; font-weight: bold; font-size: 1.2em;">Incorrect!</p>
-            <button id="triviaRestartBtn" class="generate-btn">Play Again</button>
-        </div>
-    </div>
-
-    
-
-</div>
-    
-</section>
-
-<section id="synergyView" class="hidden">
-    <div id="synergyCanvasContainer" style="width: 100%; height: calc(100vh - 80px); background-color: #0f172a; position: relative;">
-        
-        <div id="synergyLoadingOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #0f172a; z-index: 10; transition: opacity 0.5s;">
-            <div id="synergyLoadingText" style="color: #fff; font-size: 1.5rem; margin-bottom: 20px; font-weight: bold;">Analyzing 1,600 Decks...</div>
-            <div style="width: 60%; max-width: 400px; height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
-                <div id="synergyProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4CAF50, #81C784); transition: width 0.1s;"></div>
-            </div>
-        </div>
-
-    </div>
-</section>
+        </section>
 
     </main>
 
@@ -592,21 +717,21 @@
         </div>
     </div>
     <div id="deckVisualModal" class="deck-modal hidden">
-    <div class="deck-modal-content">
-    <span class="close-modal-btn">&times;</span>
-    <h2 id="modalDeckTitle">Deck Name</h2>
-    
-    <div style="text-align: center;">
-    <button id="modalAnalyzeBtn" class="analyze-deck-btn">
-        Analyze Deck
-    </button>
-</div>
-    
-    <div id="modalDeckGrid" class="visual-deck-grid"></div>
-</div>
-</div>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://unpkg.com/force-graph"></script>
+        <div class="deck-modal-content">
+            <span class="close-modal-btn">&times;</span>
+            <h2 id="modalDeckTitle">Deck Name</h2>
+
+            <div style="text-align: center;">
+                <button id="modalAnalyzeBtn" class="analyze-deck-btn">
+                    Analyze Deck
+                </button>
+            </div>
+
+            <div id="modalDeckGrid" class="visual-deck-grid"></div>
+        </div>
+    </div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/force-graph"></script>
     <script src="app.js"></script>
 </body>
 
