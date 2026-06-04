@@ -785,6 +785,7 @@ gradeButtons.forEach(button => {
         const cardCopies = {};
         const deckPresence = {};
         const uploadsByYear = {};
+        const dailyUploads = {};
         const pairCounts = {};
         const wordCounts = {};
         const stopWords = ["the", "in", "a", "of", "and", "to", "is", "for", "with", "this", "on", "most", "ever", "one", "when", "vs", "are", "that", "my", "i", "but", "it", "at", "an"];
@@ -855,6 +856,14 @@ gradeButtons.forEach(button => {
                     uploadsByYear[year] = (uploadsByYear[year] || 0) + 1;
                 }
             }
+            if (deck.upload_date && deck.upload_date !== "UNKNOWN_DATE") {
+        const parsedDate = new Date(deck.upload_date);
+        
+        if (!isNaN(parsedDate)) {
+            const dateKey = parsedDate.toISOString().split('T')[0];
+            dailyUploads[dateKey] = (dailyUploads[dateKey] || 0) + 1;
+        }
+    }
 
             // 2. Process Title Buzzwords
             if (deck.youtube_title) {
@@ -1090,6 +1099,19 @@ if (document.getElementById('mostP2wDeck') && mostExpensiveDeck && leastExpensiv
         const topCopiedSliced = topCopied.slice(0, 15);
         const topPresence = Object.entries(deckPresence).sort((a, b) => b[1] - a[1]).slice(0, 10);
         const yearsSorted = Object.keys(uploadsByYear).sort();
+        const sortedDates = Object.keys(dailyUploads).sort();
+       const cumulativeData = [];
+let runningTotal = 0;
+
+sortedDates.forEach(dateStr => {
+    runningTotal += dailyUploads[dateStr];
+    
+    // Convert date to a pure numeric timestamp (milliseconds) for linear spacing
+    const timestamp = new Date(dateStr + 'T12:00:00Z').getTime(); 
+    
+    // Store as an x/y coordinate pair
+    cumulativeData.push({ x: timestamp, y: runningTotal });
+});
         const topRawPairs = Object.entries(pairCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
         const topNormalizedPairs = Object.entries(normalizedPairsObj).sort((a, b) => b[1] - a[1]).slice(0, 10);
         const topWords = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
@@ -1289,16 +1311,69 @@ if (currentTopCardsFilter !== 'all') {
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#c9d1d9', font: { size: 10 } } } } }
         });
 
-        // --- CHART 3: Upload Timeline ---
-        const ctx3 = document.getElementById('timelineChart').getContext('2d');
-        charts.timeline = new Chart(ctx3, {
-            type: 'line',
-            data: {
-                labels: yearsSorted,
-                datasets: [{ label: 'Decks', data: yearsSorted.map(y => uploadsByYear[y]), borderColor: '#58a6ff', backgroundColor: 'rgba(88, 166, 255, 0.2)', borderWidth: 3, tension: 0.3, fill: true, pointBackgroundColor: '#1f6feb', pointRadius: 4 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor }, ticks: { color: textColor } }, y: { grid: { color: gridColor }, ticks: { color: textColor, precision: 0 } } }, plugins: { legend: { display: false } } }
-        });
+       // --- CHART 3: Cumulative Upload Timeline ---
+const ctx3 = document.getElementById('timelineChart').getContext('2d');
+charts.timeline = new Chart(ctx3, {
+    type: 'line',
+    data: {
+        // Notice we removed the "labels" array entirely!
+        datasets: [{ 
+            label: 'Total Decks', 
+            data: cumulativeData, // Now contains {x, y} coordinate objects
+            borderColor: '#58a6ff', 
+            backgroundColor: 'rgba(88, 166, 255, 0.2)', 
+            borderWidth: 3, 
+            tension: 0.1, 
+            fill: true, 
+            pointBackgroundColor: '#1f6feb', 
+            pointRadius: 1, 
+            pointHitRadius: 10 
+        }]
+    },
+    options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { 
+            x: { 
+                type: 'linear', // CRITICAL: This mathematically spaces out the dates!
+                grid: { color: gridColor }, 
+                ticks: { 
+                    color: textColor,
+                    maxTicksLimit: 8,
+                    // Convert the raw timestamp back into a readable Date string
+                    callback: function(value) {
+                        return new Date(value).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            year: 'numeric' 
+                        });
+                    }
+                } 
+            }, 
+            y: { 
+                grid: { color: gridColor }, 
+                ticks: { color: textColor, precision: 0 } 
+            } 
+        }, 
+        plugins: { 
+            legend: { display: false },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                    // Make the tooltip show the exact date when you hover over a point
+                    title: function(tooltipItems) {
+                        const rawTimestamp = tooltipItems[0].parsed.x;
+                        return new Date(rawTimestamp).toLocaleDateString('en-US', { 
+                            month: 'long', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                        });
+                    }
+                }
+            }
+        } 
+    }
+});
 
         // --- CHART 4: Ultimate Synergies ---
         const ctx4 = document.getElementById('pairsChart').getContext('2d');
