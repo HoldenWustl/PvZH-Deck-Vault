@@ -3187,112 +3187,112 @@ if (closestDeck.youtube_url) {
 }
     }
 
-        // --- FIXED: Evaluate ALL possible swaps to find the highest net synergy gain ---
-        initSynergyMatrix();
+        // --- FIXED: Add Loading State Before Evaluating Swaps ---
         
-        let bestSwapIdea = null;
-        let maxImprovement = 0;
-        const rawWeight = 0.5;
-        const affinityWeight = 0.5;
+        // 1. Inject a loading spinner immediately so the UI doesn't feel frozen
+        chatFeed.innerHTML = baseHtml + `
+            <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; color: rgba(255,255,255,0.7);">
+                <style>
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                    .ai-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,179,0,0.3); border-top: 2px solid #ffb300; border-radius: 50%; animation: spin 1s linear infinite; }
+                </style>
+                <div class="ai-spinner"></div>
+                <span>Thinking...</span>
+            </div>
+        `;
 
-        // 1. Calculate the base score of every card and compare it to its top replacement
-        currentSeeds.forEach(seed => {
-            let baseScore = 0;
-            currentSeeds.forEach(deckCard => {
-                if (deckCard.name === seed.name) return; // Don't score against itself
+        // 2. Use setTimeout to yield the main thread for 50ms so the browser can paint the spinner
+        setTimeout(() => {
+            initSynergyMatrix();
+            
+            const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
+            
+            const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
+            const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
+            const baselineScore = baselineVerdict.score;
+
+            let bestSwapIdea = null;
+            let maxImprovement = 0; 
+
+            currentSeeds.forEach(seed => {
+                const recommendations = getTopThreeRecommendations(seed.name);
                 
-                if (synergyMatrix && synergyMatrix[seed.name] && synergyMatrix[seed.name][deckCard.name]) {
-                    const coOccurrences = synergyMatrix[seed.name][deckCard.name];
-                    const baseTotalPlays = cardFrequencies[seed.name] || 1;
-                    
-                    let rawSynergy = coOccurrences;
-                    let affinitySynergy = (coOccurrences * coOccurrences) / baseTotalPlays;
-                    let blendedSynergy = (rawSynergy * rawWeight) + (affinitySynergy * affinityWeight);
-                    
-                    let classModifier = 1.0;
-                    if (cardDatabase[seed.name].Class !== cardDatabase[deckCard.name].Class) {
-                        classModifier = 4.0;
+                recommendations.forEach(rec => {
+                    const simulatedStrings = currentSeeds.map(s => {
+                        if (s.name === seed.name) return `${s.count}x ${rec.name}`; 
+                        return `${s.count}x ${s.name}`;
+                    });
+
+                    const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
+                    const simScore = simVerdict.score;
+                    const improvement = simScore - baselineScore;
+
+                    if (improvement > maxImprovement) {
+                        maxImprovement = improvement;
+                        bestSwapIdea = {
+                            removeCard: seed.name,
+                            addCard: rec.name,
+                            oldScore: baselineScore,
+                            newScore: simScore
+                        };
                     }
-                    
-                    const deckCardPlays = cardFrequencies[deckCard.name] || 1;
-                    const volumeEqualizer = 1000 / deckCardPlays;
-                    
-                    baseScore += (blendedSynergy * classModifier * volumeEqualizer) * deckCard.count;
-                }
+                });
             });
 
-            // Check if swapping THIS card yields a mathematical improvement
-            const recommendations = getTopThreeRecommendations(seed.name);
-            if (recommendations.length > 0) {
-                const topRec = recommendations[0];
-                const improvement = topRec.score - baseScore;
-                
-                // If it's a positive improvement AND the best one we've found so far, save it
-                if (improvement > maxImprovement) {
-                    maxImprovement = improvement;
-                    bestSwapIdea = {
-                        removeCard: seed.name,
-                        addCard: topRec.name
-                    };
-                }
-            }
-        });
+            let swapHtml = "";
 
-        let swapHtml = "";
+            if (bestSwapIdea) {
+                const weakName = bestSwapIdea.removeCard.replace(/_/g, ' ');
+                const topName = bestSwapIdea.addCard.replace(/_/g, ' ');
+                const boostText = `+${Math.round(maxImprovement)}% Overall Rating`;
 
-        // 2. If we found a swap with a positive net improvement, suggest the best one
-        if (bestSwapIdea) {
-            const weakName = bestSwapIdea.removeCard.replace(/_/g, ' ');
-            const topName = bestSwapIdea.addCard.replace(/_/g, ' ');
-
-            swapHtml = `
-                <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
-                    I found a way to make this deck even better!
-                    Swapping out <strong>${weakName}</strong> for <strong>${topName}</strong> would give your deck a nice boost!
-                </div>
-                
-                <div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: center; width: 100%; margin-top: 10px;">
-                    <div class="ai-visual-rec" style="flex: 0 1 240px; display: flex; flex-direction: column; align-items: center; padding: 10px; position: relative;">
-                        <span style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: rgba(255,179,0,0.15); color: #ffb300; font-size: 0.6em; font-weight: 600; padding: 3px 9px; border-radius: 10px; z-index: 2; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid rgba(255,179,0,0.3);">
-                            Top Swap Idea
-                        </span>
-                        
-                        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; margin: 15px 0 10px 0; gap: 8px;">
-                            <img src="card_images/${bestSwapIdea.removeCard}.png" alt="${weakName}" title="${weakName}" onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.removeCard}.webp';" style="flex: 1; max-width: 40%; max-height: 80px; object-fit: contain; filter: grayscale(60%) drop-shadow(0 2px 4px rgba(0,0,0,0.3)); opacity: 0.7;">
-                            
-                            <span style="font-size: 1.4em; color: #ffb300; font-weight: bold;">➔</span>
-                            
-                            <img src="card_images/${bestSwapIdea.addCard}.png" alt="${topName}" title="${topName}" onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.addCard}.webp';" style="flex: 1; max-width: 45%; max-height: 90px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
-                        </div>
-                        
-                        <button class="add-rec-btn generate-btn" data-remove="${bestSwapIdea.removeCard}" data-add="${bestSwapIdea.addCard}" style="width: 100%; padding: 6px 0; font-size: 0.9em; font-weight: bold; margin: 0; margin-top: auto; border-radius: 6px; white-space: nowrap;">
-                            Swap
-                        </button>
+                swapHtml = `
+                    <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+                        Swapping out <strong>${weakName}</strong> for <strong>${topName}</strong> will improve your deck's curve and synergy!
                     </div>
-                </div>
-            `;
-        } else {
-            // ONLY triggers if literally no card has a replacement with a higher score
-            swapHtml = `
-                <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
-                    Great job on such a cohesive deck!
-                </div>
-            `;
-        }
+                    
+                    <div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: center; width: 100%; margin-top: 10px;">
+                        <div class="ai-visual-rec" style="flex: 0 1 240px; display: flex; flex-direction: column; align-items: center; padding: 10px; position: relative;">
+                            <span style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: rgba(255,179,0,0.15); color: #ffb300; font-size: 0.6em; font-weight: 600; padding: 3px 9px; border-radius: 10px; z-index: 2; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid rgba(255,179,0,0.3);">
+                                Top Swap Idea (${boostText})
+                            </span>
+                            
+                            <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; margin: 15px 0 10px 0; gap: 8px;">
+                                <img src="card_images/${bestSwapIdea.removeCard}.png" alt="${weakName}" title="${weakName}" onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.removeCard}.webp';" style="flex: 1; max-width: 40%; max-height: 80px; object-fit: contain; filter: grayscale(60%) drop-shadow(0 2px 4px rgba(0,0,0,0.3)); opacity: 0.7;">
+                                
+                                <span style="font-size: 1.4em; color: #ffb300; font-weight: bold;">➔</span>
+                                
+                                <img src="card_images/${bestSwapIdea.addCard}.png" alt="${topName}" title="${topName}" onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.addCard}.webp';" style="flex: 1; max-width: 45%; max-height: 90px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
+                            </div>
+                            
+                            <button class="add-rec-btn generate-btn" data-remove="${bestSwapIdea.removeCard}" data-add="${bestSwapIdea.addCard}" style="width: 100%; padding: 6px 0; font-size: 0.9em; font-weight: bold; margin: 0; margin-top: auto; border-radius: 6px; white-space: nowrap;">
+                                Swap
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                swapHtml = `
+                    <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+                        Great job on such a well-optimized and balanced deck!
+                    </div>
+                `;
+            }
 
-        chatFeed.innerHTML = baseHtml + swapHtml;
-        
-        // 3. Attach click listener for the swap button if it rendered
-        const swapBtn = chatFeed.querySelector('.add-rec-btn[data-remove]');
-        if (swapBtn) {
-            swapBtn.addEventListener('click', (e) => {
-                const removeName = e.target.getAttribute('data-remove');
-                const addName = e.target.getAttribute('data-add');
-                applyFullSwap(removeName, addName);
-            });
-        }
-        
-        return;
+            // Overwrite the loading spinner with the final result
+            chatFeed.innerHTML = baseHtml + swapHtml;
+            
+            const swapBtn = chatFeed.querySelector('.add-rec-btn[data-remove]');
+            if (swapBtn) {
+                swapBtn.addEventListener('click', (e) => {
+                    const removeName = e.target.getAttribute('data-remove');
+                    const addName = e.target.getAttribute('data-add');
+                    applyFullSwap(removeName, addName);
+                });
+            }
+        }, 50); // 50ms delay gives the browser time to paint the spinner
+
+        return; // Return immediately so the outer function finishes, letting setTimeout run on its own
     }
 
     // --- The rest of your function below for when the deck is NOT complete ---
@@ -3487,9 +3487,6 @@ function getTopThreeRecommendations(baseCardName = null) {
     let candidatePool = Object.keys(cardDatabase);
     let scoredCandidates = [];
 
-    const rawWeight = 0.5;
-    const affinityWeight = 0.5;
-
     const baseSeed = baseCardName ? currentSeeds.find(c => c.name === baseCardName) : null;
     const baseCount = baseSeed ? baseSeed.count : 0;
 
@@ -3497,13 +3494,18 @@ function getTopThreeRecommendations(baseCardName = null) {
     let postSwapClasses = new Set();
     currentSeeds.forEach(card => {
         if (baseCardName && card.name === baseCardName) return;
-        postSwapClasses.add(card.class);
+        postSwapClasses.add(card.class || card.Class); // fallback for safety
     });
+
+    // Fetch grading context ONCE to prevent massive performance drops in the loop
+    const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
 
     candidatePool.forEach(candidateName => {
         if (baseCardName && candidateName === baseCardName) return;
 
         const candidateData = cardDatabase[candidateName];
+        if (!candidateData) return;
+        
         const candidateClass = candidateData.Class;
         const candidateFaction = plantClasses.has(candidateClass) ? "Plant" : "Zombie";
 
@@ -3516,48 +3518,55 @@ function getTopThreeRecommendations(baseCardName = null) {
 
         const existingCopy = currentSeeds.find(c => c.name === candidateName);
 
-        // Normal add mode: can't exceed 4 copies
-        // Swap mode: replacement must fit within the copies being removed
+        // Capacity Checks
         if (baseCardName) {
+            // Swap mode: replacement must fit within the copies being removed
             const existingCandidateCount = existingCopy ? existingCopy.count : 0;
             if (existingCandidateCount + baseCount > 4) return;
         } else {
+            // Normal add mode: can't exceed 4 copies, and respect active class limits
             if (existingCopy && existingCopy.count >= 4) return;
             if (!activeClasses.has(candidateClass) && activeClasses.size >= 2) return;
         }
 
-        let score = 0;
-
+        // --- NEW: Build the Phantom Deck ---
+        let simulatedStrings = [];
+        
         currentSeeds.forEach(deckCard => {
-            // In swap mode, ignore the removed card completely
-            if (baseCardName && deckCard.name === baseCardName) return;
-
-            if (synergyMatrix && synergyMatrix[candidateName] && synergyMatrix[candidateName][deckCard.name]) {
-                const coOccurrences = synergyMatrix[candidateName][deckCard.name];
-                const candidateTotalPlays = cardFrequencies[candidateName] || 1;
-
-                let rawSynergy = coOccurrences;
-                let affinitySynergy = (coOccurrences * coOccurrences) / candidateTotalPlays;
-                let blendedSynergy = (rawSynergy * rawWeight) + (affinitySynergy * affinityWeight);
-
-                let classModifier = 1.0;
-                if (cardDatabase[candidateName].Class !== cardDatabase[deckCard.name].Class) {
-                    classModifier = 4.0;
-                }
-
-                const deckCardPlays = cardFrequencies[deckCard.name] || 1;
-                const volumeEqualizer = 1000 / deckCardPlays;
-
-                score += (blendedSynergy * classModifier * volumeEqualizer) * deckCard.count;
-            }
+            if (baseCardName && deckCard.name === baseCardName) return; // Skip removed card entirely
+            
+            if (deckCard.name === candidateName) return; // Skip existing copies (we merge them below)
+            
+            simulatedStrings.push(`${deckCard.count}x ${deckCard.name}`);
         });
 
-        if (score > 0) {
-            scoredCandidates.push({ name: candidateName, score: score });
+        // Add the candidate we are currently testing
+        const countToAdd = baseCardName ? baseCount : 1;
+        const existingCount = existingCopy ? existingCopy.count : 0;
+        simulatedStrings.push(`${countToAdd + existingCount}x ${candidateName}`);
+
+        // --- NEW: Grade it using the True Engine ---
+        const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
+
+        // Store the final score and secondary stats for tie-breakers
+        if (simVerdict.score > 0) {
+            scoredCandidates.push({ 
+                name: candidateName, 
+                score: simVerdict.score,
+                synergy: simVerdict.synergyScore,
+                power: simVerdict.powerScore
+            });
         }
     });
 
-    scoredCandidates.sort((a, b) => b.score - a.score);
+    // Sort by the true Verdict score first. 
+    // If scores are tied, use Synergy, then Power as tie-breakers.
+    scoredCandidates.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.synergy !== a.synergy) return b.synergy - a.synergy;
+        return b.power - a.power;
+    });
+
     return scoredCandidates.slice(0, 3);
 }
 function showSwapSuggestions(baseCardName) {
@@ -3965,22 +3974,40 @@ function buildOptimizedDeck() {
 function generateDeckName(deck, isPlant) {
     const plantAdjectives = ["Blooming", "Verdant", "Photosynthetic", "Savage", "Radiant", "Overgrown", "Rooted", "Spicy", "Leafy", "Sun-Soaked", "Vengeful", "Primal", "Flourishing", "Thorny", "Botanical", "Wild", "Untamed", "Raging", "Solar", "Fierce", "Bark-Biting", "Bountiful", "Vibrant", "Enraged", "Majestic", "Vineswept"];
     const zombieAdjectives = ["Undead", "Toxic", "Gargantuan", "Vicious", "Ruthless", "Chaotic", "Dastardly", "Sneaky", "Brain-Hungry", "Galvanized", "Necrotic", "Ghastly", "Mad", "Cryptic", "Shambling", "Bizarre", "Mechanical", "Grotesque", "Apocalyptic", "Relentless", "Monstrous", "Vile", "Cybernetic", "Diabolical", "Mutated", "Stinky"];
-    const nouns = ["Assault", "Synergy", "Brigade", "Beatdown", "Control", "Swarm", "Uprising", "Horde", "Protocol", "Rush", "Aggro", "Tempo", "Engine", "Onslaught", "Vanguard", "Tactics", "Ambush", "March", "Legion", "Blitz", "Rebellion", "Syndicate", "Empire", "Invasion", "Cartel", "Offensive"];
     
-    const coreCards = deck.filter(c => c.count >= 3);
-    let signatureCardName = "Mystery";
-    
-    if (coreCards.length > 0) {
-        const randomCore = coreCards[Math.floor(Math.random() * coreCards.length)];
-        signatureCardName = randomCore.name.replace(/_/g, ' ');
-    } else {
-        const highestCost = deck.reduce((prev, current) => (prev.cost > current.cost) ? prev : current);
-        signatureCardName = highestCost.name.replace(/_/g, ' ');
-    }
+    // Categorized Nouns based on deck speed
+    const aggroNouns = ["Rush", "Swarm", "Blitz", "Aggro", "Beatdown", "Ambush", "Assault"];
+    const midNouns = ["Synergy", "Brigade", "Tempo", "Engine", "Tactics", "Vanguard", "Syndicate"];
+    const controlNouns = ["Control", "Uprising", "Horde", "Protocol", "Onslaught", "Empire", "Legion"];
 
+    // 1. SMART SIGNATURE CARD: Find highest (cost * count)
+    const signatureCard = deck.reduce((prev, current) => {
+        const prevImpact = prev.count * prev.cost;
+        const currImpact = current.count * current.cost;
+        return (currImpact > prevImpact) ? current : prev;
+    });
+
+    // Clean the name (remove underscores and leading "The")
+    const signatureCardName = signatureCard.name.replace(/_/g, ' ').replace(/^The /i, '');
+
+    // 2. ARCHETYPE DETECTION: Calculate average cost
+    let totalCost = 0;
+    let totalCards = 0;
+    deck.forEach(c => {
+        totalCost += (c.cost * c.count);
+        totalCards += c.count;
+    });
+    const avgCost = totalCost / (totalCards || 1);
+
+    // Pick the noun pool based on deck speed
+    let nounPool = midNouns;
+    if (avgCost <= 2.8) nounPool = aggroNouns;
+    else if (avgCost >= 4.0) nounPool = controlNouns;
+
+    // 3. GENERATION
     const prefixes = isPlant ? plantAdjectives : zombieAdjectives;
     const adj = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const noun = nounPool[Math.floor(Math.random() * nounPool.length)];
 
     const formats = [
         `The ${signatureCardName} ${noun}`,
@@ -4000,6 +4027,7 @@ function generateDeckName(deck, isPlant) {
         `${signatureCardName} and Friends`,
         `The ${adj} ${noun}` 
     ];
+    
     return formats[Math.floor(Math.random() * formats.length)];
 }
 
