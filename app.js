@@ -468,14 +468,54 @@ totalConnection += cardBestConnection * seedA.count;
     if (synergyBtn) synergyBtn.disabled = true;
 
     setTimeout(() => {
-    deckGrid.innerHTML = '';
-    const fragment = document.createDocumentFragment();
-    const ctx = getVerdictContext(); // built once, reused for the whole loop
+        deckGrid.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        const ctx = getVerdictContext(); // built once, reused for the whole loop
 
-    for (const [deckKey, deckInfo] of Object.entries(data)) {
+        // --- NEW: PRE-PROCESS DUPLICATES ---
+        const signatureMap = new Map();
+        for (const [deckKey, deckInfo] of Object.entries(data)) {
+            if (!deckInfo.cards) continue;
+            
+            // Create a unique signature for the exact card list (ignoring order)
+            const signature = deckInfo.cards.map(c => {
+    return c.replace(/_/g, ' ')  // Convert all underscores to spaces
+            .replace(/\s+/g, ' ') // Collapse multiple spaces into a single space
+            .trim()
+            .toLowerCase();
+}).sort().join('|');
+            
+            // Parse date for sorting (fallback to 0 if unknown/invalid)
+            let dateVal = 0;
+            if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
+                const parsed = Date.parse(deckInfo.upload_date);
+                if (!isNaN(parsed)) dateVal = parsed;
+            }
+
+            if (!signatureMap.has(signature)) {
+                signatureMap.set(signature, []);
+            }
+            signatureMap.get(signature).push({ key: deckKey, dateVal: dateVal });
+        }
+
+        const duplicateKeys = new Set();
+        for (const decks of signatureMap.values()) {
+            if (decks.length > 1) {
+                // Sort descending by date (newest first)
+                decks.sort((a, b) => b.dateVal - a.dateVal);
+                
+                // Every deck after the first (index 0) is considered an older duplicate
+                for (let i = 1; i < decks.length; i++) {
+                    duplicateKeys.add(decks[i].key);
+                }
+            }
+        }
+        // -----------------------------------
+
+        for (const [deckKey, deckInfo] of Object.entries(data)) {
             const cardEl = document.createElement('div');
             
-            // --- UPDATED: FACTION CHECK LOOP ---
+            // --- FACTION CHECK LOOP ---
             let factionClass = 'plant-deck'; // Fallback default
             
             if (deckInfo.cards && deckInfo.cards.length > 0) {
@@ -515,78 +555,86 @@ totalConnection += cardBestConnection * seedA.count;
                 const cleanCardName = card.replace(/_/g, ' ');
                 cardsHtml += `<li>${cleanCardName}</li>`;
             });
-            
             cardsHtml += '</ul>';
 
-           const dateStr = deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
-    ? deckInfo.upload_date
-    : "Unknown Date";
+            const dateStr = deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
+                ? deckInfo.upload_date
+                : "Unknown Date";
 
-const creditStr = deckInfo.credit || "Unknown";
+            const creditStr = deckInfo.credit || "Unknown";
 
-const videoId = getYouTubeId(deckInfo.youtube_url);
-const thumbnailUrl = videoId
-    ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-    : '';
+            const videoId = getYouTubeId(deckInfo.youtube_url);
+            const thumbnailUrl = videoId
+                ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+                : '';
 
-const creditIconSrc = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
+            const creditIconSrc = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
 
-// 1. Determine if we should show the video section
-const isFryVideo = creditStr === "FryEmUp" && deckInfo.youtube_url;
+            // 1. Determine if we should show the video section
+            const isFryVideo = creditStr === "FryEmUp" && deckInfo.youtube_url;
 
-// 2. Build the Video Dropdown HTML (only if it's Fry)
-const videoControlsHtml = isFryVideo ? `
-    <details class="video-dropdown" 
-             ontoggle="this.closest('.deck-card').querySelector('.video-preview').classList.toggle('hidden', !this.open)">
-        <summary>View Video</summary>
-    </details>` : '';
+            // 2. Build the Video Dropdown HTML (only if it's Fry)
+            const videoControlsHtml = isFryVideo ? `
+                <details class="video-dropdown" 
+                         ontoggle="this.closest('.deck-card').querySelector('.video-preview').classList.toggle('hidden', !this.open)">
+                    <summary>View Video</summary>
+                </details>` : '';
 
-// 3. Build the Video Preview HTML (only if it's Fry)
-const videoPreviewHtml = isFryVideo ? `
-    <div class="video-preview hidden">
-        <a href="${deckInfo.youtube_url}" target="_blank" title="${deckInfo.youtube_title}">
-            <img src="${thumbnailUrl}" alt="Video Thumbnail" loading="lazy">
-            <div class="video-title-overlay">${deckInfo.youtube_title}</div>
-        </a>
-    </div>` : '';
-const verdict = deckInfo.verdict
-            || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
-deckInfo.verdict = verdict;
-cardEl.innerHTML = `
-    <div class="deck-card-inner">
-        <div class="deck-header">
-            <div class="deck-title-group">
-    <h3 class="deck-title">${deckInfo.name}</h3>
-    <div class="deck-badges">
-        <span class="deck-credit" title="${creditStr}">${creditStr}</span>
-        <span class="deck-rating deck-rating-${deckInfo.verdict.grade}"
-      style="color:${deckInfo.verdict.gradeColor}"
-      title="Deck rating">
-    ${deckInfo.verdict.grade}
-</span>
-    </div>
-</div>
-            <span class="deck-date">${dateStr}</span>
-        </div>
-       
-        <div class="deck-controls-wrapper">
-            ${videoControlsHtml}
+            // 3. Build the Video Preview HTML (only if it's Fry)
+            const videoPreviewHtml = isFryVideo ? `
+                <div class="video-preview hidden">
+                    <a href="${deckInfo.youtube_url}" target="_blank" title="${deckInfo.youtube_title}">
+                        <img src="${thumbnailUrl}" alt="Video Thumbnail" loading="lazy">
+                        <div class="video-title-overlay">${deckInfo.youtube_title}</div>
+                    </a>
+                </div>` : '';
+                
+            const verdict = deckInfo.verdict
+                    || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
+            deckInfo.verdict = verdict;
             
-            <details class="visual-deck-details">
-                <summary class="view-visual-btn" 
-                         data-title="${deckInfo.name}" 
-                         data-cards="${encodeURIComponent(JSON.stringify(deckInfo.cards))}">
-                    View Visual Deck
-                </summary>
-            </details>
-        </div>
+            // --- NEW: DUPLICATE BADGE HTML ---
+            const duplicateBadgeHtml = duplicateKeys.has(deckKey) 
+                ? `<span class="deck-duplicate-badge" title="Older Duplicate Deck" style="background:#ffaa00; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.8em; cursor:help;">Dup</span>`
+                : '';
+            // ---------------------------------
 
-        ${videoPreviewHtml}
-        ${cardsHtml}
+            cardEl.innerHTML = `
+                <div class="deck-card-inner">
+                    <div class="deck-header">
+                        <div class="deck-title-group">
+                            <h3 class="deck-title">${deckInfo.name}</h3>
+                            <div class="deck-badges">
+                                <span class="deck-credit" title="${creditStr}">${creditStr}</span>
+                                <span class="deck-rating deck-rating-${deckInfo.verdict.grade}"
+                                      style="color:${deckInfo.verdict.gradeColor}"
+                                      title="Deck rating">
+                                    ${deckInfo.verdict.grade}
+                                </span>
+                                ${duplicateBadgeHtml}
+                            </div>
+                        </div>
+                        <span class="deck-date">${dateStr}</span>
+                    </div>
+                   
+                    <div class="deck-controls-wrapper">
+                        ${videoControlsHtml}
+                        
+                        <details class="visual-deck-details">
+                            <summary class="view-visual-btn" 
+                                     data-title="${deckInfo.name}" 
+                                     data-cards="${encodeURIComponent(JSON.stringify(deckInfo.cards))}">
+                                View Visual Deck
+                            </summary>
+                        </details>
+                    </div>
 
-        <img class="credit-icon" src="${creditIconSrc}" alt="${creditStr} icon">
-    </div>
-`;
+                    ${videoPreviewHtml}
+                    ${cardsHtml}
+
+                    <img class="credit-icon" src="${creditIconSrc}" alt="${creditStr} icon">
+                </div>
+            `;
             
             fragment.appendChild(cardEl);
         }
@@ -3771,150 +3819,209 @@ if (copyDeckBtn) {
 const downloadBtn = document.getElementById('downloadImageBtn');
 if (downloadBtn) {
     downloadBtn.addEventListener('click', async (e) => {
-        if (currentSeeds.length === 0) return;
+    if (currentSeeds.length === 0) return;
 
-        const btn = e.target;
-        const originalText = btn.innerText;
-        btn.innerText = "Saving...";
-        btn.disabled = true;
+    const btn = e.target;
+    const originalText = btn.innerText;
+    btn.innerText = "Saving...";
+    btn.disabled = true;
 
-        try {
-            // 1. Setup Canvas Grid Math
-            const padding = 20;
-            const cardBoxWidth = 110;
-            const cardBoxHeight = 140; 
-            const gap = 15;
-            const columns = 4; 
-            const rows = Math.ceil(currentSeeds.length / columns);
-            
-            // Added watermarkHeight to give the text room to breathe at the bottom
-            const watermarkHeight = 24; 
-            const canvasWidth = padding * 2 + (columns * cardBoxWidth) + ((columns - 1) * gap); 
-            const rowHeight = cardBoxHeight; 
-            
-            // Add watermarkHeight to the total canvas height
-            const canvasHeight = padding * 2 + (rows * rowHeight) + ((rows - 1) * gap) + watermarkHeight;
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
-            const ctx = canvas.getContext('2d');
+    try {
+        // 1. Setup Canvas Grid Math
+        const padding = 30; // Increased padding slightly for a better frame
+        const cardBoxWidth = 110;
+        const cardBoxHeight = 140; 
+        const gap = 18; // Slightly larger gap to accommodate shadows
+        const columns = 4; 
+        const rows = Math.ceil(currentSeeds.length / columns);
+        
+        const watermarkHeight = 40; // Increased to give the new watermark pill room
+        const canvasWidth = padding * 2 + (columns * cardBoxWidth) + ((columns - 1) * gap); 
+        const rowHeight = cardBoxHeight; 
+        const canvasHeight = padding * 2 + (rows * rowHeight) + ((rows - 1) * gap) + watermarkHeight;
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext('2d');
 
-            // 2. Draw Background
-            ctx.fillStyle = '#22262a'; 
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        // 2. Draw Premium Background (Radial Gradient)
+        const cx = canvasWidth / 2;
+        const cy = canvasHeight / 2;
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvasWidth);
+        bgGradient.addColorStop(0, '#2c333a'); // Lighter center spotlight
+        bgGradient.addColorStop(1, '#111417'); // Darker edges
+        
+        ctx.fillStyle = bgGradient; 
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-            // 3. SORT THE CARDS
-            const sortedSeeds = [...currentSeeds].sort((a, b) => {
-                const costA = cardDatabase[a.name]?.Cost || 0;
-                const costB = cardDatabase[b.name]?.Cost || 0;
-                if (costA !== costB) return costA - costB;
-                return a.name.localeCompare(b.name);
-            });
+        // Optional: subtle border around the entire canvas
+        ctx.strokeStyle = '#3e464f';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(2, 2, canvasWidth - 4, canvasHeight - 4);
 
-            // 4. Load Images
-            const loadedImages = await Promise.all(sortedSeeds.map(seed => {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.crossOrigin = "anonymous"; 
-                    const dbName = seed.name.replace(/ /g, '_');
-                    
-                    img.onload = () => resolve({ img, seed });
-                    img.onerror = () => {
-                        const imgWebp = new Image();
-                        imgWebp.crossOrigin = "anonymous";
-                        imgWebp.onload = () => resolve({ img: imgWebp, seed });
-                        imgWebp.onerror = () => resolve({ img: null, seed }); 
-                        imgWebp.src = `card_images/${dbName}.webp`;
-                    };
-                    img.src = `card_images/${dbName}.png`;
-                });
-            }));
+        // 3. SORT THE CARDS
+        const sortedSeeds = [...currentSeeds].sort((a, b) => {
+            const costA = cardDatabase[a.name]?.Cost || 0;
+            const costB = cardDatabase[b.name]?.Cost || 0;
+            if (costA !== costB) return costA - costB;
+            return a.name.localeCompare(b.name);
+        });
 
-            // 5. Draw the Cards and Badges
-            loadedImages.forEach((item, index) => {
-                const col = index % columns;
-                const row = Math.floor(index / columns);
+        // 4. Load Images
+        const loadedImages = await Promise.all(sortedSeeds.map(seed => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = "anonymous"; 
+                const dbName = seed.name.replace(/ /g, '_');
                 
-                const x = padding + (col * (cardBoxWidth + gap));
-                const y = padding + (row * (rowHeight + gap));
+                img.onload = () => resolve({ img, seed });
+                img.onerror = () => {
+                    const imgWebp = new Image();
+                    imgWebp.crossOrigin = "anonymous";
+                    imgWebp.onload = () => resolve({ img: imgWebp, seed });
+                    imgWebp.onerror = () => resolve({ img: null, seed }); 
+                    imgWebp.src = `card_images/${dbName}.webp`;
+                };
+                img.src = `card_images/${dbName}.png`;
+            });
+        }));
 
-                // Anti-Squish Logic
-                let drawWidth = cardBoxWidth;
-                let drawHeight = cardBoxHeight;
-                let dx = x;
-                let dy = y;
+        // 5. Draw the Cards and Badges
+        loadedImages.forEach((item, index) => {
+            const col = index % columns;
+            const row = Math.floor(index / columns);
+            
+            const x = padding + (col * (cardBoxWidth + gap));
+            const y = padding + (row * (rowHeight + gap));
 
-                if (item.img) {
-                    const imgAspect = item.img.width / item.img.height;
-                    const boxAspect = cardBoxWidth / cardBoxHeight;
+            let drawWidth = cardBoxWidth;
+            let drawHeight = cardBoxHeight;
+            let dx = x;
+            let dy = y;
 
-                    if (imgAspect > boxAspect) {
-                        drawWidth = cardBoxWidth;
-                        drawHeight = cardBoxWidth / imgAspect;
-                    } else {
-                        drawHeight = cardBoxHeight;
-                        drawWidth = cardBoxHeight * imgAspect;
-                    }
+            if (item.img) {
+                const imgAspect = item.img.width / item.img.height;
+                const boxAspect = cardBoxWidth / cardBoxHeight;
 
-                    dx = x + (cardBoxWidth - drawWidth) / 2;
-                    dy = y + (cardBoxHeight - drawHeight) / 2;
-
-                    ctx.drawImage(item.img, dx, dy, drawWidth, drawHeight);
+                if (imgAspect > boxAspect) {
+                    drawWidth = cardBoxWidth;
+                    drawHeight = cardBoxWidth / imgAspect;
                 } else {
-                    ctx.fillStyle = '#333';
-                    ctx.fillRect(x, y, cardBoxWidth, cardBoxHeight);
+                    drawHeight = cardBoxHeight;
+                    drawWidth = cardBoxHeight * imgAspect;
                 }
 
-                // Overlay the Quantity Badge
-                const text = `x${item.seed.count}`;
-                ctx.font = 'bold 16px sans-serif';
-                const textWidth = ctx.measureText(text).width;
+                dx = x + (cardBoxWidth - drawWidth) / 2;
+                dy = y + (cardBoxHeight - drawHeight) / 2;
+
+                // Add Drop Shadow to Cards
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                ctx.shadowBlur = 12;
+                ctx.shadowOffsetY = 6;
+                ctx.shadowOffsetX = 0;
+
+                ctx.drawImage(item.img, dx, dy, drawWidth, drawHeight);
                 
-                const badgeWidth = textWidth + 12; 
-                const badgeHeight = 24;
-                const badgeX = dx - 4; 
-                const badgeY = dy + drawHeight - badgeHeight - 4; 
+                // Reset shadow so it doesn't mess up badges/text
+                ctx.shadowColor = 'transparent';
+            } else {
+                ctx.fillStyle = '#1e2226';
+                ctx.strokeStyle = '#3e464f';
+                ctx.lineWidth = 2;
+                ctx.fillRect(x, y, cardBoxWidth, cardBoxHeight);
+                ctx.strokeRect(x, y, cardBoxWidth, cardBoxHeight);
+            }
 
-                ctx.fillStyle = '#1a1a1a';
-                ctx.beginPath();
-                ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 4); 
-                ctx.fill();
+            // Overlay the Premium Quantity Badge
+            const text = `x${item.seed.count}`;
+            ctx.font = 'bold 16px "Segoe UI", sans-serif';
+            const textWidth = ctx.measureText(text).width;
+            
+            const badgeWidth = textWidth + 16; 
+            const badgeHeight = 26;
+            const badgeX = dx - 6; 
+            const badgeY = dy + drawHeight - badgeHeight - 6; 
 
-                ctx.fillStyle = '#ffffff';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(text, badgeX + (badgeWidth / 2), badgeY + (badgeHeight / 2) + 1); 
-            });
+            // Badge Gradient Background
+            const badgeGradient = ctx.createLinearGradient(badgeX, badgeY, badgeX, badgeY + badgeHeight);
+            badgeGradient.addColorStop(0, '#3a4149');
+            badgeGradient.addColorStop(1, '#1d2126');
+            
+            ctx.fillStyle = badgeGradient;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetY = 3;
+            
+            ctx.beginPath();
+            ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 6); 
+            ctx.fill();
 
-            // 6. Draw Watermark
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'bottom';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; // Slightly transparent white
-            ctx.font = 'bold 16px sans-serif';
-            // Position it right-aligned, accounting for padding
-            ctx.fillText('pvzhvault.com', canvasWidth - padding, canvasHeight - 15);
+            // Badge Border
+            ctx.shadowColor = 'transparent'; // Reset shadow for border
+            ctx.strokeStyle = '#5a6470';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
 
-            // 7. Export
-            const link = document.createElement('a');
-            link.download = `deck_export.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            // Badge Text
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            // Added slight text shadow for extra crispness
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = 2;
+            ctx.fillText(text, badgeX + (badgeWidth / 2), badgeY + (badgeHeight / 2) + 1); 
+            ctx.shadowColor = 'transparent';
+        });
 
-            btn.innerText = "Downloaded!";
-            btn.style.background = "#4CAF50"; 
-        } catch (err) {
-            console.error("Canvas generation failed: ", err);
-            btn.innerText = "Error";
-            btn.style.background = "#f44336";
-        } finally {
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.background = ""; 
-                btn.disabled = false;
-            }, 2000);
-        }
-    });
+        // 6. Draw Modern Watermark (Pill Shape)
+        const wmText = 'pvzhvault.com';
+        ctx.font = 'bold 15px "Segoe UI", sans-serif';
+        const wmTextWidth = ctx.measureText(wmText).width;
+        
+        const wmPadX = 14;
+        const wmPadY = 8;
+        const wmWidth = wmTextWidth + (wmPadX * 2);
+        const wmHeight = 15 + (wmPadY * 2);
+        const wmX = canvasWidth - padding - wmWidth + 10;
+        const wmY = canvasHeight - padding - wmHeight + 15;
+
+        // Watermark Pill Background
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.beginPath();
+        ctx.roundRect(wmX, wmY, wmWidth, wmHeight, wmHeight / 2);
+        ctx.fill();
+
+        // Watermark Text with slight gradient
+        const textGrad = ctx.createLinearGradient(wmX, wmY, wmX, wmY + wmHeight);
+        textGrad.addColorStop(0, '#ffffff');
+        textGrad.addColorStop(1, '#b0b5ba');
+        
+        ctx.fillStyle = textGrad;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(wmText, wmX + (wmWidth / 2), wmY + (wmHeight / 2) + 1);
+
+        // 7. Export
+        const link = document.createElement('a');
+        link.download = `deck_export.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        btn.innerText = "Downloaded!";
+        btn.style.background = "#4CAF50"; 
+    } catch (err) {
+        console.error("Canvas generation failed: ", err);
+        btn.innerText = "Error";
+        btn.style.background = "#f44336";
+    } finally {
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.background = ""; 
+            btn.disabled = false;
+        }, 2000);
+    }
+});
 }
 
 // --- ROUTING LOGIC ---
