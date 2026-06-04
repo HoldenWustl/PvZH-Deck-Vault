@@ -4364,789 +4364,338 @@ modal.addEventListener('click', (e) => {
     }
 });
 function renderGames() {
-    // 1. Setup the Daily Seed
-const today = new Date();
-const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-const dateSum = today.getFullYear() + today.getMonth() + today.getDate();
-
-const cardKeys = Object.keys(cardDatabase).sort();
-const dailyCardKey = cardKeys[dateSum % cardKeys.length]; 
-const dailyCard = cardDatabase[dailyCardKey];
-
-// 2. Grab DOM Elements
-const canvas = document.getElementById('silhouetteCanvas');
-const ctx = canvas.getContext('2d');
-const inputArea = document.getElementById('silhouetteInputArea');
-const guessInput = document.getElementById('silhouetteGuess');
-const submitBtn = document.getElementById('silhouetteSubmitBtn');
-const feedbackEl = document.getElementById('silhouetteFeedback');
-const suggestionsBox = document.getElementById('silhouetteSuggestions');
-
-// 3. State Management variables
-const savedDate = localStorage.getItem('silhouetteDate');
-const isSolved = localStorage.getItem('silhouetteSolved') === 'true';
-let wrongGuesses = parseInt(localStorage.getItem('silhouetteGuesses') || '0');
-
-if (savedDate !== dateString) {
-    localStorage.setItem('silhouetteDate', dateString);
-    localStorage.setItem('silhouetteSolved', 'false');
-    localStorage.setItem('silhouetteGuesses', '0');
-    wrongGuesses = 0;
-    setupUnsolvedState();
-} else if (isSolved) {
-    setupSolvedState();
-} else {
-    setupUnsolvedState();
-}
-
-// --- State Helper Functions ---
-function setupUnsolvedState() {
-    inputArea.style.display = 'block';
-    feedbackEl.textContent = '';
-    updateImageBlur(); // Dynamically sets blur based on previous wrong guesses
-}
-
-function setupSolvedState() {
-    canvas.style.filter = 'blur(0px) grayscale(0%)';
-    inputArea.style.display = 'none';
-    feedbackEl.textContent = `You got it! It was ${dailyCard.Name.replace(/_/g, ' ')}!`;
-    feedbackEl.style.color = '#4CAF50';
-}
-
-// --- NEW: Progressive Blur Logic ---
-function updateImageBlur() {
-    // Starts at 20px blur. Drops by 3px per wrong guess. 
-    // Math.max ensures it never drops below 4px until they actually solve it.
-    const currentBlur = Math.max(4, 20 - (wrongGuesses * 3));
-    canvas.style.filter = `blur(${currentBlur}px) grayscale(100%)`;
-}
-
-// --- Autocomplete Logic ---
-let selectedRawName = null; 
-
-guessInput.addEventListener('input', function() {
-    const query = this.value.toLowerCase().trim();
-    suggestionsBox.innerHTML = ''; 
-    selectedRawName = null; 
-
-    if (query.length < 2) {
-        suggestionsBox.style.display = 'none';
-        return;
-    }
-
-    let matches = 0;
-    Object.keys(cardDatabase).forEach(rawName => {
-        if (matches >= 2) return; 
-        
-        const cleanName = rawName.replace(/_/g, ' ');
-        if (cleanName.toLowerCase().includes(query)) {
-            const cardInfo = cardDatabase[rawName];
-            
-            const li = document.createElement('li');
-            li.innerHTML = `<span>${cleanName}</span> <span class="suggestion-class">${cardInfo.Class}</span>`;
-            
-            li.onclick = () => {
-                guessInput.value = cleanName;
-                selectedRawName = rawName; 
-                suggestionsBox.style.display = 'none';
-                newSubmitBtn.click(); 
-            };
-            
-            suggestionsBox.appendChild(li);
-            matches++;
-        }
-    });
-
-    suggestionsBox.style.display = matches > 0 ? 'block' : 'none';
-});
-
-// Hide suggestions if clicking outside
-document.addEventListener('click', (e) => {
-    if (e.target !== guessInput) suggestionsBox.style.display = 'none';
-});
-
-// --- Handle the Guess ---
-const newSubmitBtn = submitBtn.cloneNode(true);
-submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
-
-newSubmitBtn.addEventListener('click', () => {
-    const actualNameKey = dailyCardKey.toLowerCase();
-    let guessKeyToTest = selectedRawName ? selectedRawName.toLowerCase() : guessInput.value.trim().toLowerCase().replace(/\s+/g, '_');
-
-    if (guessKeyToTest === actualNameKey) {
-        // Correct Guess!
-        localStorage.setItem('silhouetteSolved', 'true');
-        setupSolvedState();
-    } else {
-        // Wrong Guess!
-        wrongGuesses++;
-        localStorage.setItem('silhouetteGuesses', wrongGuesses.toString());
-        
-        feedbackEl.textContent = "Incorrect. The image is now a bit clearer!";
-        feedbackEl.style.color = '#f44336';
-        
-        updateImageBlur(); // Apply the new blur value
-        guessInput.value = '';
-        guessInput.focus();
-    }
-});
-
-// --- Image Loading ---
-const imgObj = new Image();
-
-imgObj.onload = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const scale = Math.min(canvas.width / imgObj.width, canvas.height / imgObj.height);
-    const x = (canvas.width / 2) - (imgObj.width / 2) * scale;
-    const y = (canvas.height / 2) - (imgObj.height / 2) * scale;
-    ctx.drawImage(imgObj, x, y, imgObj.width * scale, imgObj.height * scale);
-};
-
-imgObj.onerror = function() {
-    this.onerror = null; 
-    this.src = `card_images/${dailyCardKey}.webp`;
-};
-
-imgObj.src = `card_images/${dailyCardKey}.png`;
-
-// ==========================================
-// HIGHER OR LOWER LOGIC
-// ==========================================
-
-let deckCounts = {};
-let validHlCards = [];
-let hlStreak = 0;
-let hlBestStreak = parseInt(localStorage.getItem('hlBestStreak') || '0');
-let currentCardLeft = null;
-let currentCardRight = null;
-let hlIsAnimating = false; // Prevents spam clicking
-let hlIsGameOver = false;
-
-// 1. Calculate how many decks every card is in
-Object.keys(cardDatabase).forEach(card => deckCounts[card] = 0);
-
-Object.values(fullDatabase).forEach(deck => {
-    deck.cards.forEach(cardString => {
-        // Remove the "x4 " or "x3 " prefix to get the raw card name
-        const cleanName = cardString.replace(/^x\d\s+/, '');
-        if (deckCounts[cleanName] !== undefined) {
-            deckCounts[cleanName]++;
-        } else {
-            // Fallback in case a card is in a deck but missing from cardDatabase
-            deckCounts[cleanName] = 1; 
-        }
-    });
-});
-
-// We only want to play with cards that actually exist in the database
-validHlCards = Object.keys(deckCounts);
-
-// 2. DOM Elements
-const hlCardLeftEl = document.getElementById('hlCardLeft');
-const hlCardRightEl = document.getElementById('hlCardRight');
-const hlGameOverEl = document.getElementById('hlGameOver');
-const hlStreakEl = document.getElementById('hlStreak');
-const hlBestEl = document.getElementById('hlBest');
-hlBestEl.textContent = hlBestStreak;
-
-// Helper to set images with your .png to .webp fallback
-function setHlImage(imgElement, cardKey) {
-    imgElement.src = `card_images/${cardKey}.png`;
-    imgElement.onerror = function() {
-        this.onerror = null;
-        this.src = `card_images/${cardKey}.webp`;
-    };
-}
-
-// Helper to get a random card that isn't the current one
-function getRandomHlCard(excludeCard) {
-    let randomCard;
-    do {
-        randomCard = validHlCards[Math.floor(Math.random() * validHlCards.length)];
-    } while (randomCard === excludeCard);
-    return randomCard;
-}
-
-// 3. Render function
-function renderHlState() {
-    // Setup Left Card (Count is now HIDDEN)
-    document.getElementById('hlNameLeft').textContent = currentCardLeft.replace(/_/g, ' ');
-    document.getElementById('hlCountLeft').textContent = `??? Decks`;
-    setHlImage(document.getElementById('hlImgLeft'), currentCardLeft);
-
-    // Setup Right Card (Count is HIDDEN)
-    document.getElementById('hlNameRight').textContent = currentCardRight.replace(/_/g, ' ');
-    document.getElementById('hlCountRight').textContent = `??? Decks`;
-    setHlImage(document.getElementById('hlImgRight'), currentCardRight);
-}
-
-// 5. Handle user guess
-function handleHlGuess(clickedSide) {
-    // --- NEW: Stop immediately if animating OR if the game is over ---
-    if (hlIsAnimating || hlIsGameOver) return; 
-    hlIsAnimating = true;
-
-    const countLeft = deckCounts[currentCardLeft];
-    const countRight = deckCounts[currentCardRight];
-
-    // Trigger the satisfying tick-up effect over 800ms
-    animateValue(document.getElementById('hlCountLeft'), 0, countLeft, 800);
-    animateValue(document.getElementById('hlCountRight'), 0, countRight, 800);
-
-    // Determine if they were right (Ties go to the player)
-    let isCorrect = false;
-    if (clickedSide === 'left' && countLeft >= countRight) isCorrect = true;
-    if (clickedSide === 'right' && countRight >= countLeft) isCorrect = true;
-
-    const clickedElement = clickedSide === 'left' ? hlCardLeftEl : hlCardRightEl;
-
-    if (isCorrect) {
-        hlStreak++;
-        hlStreakEl.textContent = hlStreak;
-        
-        // High Score Logic
-        if (hlStreak > hlBestStreak) {
-            hlBestStreak = hlStreak;
-            hlBestEl.textContent = hlBestStreak;
-            localStorage.setItem('hlBestStreak', hlBestStreak.toString());
-        }
-        
-        clickedElement.classList.add('hl-correct');
-        
-        // Wait 1.5 seconds then advance
-        setTimeout(() => {
-            clickedElement.classList.remove('hl-correct');
-            hlCardLeftEl.classList.add('hl-fade-out');
-            hlCardRightEl.classList.add('hl-fade-out');
-            
-            // 2. Wait 300ms for them to disappear, swap data, then fade back in
-            setTimeout(() => {
-                currentCardLeft = currentCardRight;
-                currentCardRight = getRandomHlCard(currentCardLeft);
-                renderHlState();
-                
-                hlCardLeftEl.classList.remove('hl-fade-out');
-                hlCardRightEl.classList.remove('hl-fade-out');
-                
-                // Unlock game after fade-in completes
-                setTimeout(() => { hlIsAnimating = false; }, 300);
-            }, 300); 
-            
-        }, 1200);
-
-    } else {
-        // --- NEW: Instantly lock the game so they can't click anything else ---
-        hlIsGameOver = true; 
-        
-        clickedElement.classList.add('hl-wrong');
-        
-        // Wait 1.5 seconds so they can see the final numbers before game over menu
-        setTimeout(() => {
-            clickedElement.classList.remove('hl-wrong');
-            hlGameOverEl.style.display = 'block';
-        }, 1500);
-    }
-}
-
-// Satisfying Number Ticking Animation
-function animateValue(obj, start, end, duration) {
-    let startTimestamp = null;
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        
-        // Ease-out effect (starts fast, slows down at the end)
-        const easeProgress = 1 - Math.pow(1 - progress, 3); 
-        const currentVal = Math.floor(easeProgress * (end - start) + start);
-        
-        obj.textContent = `${currentVal} Decks`;
-        
-        if (progress < 1) {
-            window.requestAnimationFrame(step);
-        } else {
-            obj.textContent = `${end} Decks`; // Ensure it lands exactly on the target
-        }
-    };
-    window.requestAnimationFrame(step);
-}
-
-// 4. Start/Restart Game
-function startHigherLower() {
-    hlIsGameOver = false; 
-    hlIsAnimating = false; // --- FIXED: Reset the animation lock on restart ---
-    hlStreak = 0;
-    hlStreakEl.textContent = hlStreak;
-    hlGameOverEl.style.display = 'none';
+    // ==========================================
+    // CORE SYSTEM DATA PARSING & COMPILE
+    // ==========================================
+    let deckCounts = {};
+    let validHlCards = [];
     
-    // Clear any leftover animation classes
-    hlCardLeftEl.classList.remove('hl-correct', 'hl-wrong', 'hl-fade-out');
-    hlCardRightEl.classList.remove('hl-correct', 'hl-wrong', 'hl-fade-out');
+    Object.keys(cardDatabase).forEach(card => deckCounts[card] = 0);
 
-    currentCardLeft = getRandomHlCard(null);
-    currentCardRight = getRandomHlCard(currentCardLeft);
-    
-    renderHlState();
-}
-
-
-
-// 6. Event Listeners
-hlCardLeftEl.onclick = () => handleHlGuess('left');
-hlCardRightEl.onclick = () => handleHlGuess('right');
-document.getElementById('hlRestartBtn').onclick = startHigherLower;
-
-// Initialize the game
-startHigherLower();
-
-// ==========================================
-// TRIVIA GAME LOGIC
-// ==========================================
-
-const triviaQuestions = [
-    // --- META & GAME HISTORY ---
-    { question: "Which of these cards was originally a Super-Rare before being upgraded to a Legendary in a later patch?", answer: "Valkyrie", wrong: ["Trickster", "Zombot 1000", "Octo Zombie"] },
-    { question: "In the early days of PvZ Heroes, what was the maximum number of cards you could hold in your hand before milling?", answer: "10", wrong: ["9", "12", "Unlimited"] },
-    { question: "In the competitive community, what does the term 'RNG' stand for when referring to cards like Bad Moon Rising?", answer: "Random Number Generation", wrong: ["Real Ninja Gaming", "Rapid Number Growth", "Running New Gear"] },
-    { question: "The 'Galactic Gardens' update introduced what major new mechanic to the game?", answer: "Environments", wrong: ["Tokens", "Superpowers", "Evolution cards"] },
-    { question: "Which keyword made its first appearance in the 'Triassic Triumph' card set?", answer: "Fusion", wrong: ["Dino-Roar", "Evolution", "Untrickable"] },
-    { question: "Which keyword made its first appearance in the 'Colossal Fossils' card set?", answer: "Dino-Roar", wrong: ["Fusion", "Deadly", "Strikethrough"] },
-    { question: "Before it received a major nerf to balance its power, how much Sun did 'Briar Rose' originally cost?", answer: "4 Sun", wrong: ["3 Sun", "5 Sun", "6 Sun"] },
-    { question: "What was the original cost of 'Sow Magic Beans' before it was nerfed to no longer draw a card?", answer: "2 Sun", wrong: ["1 Sun", "3 Sun", "4 Sun"] },
-    { question: "What was the original amount of Brains given by 'Medulla Nebula' when played upon, before it was nerfed?", answer: "3 Brains", wrong: ["2 Brains", "4 Brains", "1 Brain"] },
-    { question: "What was the original ability of 'Disco-Naut' before being nerfed?", answer: "Zombies with 3 or less attack have Bullseye", wrong: ["All Dancing Zombies have Bullseye", "Zombies with 2 or less attack have Bullseye", "Zombies with 4 or less attack have Bullseye"] },
-    { question: "Octo Zombie's ability to return to your hand after being destroyed used to be a keyword trait. What was it called?", answer: "Afterlife", wrong: ["Undying", "Rebirth", "Immortal"] },
-    { question: "What was the original ability of Z-Mech's 'Missile Madness' superpower before it was reworked?", answer: "Attack for 2 damage in 3 random lanes", wrong: ["Do 3 damage to all Plants", "Destroy a Plant with 4 or less attack", "Do 4 damage to a Plant and 1 to the Plant Hero"] },
-    { question: "Which Plant environment had its cost increased from 2 Sun to 3 Sun due to its dominance in the meta?", answer: "Spikeweed Sector", wrong: ["Solar Winds", "Venus Flytraplanet", "Coffee Grounds"] },
-    { question: "Which famous competitive Plant deck archetype revolves around Astro-Shroom, Admiral Navy Bean, and Planet of the Grapes?", answer: "Cyclecap", wrong: ["Heal Midrange", "Ramp to Mime", "Aggro Flare"] },
-    {
-    question: "If the Plant Hero's deck has exactly 0 cards left and it becomes their turn to draw, what happens?",
-    answer: "They instantly lose the game.",
-    wrong: [
-      "They simply don't draw a card and the game continues normally.",
-      "They take increasing 'fatigue' damage each turn.",
-      "The game ends in an automatic draw."
-    ]
-  },
-    // --- DEEP MECHANICS ---
-    { question: "Exactly how many 'charges' are required to completely fill the Super-Block meter?", answer: "8", wrong: ["10", "6", "9"] },
-    { question: "If a Plant Hero has a full hand of 10 cards, what happens when they Super-Block?", answer: "They mill their Superpower and get nothing", wrong: ["They play the Superpower immediately for free", "They draw a card anyway", "The Super-Block meter resets to 0 but saves the power"] },
-    { question: "What happens if a Zombie with 'Frenzy' destroys a Plant with 0 Attack?", answer: "It does a bonus attack", wrong: ["Nothing", "It heals to full health", "It gains +1/+1"] },
-    { question: "What happens if an 'Overshoot' Zombie is fronted by a Plant?", answer: "It does its Overshoot damage to the Hero, then attacks the Plant normally", wrong: ["It only attacks the Plant", "It ignores the Plant and attacks the Hero entirely", "It loses its Overshoot ability for that turn"] },
-    { question: "If a Zombie Hero has 1 Health, and a Plant with 3 Attack and 'Bullseye' hits them while their block meter is 1 charge away from full, what happens?", answer: "The Zombie Hero takes 3 damage and loses", wrong: ["They Super-Block and survive", "They take 1 damage and block the rest", "The game ends in a draw"] },
-    { question: "What does the 'Untrickable' trait actually do?", answer: "Makes the card unaffected by the opponent's tricks", wrong: ["Cannot be Bounced", "Immune to environments", "Cannot be destroyed by combat damage"] },
-    { question: "If a Space Cowboy destroys a Potato Mine, what happens?", answer: "It moves before the mine explodes, dodging the damage", wrong: ["It takes 2 damage and dies", "It gets destroyed, but moves first", "It stays in the lane and takes 2 damage"] },
-    { question: "What happens if a plant is Bounced back to your hand after having its stats changed by Onion Rings?", answer: "It retains its 4/4 stats in your hand", wrong: ["It reverts to its original stats", "It costs 4 Sun to play", "It becomes a 1/1"] },
-    { question: "If Sneezing Zombie is on the field, can the Plant Hero play 'Second-Best Taco of All Time' to draw a card?", answer: "No, the card cannot be played at all", wrong: ["Yes, but it only draws a card and doesn't heal", "Yes, and it heals anyway due to a bug", "Yes, but they take 2 damage instead"] },
-    { question: "What happens if a Mixed-Up Gravedigger is revealed from a Gravestone?", answer: "Its 'When Played' effect does not activate", wrong: ["It activates again, putting everything in Gravestones", "It destroys all Plants", "It gains +1/+1"] },
-    { question: "Can Dandy Lion King's ability deal the finishing blow to defeat the Zombie Hero?", answer: "No, because the damage rounds down to 0", wrong: ["Yes, if they are at 1 health", "Yes, if paired with Heartichoke", "No, because it only targets Plants"] },
-    { question: "What visually happens if a Zombie shrunk by Shrinking Violet is Bounced or put into a Gravestone?", answer: "Its size glitches and it becomes extremely large", wrong: ["It becomes microscopic", "It turns completely invisible", "It turns into a 1/1 Goat"] },
-    { question: "What happens if a Supernova Gargantuar destroys a Wing-Nut?", answer: "It destroys all Wing-Nuts on the board and then does a Bonus Attack", wrong: ["It just destroys the Wing-Nut", "It does a Bonus Attack but other Wing-Nuts survive", "It destroys all Wing-Nuts but cannot Bonus Attack"] },
-    { question: "Does the 'Untrickable' trait protect a card from friendly tricks, such as Doom-Shroom?", answer: "No, friendly tricks will still affect and destroy them", wrong: ["Yes, they are completely immune", "Yes, but only if they are Plants", "No, but they take half damage"] },
-    { question: "What happens if a Zombie Chicken or Fire Rooster is played in the same lane as a Toadstool or Chomper?", answer: "The plant destroys it before it gets a chance to move", wrong: ["The zombie moves away safely", "The plant misses and destroys nothing", "The zombie moves, but the plant destroys a random zombie"] },
-    { question: "If Immorticia plays Witch's Familiar while a Zookeeper is on the board, what happens?", answer: "Zookeeper's ability triggers twice", wrong: ["Zookeeper's ability triggers once", "The Zookeeper is destroyed", "All Pets gain +2/+2 permanently"] },
-    { question: "If a Plant has 'Double Strike' and attacks a Zombie with 'Deadly', what happens?", answer: "The Plant dies after the first attack and does not perform its bonus attack", wrong: ["The Plant survives", "The Plant performs its bonus attack then dies", "The Zombie loses its Deadly trait"] },
-    { question: "Can a 'Gravitree' pull a Zombie that is currently hiding inside a Gravestone?", answer: "No, Gravestones are completely unaffected", wrong: ["Yes, it pulls the Gravestone to its lane", "Yes, but it reveals the Zombie first", "Yes, but only if it's an environment"] },
-
-    // --- TOKENS & UNCOLLECTABLES ---
-    { question: "Which of these is an uncollectable Token card?", answer: "Pot of Gold", wrong: ["Leprechaun Imp", "Fire Rooster", "Turkey Rider"] },
-    { question: "How many cards does the token 'Pot of Gold' let you draw?", answer: "3", wrong: ["2", "4", "1"] },
-    { question: "What tokens are generated when the Plant 'Mayflower' hits the Zombie Hero?", answer: "A random Squash, Bean, or Corn", wrong: ["A random Flower", "A random Fruit", "A random Peashooter"] },
-    { question: "What token does the trick 'Gargantuar's Feast' create?", answer: "3 random Gargantuars", wrong: ["3 random 1-cost Zombies", "1 Zombot 1000", "3 random Science Zombies"] },
-    { question: "Which Zombie card generates the uncollectable 'Pot of Gold' token?", answer: "Leprechaun Imp", wrong: ["Regifting Zombie", "Wormhole Gatekeeper", "Trick-or-Treater"] },
-    { question: "Which Token card is created when you play a 'Gargantuar-Throwing Imp'?", answer: "Smashing Gargantuar", wrong: ["Imp-Throwing Gargantuar", "Swab", "Zombot 1000"] },
-    { question: "What is the name of the unique Token Zombie created by the 'Octo Zombie'?", answer: "Octo-Pet", wrong: ["Squid Zombie", "Kraken", "Tentacle"] },
-
-    // --- SPECIFIC CARD KNOWLEDGE ---
-    { question: "Which Plant has the highest base Attack stat in the game without buffs?", answer: "Poison Oak", wrong: ["Super-Phat Beets", "Grapes of Wrath", "Dark Matter Dragonfruit"] },
-    { question: "What are the exact base stats of 'Dark Matter Dragonfruit'?", answer: "6/6", wrong: ["6/5", "7/7", "5/6"] },
-    { question: "What unique effect does 'Dark Matter Dragonfruit' have on the Zombie player?", answer: "Zombie Tricks cost 6 more", wrong: ["Zombies cost 2 more", "Zombie Tricks cost 2 more", "Zombie Environments cannot be played"] },
-    { question: "What is the only Zombie card in the entire game that costs 11 Brains?", answer: "Gargantuar's Feast", wrong: ["Zombot 1000", "Bad Moon Rising", "Octo Zombie"] },
-    { question: "What is the exact ability of the 'Galacta-Cactus' when destroyed?", answer: "Does 1 damage to everything", wrong: ["Does 2 damage to the Zombie Hero", "Destroys a random Zombie", "Gives all Plants Bullseye"] },
-    { question: "What are the stats and cost of the 'Swab' (Swabbie) Zombie?", answer: "0-cost 1/1", wrong: ["1-cost 1/1", "0-cost 2/1", "1-cost 2/2"] },
-    { question: "Which Zombie trick destroys all Plants with 2 or less Attack?", answer: "Weed Spray", wrong: ["Rolling Stone", "The Chickening", "Bungee Plumber"] },
-    { question: "Which Zombie card states 'When played: All Zombies get +1/+1 for the rest of the game'?", answer: "Intergalactic Warlord", wrong: ["Primeval Yeti", "Zombie King", "Zombot Drone Engineer"] },
-    { question: "Which Plant does exactly 6 damage to the Zombie Hero when it is destroyed?", answer: "Grapes of Wrath", wrong: ["Cherry Bomb", "Berry Blast", "Doom-Shroom"] },
-    { question: "Which 1-cost Plant has 'Dino-Roar: Shuffle a Magic Beanstalk into your deck'?", answer: "Lima-Pleurodon", wrong: ["Navy Bean", "Admiral Navy Bean", "Tricarrotops"] },
-    { question: "What does the Plant superpower 'Transmogrify' do?", answer: "Transforms a Zombie into a random 1-cost Zombie", wrong: ["Transforms a Zombie into a 1/1 Goat", "Destroys a Zombie with 3 or less Attack", "Bounces a Zombie"] },
-    { question: "What is the only card in the entire game that has an Armor value higher than 'Armored 1'?", answer: "Knight of the Living Dead", wrong: ["Undying Pharaoh", "Rodeo Gargantuar", "Juggernut"] },
-    { question: "Which Plant card is completely unable to attack the Zombie in its own lane?", answer: "Rotobaga", wrong: ["Threepeater", "Snapdragon", "Shooting Starfruit"] },
-    { question: "Astro Vera is unique because it is the only card in the game that can do what?", answer: "Increase a Hero's maximum health", wrong: ["Heal a Hero to full health", "Prevent a Hero from taking damage", "Give a Hero an extra Super-Block"] },
-    { question: "Which Plant card is the only one in the game that can reduce the cost of cards in your hand?", answer: "Captain Cucumber", wrong: ["Party Thyme", "Savage Spinach", "Onion Rings"] },
-    { question: "Which Zombie is the only one in the game to possess exactly one trait from all five Zombie classes?", answer: "Kitchen Sink Zombie", wrong: ["Zombot Dinotronic Mechasaur", "Gargantuar Mime", "Frankentuar"] },
-    { question: "Which Plant legendary does NOT have the Amphibious trait, despite physically floating above the ground?", answer: "Shooting Starfruit", wrong: ["Winter Melon", "Dark Matter Dragonfruit", "Cornucopia"] },
-    { question: "Which Plant has the highest base Health stat in the entire game?", answer: "Soul Patch", wrong: ["Primal Wall-Nut", "Water Chestnut", "Gravitree"] },
-    { question: "What happens when you use the trick 'Evolutionary Leap' on any 8-Cost Zombie?", answer: "You are guaranteed to get a Zombot 1000", wrong: ["You get a random 9-cost Zombie", "You get an Octo Zombie", "The card does nothing and is wasted"] },
-    { question: "'Ensign Uproot' is completely unique because it is the only card in the entire game that can do what?", answer: "Move both Plants and Zombies", wrong: ["Bounce both Plants and Zombies", "Heal both Plants and Zombies", "Freeze both Plants and Zombies"] },
-
-    // --- TRIBES & SYNERGIES ---
-    { question: "Which of the following is the only 'Pinecone Animal' in the game?", answer: "Pineclone", wrong: ["Sap-Fling", "Grizzly Pear", "Hibernating Beary"] },
-    { question: "Which Zombie tribe has direct synergy with the 'Zookeeper' card?", answer: "Pet", wrong: ["Monster", "Professional", "Science"] },
-    { question: "What tribe does the 'Cornucopia' card belong to?", answer: "Corn", wrong: ["Fruit", "Seed", "Squash"] },
-    { question: "Which of the following is NOT a real Plant tribe in the game?", answer: "Vine", wrong: ["Root", "Pinecone", "Banana"] },
-    { question: "Which Plant card belongs to the 'Squash' tribe and destroys a Zombie unconditionally?", answer: "Squash", wrong: ["Lawnmower", "Whack-a-Zombie", "Shamrocket"] },
-    { question: "What is the tribe of the 0-cost Zombie 'Swabbie'?", answer: "Pirate Imp", wrong: ["Monster Imp", "Pet Imp", "Professional Imp"] },
-    { question: "What is the only tribe that features cards on both the Plant and Zombie sides?", answer: "Mime", wrong: ["Monster", "Pet", "Gourmet"] },
-    { question: "Which primal plant is NOT in the same class as its modern counterpart?", answer: "Primal Peashooter", wrong: ["Primal Sunflower", "Primal Wall-Nut", "Primal Potato Mine"] },
-    { question: "Which tribe is unique because its main synergy card only buffs cards currently in your hand?", answer: "Banana", wrong: ["Pea", "Mushroom", "Berry"] },
-    { question: "Which Zombie was the one and only member of the 'Clock' tribe?", answer: "Cuckoo Zombie", wrong: ["Synchronized Swimmer", "Portal Technician", "Kitchen Sink Zombie"] },
-
-    // --- ENVIRONMENTS ---
-    { question: "What is the exact effect of the Plant environment 'Pair Pearadise'?", answer: "Makes a copy of a Plant played there", wrong: ["Gives Plants Team-Up", "Heals Plants for 4", "Gives Plants +2/+2"] },
-    { question: "Which Zombie environment makes Plants played there get -1/-0?", answer: "Black Hole", wrong: ["Trapper Territory", "Cone Zone", "Meteor Z"] },
-    { question: "Which environment is entirely transparent, allowing the background stage lights to be seen flashing through it?", answer: "Sappy Place", wrong: ["Force Field", "Black Hole", "Laser Base Alpha"] },
-    { question: "Which Plant environment gives attacking Plants the 'Double Strike' trait?", answer: "Coffee Grounds", wrong: ["Planet of the Grapes", "Mushroom Grotto", "Pair Pearadise"] },
-    { question: "Which card has the Zombie Evolution ability: 'A Zombie played on this does a Bonus Attack'?", answer: "Mustache Monument", wrong: ["Moon Base Z", "Area 22", "Teleportation Zombie"] },
-
-    // --- HEROES & CLASSES ---
-    { question: "Which Zombie Hero was NOT part of the original base game and was added in a later update?", answer: "Huge-Gigantacus", wrong: ["Brain Freeze", "Neptuna", "Professor Brainstorm"] },
-    { question: "Which Plant Hero is technically a time-traveling orange from the future?", answer: "Citron", wrong: ["Captain Combustible", "Grass Knuckles", "Beta-Carrotina"] },
-    { question: "Which Plant Hero is entirely based on a burning tree stump?", answer: "Captain Combustible", wrong: ["Grass Knuckles", "Spudow", "Citron"] },
-    { question: "Which two Plant Heroes share the exact same class combination of Guardian and Smarty?", answer: "Citron & Beta-Carrotina", wrong: ["Green Shadow & Rose", "Wall-Knight & Spudow", "Nightcap & Captain Combustible"] },
-    { question: "What are the two classes commanded by the Zombie Hero 'Rustbolt'?", answer: "Brainy and Hearty", wrong: ["Brainy and Crazy", "Hearty and Sneaky", "Crazy and Beastly"] },
-    { question: "The 'Beastly' and 'Hearty' classes belong to which Zombie Hero?", answer: "The Smash", wrong: ["Rustbolt", "Brain Freeze", "Immorticia"] },
-    { question: "Which Plant Hero leads the Mega-Grow and Smarty classes?", answer: "Green Shadow", wrong: ["Solar Flare", "Wall-Knight", "Nightcap"] },
-    { question: "Who is the Zombie Hero that commands the Sneaky and Crazy classes?", answer: "Impfinity", wrong: ["Super Brainz", "Electric Boogaloo", "Professor Brainstorm"] },
-    { question: "Which Hero's signature superpower is considered a 'Gargantuar' Trick, meaning Gargologist reduces its cost?", answer: "The Smash", wrong: ["Z-Mech", "Brain Freeze", "Immorticia"] },
-    { question: "Huge-Gigantacus and Beta-Carrotina are completely unique among all heroes for what reason?", answer: "Their superpowers consist of environments and fighters, not tricks", wrong: ["They command three classes instead of two", "They start the game with two Superpowers", "They have 25 maximum health"] },
-    { question: "Which is the only Hero in the game with absolutely no 'Destroy' (Instant Kill) cards in their classes?", answer: "Captain Combustible", wrong: ["Spudow", "Solar Flare", "Green Shadow"] },
-    { question: "Which of these Plant classes has absolutely no cards with the Amphibious trait?", answer: "Kabloom", wrong: ["Guardian", "Smarty", "Mega-Grow"] },
-
-    // --- HERO SIGNATURE SUPERPOWERS ---
-    { question: "What is the name of Wall-Knight's Signature Superpower?", answer: "Uncrackable", wrong: ["Nut Signal", "Bubble Up", "Geyser"] },
-    { question: "Which Zombie Hero's Signature Superpower is called 'Terror-Former 10,000'?", answer: "Huge-Gigantacus", wrong: ["Rustbolt", "Professor Brainstorm", "Z-Mech"] },
-    { question: "What is the name of Impfinity's Signature Superpower?", answer: "Triple Threat", wrong: ["Clone Army", "Imp Swarm", "Deadly Dance"] },
-
-    // --- BASIC RULES & UI ---
-    { question: "What is the maximum number of copies of a single card you can have in a standard ranked deck?", answer: "4", wrong: ["3", "5", "2"] },
-    { question: "Which of these is NOT one of the 5 Zombie classes?", answer: "Brutal", wrong: ["Hearty", "Sneaky", "Brainy"] },
-    { question: "What does playing the 'Teleport' trick allow a Zombie player to do?", answer: "Play a Zombie during the Trick phase", wrong: ["Move a Zombie to another lane", "Bounce a Plant", "Draw 3 cards"] },
-    { question: "What happens when you tap and swipe down repeatedly on the main Collection screen?", answer: "A hidden Wall-Nut peeks upside down from the top of the screen", wrong: ["A secret Zombie hand grabs a card", "The screen flashes green", "You get a free Spark"] },
-    { question: "The 10x and 5x multiplier symbols on strategy decks disappear from the menu under what condition?", answer: "Once you collect all 4 event cards for that week", wrong: ["When you reach Ultimate League", "When you buy the deck with gems", "At the end of the Season"] },
-
-    // --- INTERNAL DATA & REMOVED CONTENT ---
-    { question: "What was the development code name for the 'Solar Winds' environment before the game was officially released?", answer: "Zen Garden", wrong: ["Sun Realm", "Light Ray", "Golden Ground"] },
-    { question: "In the game's internal code and files, which Hero is named 'scortchwood'?", answer: "Captain Combustible", wrong: ["Torchwood", "Solar Flare", "Nightcap"] },
-    { question: "In the game's internal files, which Hero is named 'penelopea'?", answer: "Green Shadow", wrong: ["Peashooter", "Grass Knuckles", "Rose"] },
-    { question: "Which tribe was completely removed from the game, which originally contained 'Surfer Zombie'?", answer: "Vacation", wrong: ["Beach", "Water", "Sports"] },
-    { question: "Which tribe was completely removed from the game, which originally contained 'Trash Can Zombie' and 'Stealthy Imp'?", answer: "Garbage", wrong: ["Junk", "Dumpster", "Alley"] },
-    { question: "Which card's strategy deck used to be called 'Pearadise Found'?", answer: "Spudow (Double Trouble)", wrong: ["Citron (Nut-tastic)", "Wall-Knight (Heal-Lusion)", "Captain Combustible (Moss Boss)"] }
-];
-
-let triviaScore = 0;
-let triviaBestScore = parseInt(localStorage.getItem('triviaBestScore') || '0');
-let currentQuestionObj = null;
-let triviaIsAnimating = false;
-let triviaIsGameOver = false;
-
-const triviaGameArea = document.getElementById('triviaGameArea');
-const triviaQuestionEl = document.getElementById('triviaQuestion');
-const triviaOptionsContainer = document.getElementById('triviaOptions');
-const triviaGameOverEl = document.getElementById('triviaGameOver');
-const triviaScoreEl = document.getElementById('triviaScore');
-const triviaBestEl = document.getElementById('triviaBest');
-
-// Set initial best score display
-triviaBestEl.textContent = triviaBestScore;
-
-// Helper: Shuffle an array (Fisher-Yates)
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-function loadTriviaQuestion() {
-    triviaOptionsContainer.innerHTML = '';
-    
-    // Pick a new random question (and prevent getting the exact same one twice in a row)
-    let newQuestion;
-    do {
-        newQuestion = triviaQuestions[Math.floor(Math.random() * triviaQuestions.length)];
-    } while (newQuestion === currentQuestionObj && triviaQuestions.length > 1);
-    currentQuestionObj = newQuestion;
-    
-    triviaQuestionEl.textContent = currentQuestionObj.question;
-
-    let options = [currentQuestionObj.answer, ...currentQuestionObj.wrong];
-    options = shuffleArray(options);
-
-    options.forEach(optionText => {
-        const btn = document.createElement('button');
-        btn.className = 'trivia-btn';
-        btn.textContent = optionText;
-        btn.onclick = () => handleTriviaGuess(optionText, btn);
-        triviaOptionsContainer.appendChild(btn);
-    });
-}
-
-function handleTriviaGuess(selectedOption, clickedBtn) {
-    if (triviaIsAnimating || triviaIsGameOver) return;
-    triviaIsAnimating = true;
-
-    const allBtns = triviaOptionsContainer.querySelectorAll('.trivia-btn');
-    
-    if (selectedOption === currentQuestionObj.answer) {
-        // --- CORRECT ---
-        clickedBtn.classList.add('trivia-correct');
-        triviaScore++;
-        triviaScoreEl.textContent = triviaScore;
-
-        // High Score Logic
-        if (triviaScore > triviaBestScore) {
-            triviaBestScore = triviaScore;
-            triviaBestEl.textContent = triviaBestScore;
-            localStorage.setItem('triviaBestScore', triviaBestScore.toString());
-        }
-
-        // Wait 1.2s, fade out, load new question, fade in
-        setTimeout(() => {
-            triviaGameArea.classList.add('trivia-fade-out');
-            
-            setTimeout(() => {
-                loadTriviaQuestion();
-                triviaGameArea.classList.remove('trivia-fade-out');
-                
-                setTimeout(() => { triviaIsAnimating = false; }, 300); // Unlock after fade-in
-            }, 300); 
-            
-        }, 1200);
-
-    } else {
-        // --- WRONG ---
-        triviaIsGameOver = true;
-        clickedBtn.classList.add('trivia-wrong');
-        
-        // Disable everything and highlight the correct answer so they learn from it
-        allBtns.forEach(btn => {
-            btn.disabled = true;
-            if (btn.textContent === currentQuestionObj.answer) {
-                btn.classList.add('trivia-correct');
-            } else if (btn !== clickedBtn) {
-                btn.style.opacity = '0.4'; // Fade out other wrong answers
+    Object.values(fullDatabase).forEach(deck => {
+        if (!deck || !deck.cards) return;
+        deck.cards.forEach(cardString => {
+            const cleanName = cardString.replace(/^x\d\s+/, '');
+            if (deckCounts[cleanName] !== undefined) {
+                deckCounts[cleanName]++;
+            } else {
+                deckCounts[cleanName] = 1; 
             }
         });
+    });
 
-        // Show Game Over menu after 1.5 seconds
-        setTimeout(() => {
-            triviaGameOverEl.style.display = 'block';
-        }, 1500);
+    validHlCards = Object.keys(deckCounts).filter(k => cardDatabase[k] !== undefined);
+
+    // ==========================================
+    // ARCADE METRIC STATE CONFIGURATION
+    // ==========================================
+    let hlScore = 0;
+    let hlStreak = 0;
+    let peakSessionStreak = 0; 
+    let hlCombo = 1.0;
+    let hlBestScore = parseInt(localStorage.getItem('hlBestScoreArcade') || '0');
+    let hlTimeLeft = 60;
+    let hlTimerInterval = null;
+    
+    // Mechanics State
+    let hlSkipsLeft = 3;
+    let hlPerfectRun = true;
+    let hlIsFever = false;
+    let hlIsAnimating = false;
+    
+    let currentCardLeft = null;
+    let currentCardRight = null;
+
+    // DOM UI Bindings
+    const hlArcadeContainer = document.getElementById('hlArcadeContainer');
+    const hlCardLeftEl = document.getElementById('hlCardLeft');
+    const hlCardRightEl = document.getElementById('hlCardRight');
+    const hlTimerBar = document.getElementById('hlTimerBar');
+    const hlVsBadge = document.getElementById('hlVsBadge');
+    
+    const hlScoreVal = document.getElementById('hlScoreVal');
+    const hlComboVal = document.getElementById('hlComboVal');
+    const hlStreakVal = document.getElementById('hlStreakVal');
+    const hlBestVal = document.getElementById('hlBestVal');
+    
+    const hlSkipBtn = document.getElementById('hlSkipBtn');
+    const hlSkipCount = document.getElementById('hlSkipCount');
+
+    const hlStartScreen = document.getElementById('hlStartScreen');
+    const hlGameOverScreen = document.getElementById('hlGameOverScreen');
+    const hlFinalSummary = document.getElementById('hlFinalSummary');
+
+    hlBestVal.textContent = hlBestScore;
+
+    // ==========================================
+    // UTILITY HELPER UTILITIES
+    // ==========================================
+    function setCardImage(imgElement, cardKey) {
+        imgElement.src = `card_images/${cardKey}.png`;
+        imgElement.onerror = function() {
+            this.onerror = null;
+            this.src = `card_images/${cardKey}.webp`;
+        };
     }
-}
 
-function startTrivia() {
-    triviaIsGameOver = false;
-    triviaIsAnimating = false;
-    triviaScore = 0;
-    
-    triviaScoreEl.textContent = triviaScore;
-    triviaGameOverEl.style.display = 'none';
-    triviaGameArea.classList.remove('trivia-fade-out');
-    
-    loadTriviaQuestion();
-}
+    function getRandomCard(excludeCard) {
+        let selection;
+        do {
+            selection = validHlCards[Math.floor(Math.random() * validHlCards.length)];
+        } while (selection === excludeCard);
+        return selection;
+    }
 
-// Event Listeners
-document.getElementById('triviaRestartBtn').addEventListener('click', startTrivia);
+    function animateValue(element, start, end, duration, postfix = " Decks") {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const easeProgress = 1 - Math.pow(1 - progress, 3); 
+            const currentVal = Math.floor(easeProgress * (end - start) + start);
+            
+            element.textContent = `${currentVal}${postfix}`;
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                element.textContent = `${end}${postfix}`;
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
 
-// Initialize
-startTrivia();
+    // Spawns Combat Text (+150, -10s, etc.) over the target card
+    function spawnFloatingText(wrapperElement, text, color) {
+        const popup = document.createElement('div');
+        popup.textContent = text;
+        popup.className = 'hl-floating-text';
+        popup.style.color = color;
+        wrapperElement.appendChild(popup);
+        setTimeout(() => popup.remove(), 1000);
+    }
 
-// ==========================================
-// DAILY REDACTED LOGIC
-// ==========================================
+    // ==========================================
+    // ENGINE RUNTIME CONTROLLERS
+    // ==========================================
+    function initMatchup() {
+        document.getElementById('hlNameLeft').textContent = currentCardLeft.replace(/_/g, ' ');
+        document.getElementById('hlCountLeft').textContent = `${deckCounts[currentCardLeft]} Decks`;
+        setCardImage(document.getElementById('hlImgLeft'), currentCardLeft);
 
-// 1. Setup the Daily Seed
-const rToday = new Date();
-const rDateString = `${rToday.getFullYear()}-${rToday.getMonth()}-${rToday.getDate()}`;
-const rDateSum = rToday.getFullYear() + rToday.getMonth() + rToday.getDate();
+        document.getElementById('hlNameRight').textContent = currentCardRight.replace(/_/g, ' ');
+        document.getElementById('hlCountRight').textContent = `??? Decks`;
+        setCardImage(document.getElementById('hlImgRight'), currentCardRight);
+        
+        hlIsAnimating = false;
+    }
 
-// Filter to only include cards that actually have a description
-const validRedactedKeys = Object.keys(cardDatabase).filter(key => 
-    cardDatabase[key].Description && cardDatabase[key].Description.trim().length > 0
-).sort();
+    function cycleCards(targetEl) {
+        setTimeout(() => {
+            if(targetEl) {
+                targetEl.classList.remove('hl-correct-flash');
+                targetEl.classList.remove('hl-wrong-flash');
+            }
+            hlCardLeftEl.classList.add('hl-slide-out');
+            hlCardRightEl.classList.add('hl-slide-out');
 
-// Offset by 42 so it's not the same card as Daily Silhouette
-const redactedDailyKey = validRedactedKeys[(rDateSum + 42) % validRedactedKeys.length]; 
-const redactedDailyCard = cardDatabase[redactedDailyKey];
+            setTimeout(() => {
+                currentCardLeft = targetEl ? currentCardRight : getRandomCard(null); // Full reset if skipped or wrong
+                currentCardRight = getRandomCard(currentCardLeft);
+                
+                hlCardLeftEl.classList.remove('hl-slide-out');
+                hlCardRightEl.classList.remove('hl-slide-out');
+                initMatchup();
+            }, 250);
+        }, 900);
+    }
 
-// 2. Grab DOM Elements
-const redactedDescEl = document.getElementById('redactedDescriptionText');
-const redactedInputArea = document.getElementById('redactedInputArea');
-const redactedGuessInput = document.getElementById('redactedGuess');
-const redactedSubmitBtn = document.getElementById('redactedSubmitBtn');
-const redactedFeedbackEl = document.getElementById('redactedFeedback');
-const redactedAttemptsEl = document.getElementById('redactedAttempts');
-const redactedSuggestionsBox = document.getElementById('redactedSuggestions');
+    function handleGuess(selectedSide) {
+        if (hlIsAnimating || hlTimeLeft <= 0) return;
+        hlIsAnimating = true;
 
-// 3. State Management variables
-const rSavedDate = localStorage.getItem('redactedDate');
-const rIsSolved = localStorage.getItem('redactedSolved') === 'true';
-let rWrongGuesses = parseInt(localStorage.getItem('redactedGuesses') || '0');
-const MAX_ATTEMPTS = 5;
+        const countLeft = deckCounts[currentCardLeft];
+        const countRight = deckCounts[currentCardRight];
+        animateValue(document.getElementById('hlCountRight'), 0, countRight, 500);
 
-if (rSavedDate !== rDateString) {
-    localStorage.setItem('redactedDate', rDateString);
-    localStorage.setItem('redactedSolved', 'false');
-    localStorage.setItem('redactedGuesses', '0');
-    rWrongGuesses = 0;
-    setupRedactedUnsolvedState();
-} else if (rIsSolved) {
-    setupRedactedSolvedState();
-} else if (rWrongGuesses >= MAX_ATTEMPTS) {
-    setupRedactedGameOverState();
-} else {
-    setupRedactedUnsolvedState();
-}
+        let isCorrect = false;
+        if (selectedSide === 'left' && countLeft >= countRight) isCorrect = true;
+        if (selectedSide === 'right' && countRight >= countLeft) isCorrect = true;
 
-// --- State Helper Functions ---
-function setupRedactedUnsolvedState() {
-    redactedInputArea.style.display = 'block';
-    redactedFeedbackEl.textContent = '';
-    updateRedactedDisplay();
-}
+        const targetEl = selectedSide === 'left' ? hlCardLeftEl : hlCardRightEl;
 
-function setupRedactedSolvedState() {
-    redactedInputArea.style.display = 'none';
-    redactedFeedbackEl.textContent = `You got it! It was ${redactedDailyCard.Name.replace(/_/g, ' ')}!`;
-    redactedFeedbackEl.style.color = '#4CAF50';
-    rWrongGuesses = parseInt(localStorage.getItem('redactedGuesses') || '0');
-    updateRedactedDisplay(true); 
-}
+        if (isCorrect) {
+            hlStreak++;
+            peakSessionStreak = Math.max(peakSessionStreak, hlStreak);
+            
+            const pointsEarned = Math.round(100 * hlCombo);
+            hlScore += pointsEarned;
+            
+            hlCombo = parseFloat((hlCombo + 0.2).toFixed(1));
+            hlTimeLeft = Math.min(60, hlTimeLeft + 3);
 
-function setupRedactedGameOverState() {
-    redactedInputArea.style.display = 'none';
-    redactedFeedbackEl.textContent = `Game Over! The card was ${redactedDailyCard.Name.replace(/_/g, ' ')}.`;
-    redactedFeedbackEl.style.color = '#f44336';
-    updateRedactedDisplay(true); 
-}
+            // Visual Updates
+            hlScoreVal.textContent = hlScore;
+            hlStreakVal.textContent = hlStreak;
+            
+            hlComboVal.textContent = `${hlCombo}x`;
+            hlComboVal.classList.add('hl-combo-pop');
+            setTimeout(() => hlComboVal.classList.remove('hl-combo-pop'), 400);
 
-// --- Progressive Redaction Logic ---
-function generateRedactedText(text, attempts, forceReveal = false) {
-    if (forceReveal) return text;
+            targetEl.classList.add('hl-correct-flash');
+            
+            // Combat Text
+            spawnFloatingText(targetEl, `+${pointsEarned}`, '#00f5d4');
+            spawnFloatingText(hlCardLeftEl === targetEl ? hlCardRightEl : hlCardLeftEl, `+3s`, '#00b4d8');
 
-    const parts = text.split(/(\s+)/);
-    let targetWords = [];
+            // Fever Mode Check
+            if (hlCombo >= 2.0 && !hlIsFever) {
+                hlIsFever = true;
+                hlArcadeContainer.classList.add('fever-active');
+                hlComboVal.style.color = '#ffea00';
+                hlVsBadge.textContent = "FEVER!";
+                hlVsBadge.style.color = "#ffea00";
+            }
 
-    // Stop words that are never redacted
-    const stopWords = ['a', 'an', 'the', 'and', 'or', 'to', 'in', 'on', 'of', 'for', 'with', 'is', 'it', 'all', 'this'];
+            if (hlScore > hlBestScore) {
+                hlBestScore = hlScore;
+                hlBestVal.textContent = hlBestScore;
+                localStorage.setItem('hlBestScoreArcade', hlBestScore.toString());
+            }
 
-    parts.forEach((part, index) => {
-        if (part.trim().length > 0) {
-            const cleanWord = part.replace(/[^a-zA-Z]/g, '').toLowerCase();
-            if (cleanWord.length > 0 && !stopWords.includes(cleanWord)) {
-                targetWords.push(index);
+            cycleCards(targetEl);
+
+        } else {
+            hlPerfectRun = false; // Lost the perfect run
+            const penalty = hlIsFever ? 15 : 10;
+            hlTimeLeft = Math.max(0, hlTimeLeft - penalty); 
+
+            // Reset Combo & Fever
+            hlStreak = 0;
+            hlCombo = 1.0;
+            hlIsFever = false;
+            hlArcadeContainer.classList.remove('fever-active');
+            hlComboVal.style.color = '#00b4d8';
+            hlVsBadge.textContent = "VS";
+            hlVsBadge.style.color = "#ff007f";
+
+            hlStreakVal.textContent = hlStreak;
+            hlComboVal.textContent = "1.0x";
+
+            targetEl.classList.add('hl-wrong-flash');
+            spawnFloatingText(targetEl, `-${penalty}s`, '#ff007f');
+
+            cycleCards(targetEl);
+        }
+    }
+
+    function handleSkip() {
+        if (hlIsAnimating || hlTimeLeft <= 0 || hlSkipsLeft <= 0) return;
+        hlIsAnimating = true;
+        
+        hlSkipsLeft--;
+        hlSkipCount.textContent = hlSkipsLeft;
+        if (hlSkipsLeft === 0) hlSkipBtn.disabled = true;
+
+        hlTimeLeft = Math.max(0, hlTimeLeft - 2);
+        spawnFloatingText(hlCardRightEl, `SKIPPED (-2s)`, '#ffea00');
+        
+        cycleCards(null); // Cycle without evaluating a win/loss
+    }
+
+    // ==========================================
+    // CHRONO TIMER CLOCK LOOP MANAGEMENT
+    // ==========================================
+    function startClock() {
+        if (hlTimerInterval) clearInterval(hlTimerInterval);
+        
+        hlTimerInterval = setInterval(() => {
+            hlTimeLeft--;
+            
+            const percent = (hlTimeLeft / 60) * 100;
+            hlTimerBar.style.width = `${percent}%`;
+
+            if (hlTimeLeft <= 15) {
+                hlTimerBar.classList.add('timer-warning');
+            } else {
+                hlTimerBar.classList.remove('timer-warning');
+            }
+
+            if (hlTimeLeft <= 0) {
+                terminateGameLoop();
+            }
+        }, 1000);
+    }
+
+    function terminateGameLoop() {
+        clearInterval(hlTimerInterval);
+        
+        // Perfect Run Calculation
+        let perfectRunHTML = "";
+        if (hlPerfectRun && hlScore > 0) {
+            hlScore += 5000;
+            perfectRunHTML = `<br><span style="color:#ffea00; font-weight:900;">🔥 PERFECT RUN! +5000 🔥</span>`;
+            if (hlScore > hlBestScore) {
+                hlBestScore = hlScore;
+                hlBestVal.textContent = hlBestScore;
+                localStorage.setItem('hlBestScoreArcade', hlBestScore.toString());
             }
         }
-    });
 
-    // Reveal scaling: 0 = 0%, 1 = 25%, 2 = 50%, 3 = 75%, 4 = 90%
-    let percentToReveal = 0;
-    if (attempts === 1) percentToReveal = 0.25;
-    else if (attempts === 2) percentToReveal = 0.50;
-    else if (attempts === 3) percentToReveal = 0.75;
-    else if (attempts >= 4) percentToReveal = 0.90;
+        hlGameOverScreen.style.display = 'flex';
+        hlFinalSummary.innerHTML = `
+            Final Score: <strong style="color:#00f5d4;">${hlScore}</strong>${perfectRunHTML}<br><br>
+            Peak Streak: <strong style="color:#ffea00;">${peakSessionStreak}</strong><br>
+            All-Time High: <strong style="color:#00b4d8;">${hlBestScore}</strong>
+        `;
+    }
 
-    let revealCount = Math.floor(targetWords.length * percentToReveal);
+    function beginGameSession() {
+        // Reset Base Stats
+        hlScore = 0;
+        hlStreak = 0;
+        peakSessionStreak = 0; 
+        hlCombo = 1.0;
+        hlTimeLeft = 60;
+        hlIsAnimating = false;
+        
+        // Reset Mechanics
+        hlPerfectRun = true;
+        hlIsFever = false;
+        hlSkipsLeft = 3;
+        
+        hlArcadeContainer.classList.remove('fever-active');
+        hlComboVal.style.color = '#00b4d8';
+        hlVsBadge.textContent = "VS";
+        hlVsBadge.style.color = "#ff007f";
+        
+        hlSkipCount.textContent = hlSkipsLeft;
+        hlSkipBtn.disabled = false;
+
+        hlScoreVal.textContent = "0";
+        hlStreakVal.textContent = "0";
+        hlComboVal.textContent = "1.0x";
+        hlTimerBar.style.width = "100%";
+        hlTimerBar.classList.remove('timer-warning');
+
+        hlStartScreen.style.display = 'none';
+        hlGameOverScreen.style.display = 'none';
+
+        currentCardLeft = getRandomCard(null);
+        currentCardRight = getRandomCard(currentCardLeft);
+
+        initMatchup();
+        startClock();
+    }
+
+    // ==========================================
+    // ACTION LISTENERS ASSIGNMENTS
+    // ==========================================
+    hlCardLeftEl.onclick = () => handleGuess('left');
+    hlCardRightEl.onclick = () => handleGuess('right');
+    hlSkipBtn.onclick = handleSkip;
     
-    let revealIndices = new Set();
-    if (revealCount > 0) {
-        let step = targetWords.length / revealCount;
-        for (let i = 0; i < revealCount; i++) {
-            revealIndices.add(targetWords[Math.floor(i * step)]);
-        }
-    }
-
-    return parts.map((part, index) => {
-        if (targetWords.includes(index) && !revealIndices.has(index)) {
-            return part.replace(/[a-zA-Z0-9]/g, '█');
-        }
-        return part;
-    }).join('');
-}
-
-function updateRedactedDisplay(forceReveal = false) {
-    redactedAttemptsEl.textContent = rWrongGuesses;
-    redactedDescEl.textContent = generateRedactedText(redactedDailyCard.Description, rWrongGuesses, forceReveal);
-}
-
-// --- Autocomplete Logic ---
-let rSelectedRawName = null;
-
-redactedGuessInput.addEventListener('input', function() {
-    const query = this.value.toLowerCase().trim();
-    redactedSuggestionsBox.innerHTML = ''; 
-    rSelectedRawName = null; 
-
-    if (query.length < 2) {
-        redactedSuggestionsBox.style.display = 'none';
-        return;
-    }
-
-    let matches = 0;
-    Object.keys(cardDatabase).forEach(rawName => {
-        if (matches >= 2) return; // Kept strictly to 2 max
-        
-        const cleanName = rawName.replace(/_/g, ' ');
-        if (cleanName.toLowerCase().includes(query)) {
-            const cardInfo = cardDatabase[rawName];
-            
-            const li = document.createElement('li');
-            // Exact same innerHTML and classes as Silhouette
-            li.innerHTML = `<span>${cleanName}</span> <span class="suggestion-class">${cardInfo.Class}</span>`;
-            
-            li.onclick = () => {
-                redactedGuessInput.value = cleanName;
-                rSelectedRawName = rawName; 
-                redactedSuggestionsBox.style.display = 'none';
-                newRedactedSubmitBtn.click(); 
-            };
-            
-            redactedSuggestionsBox.appendChild(li);
-            matches++;
-        }
-    });
-
-    redactedSuggestionsBox.style.display = matches > 0 ? 'block' : 'none';
-});
-
-// Hide suggestions if clicking outside
-document.addEventListener('click', (e) => {
-    if (e.target !== redactedGuessInput) redactedSuggestionsBox.style.display = 'none';
-});
-
-// --- Handle the Guess ---
-const newRedactedSubmitBtn = redactedSubmitBtn.cloneNode(true);
-redactedSubmitBtn.parentNode.replaceChild(newRedactedSubmitBtn, redactedSubmitBtn);
-
-newRedactedSubmitBtn.addEventListener('click', () => {
-    if (rWrongGuesses >= MAX_ATTEMPTS || rIsSolved) return;
-
-    const actualNameKey = redactedDailyKey.toLowerCase();
-    let guessKeyToTest = rSelectedRawName ? rSelectedRawName.toLowerCase() : redactedGuessInput.value.trim().toLowerCase().replace(/\s+/g, '_');
-
-    if (guessKeyToTest === actualNameKey) {
-        // Correct Guess!
-        localStorage.setItem('redactedSolved', 'true');
-        setupRedactedSolvedState();
-    } else {
-        // Wrong Guess!
-        rWrongGuesses++;
-        localStorage.setItem('redactedGuesses', rWrongGuesses.toString());
-        
-        if (rWrongGuesses >= MAX_ATTEMPTS) {
-            setupRedactedGameOverState();
-        } else {
-            redactedFeedbackEl.textContent = "Incorrect. More of the description has been revealed!";
-            redactedFeedbackEl.style.color = '#f44336';
-            
-            updateRedactedDisplay(); 
-            redactedGuessInput.value = '';
-            redactedGuessInput.focus();
-        }
-    }
-});
+    document.getElementById('hlStartBtn').onclick = beginGameSession;
+    document.getElementById('hlRestartBtn').onclick = beginGameSession;
 }
 
 // Keep a global reference to the graph so we don't recreate it every time they click the tab
