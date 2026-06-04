@@ -697,7 +697,49 @@
             z-index: 10;
             border-radius: 18px;
         }
+        /* Kinetic Flashes for the Timer Bar */
+.timer-gain-flash { animation: timerGain 0.4s ease-out; }
+.timer-loss-flash { animation: timerLoss 0.4s ease-out; }
 
+/* The Panic Heartbeat for low time */
+.timer-panic {
+    animation: timerHeartbeat 0.6s infinite alternate cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+/* Staggered Game Over Animations */
+.hl-gameover-animate {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: hlSlideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes hlSlideUpFade {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Specific item spacing */
+.hl-stat-line {
+    margin: 8px 0;
+    font-size: 1.25rem;
+}
+
+@keyframes timerGain {
+    0% { background: #fff; filter: brightness(2); }
+    100% { background: linear-gradient(90deg, #00f5d4, #00b4d8); }
+}
+
+@keyframes timerLoss {
+    0% { background: #fff; filter: brightness(2); }
+    50% { background: #ff007f; }
+    100% { background: linear-gradient(90deg, #ff007f, #f44336); }
+}
+
+@keyframes timerHeartbeat {
+    0% { transform: scaleY(1); filter: drop-shadow(0 0 2px #ff007f); }
+    100% { transform: scaleY(1.4); filter: drop-shadow(0 0 12px #ff007f); }
+}
         /* =======================================
            MOBILE RESPONSIVENESS (SMARTPHONES)
            ======================================= */
@@ -753,9 +795,13 @@
             </div>
         </div>
 
-        <div class="hl-timer-container">
-            <div id="hlTimerBar"></div>
-        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #8a8f9d; font-weight: bold;">Time Remaining</span>
+    <span id="hlTimerText" style="font-family: monospace; font-size: 1.2rem; font-weight: 900; color: #00f5d4; text-shadow: 0 0 10px rgba(0,245,212,0.4);">60.0s</span>
+</div>
+<div class="hl-timer-container">
+    <div id="hlTimerBar"></div>
+</div>
 
         <div class="hl-arena">
             <div id="hlCardLeft" class="hl-card-wrapper">
@@ -791,10 +837,12 @@
         </div>
 
         <div id="hlGameOverScreen" class="hl-overlay" style="display: none;">
-            <h1 style="font-size: 2.5rem; color: #ff007f; margin-bottom: 5px;">TIME OUT!</h1>
-            <p id="hlFinalSummary" style="color: #fff; margin-bottom: 25px; font-size: 1.2rem; text-align: center; line-height: 1.6;"></p>
-            <button id="hlRestartBtn" class="hl-btn">Run It Back</button>
-        </div>
+    <h1 class="hl-gameover-animate" style="font-size: 2.5rem; color: #ff007f; margin-bottom: 15px; animation-delay: 0s;">TIME OUT!</h1>
+    
+    <div id="hlFinalSummary" style="color: #fff; margin-bottom: 25px; text-align: center;"></div>
+    
+    <button id="hlRestartBtn" class="hl-btn hl-gameover-animate" style="animation-delay: 1.1s;">Run It Back</button>
+</div>
     </div>
 </section>
 

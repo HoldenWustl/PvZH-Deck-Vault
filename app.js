@@ -4396,7 +4396,7 @@ function renderGames() {
     let hlBestScore = parseInt(localStorage.getItem('hlBestScoreArcade') || '0');
     let hlTimeLeft = 60;
     let hlTimerInterval = null;
-    
+    const hlTimerText = document.getElementById('hlTimerText');
     // Mechanics State
     let hlSkipsLeft = 3;
     let hlPerfectRun = true;
@@ -4510,83 +4510,93 @@ function renderGames() {
     }
 
     function handleGuess(selectedSide) {
-        if (hlIsAnimating || hlTimeLeft <= 0) return;
-        hlIsAnimating = true;
+    if (hlIsAnimating || hlTimeLeft <= 0) return;
+    hlIsAnimating = true;
 
-        const countLeft = deckCounts[currentCardLeft];
-        const countRight = deckCounts[currentCardRight];
-        animateValue(document.getElementById('hlCountRight'), 0, countRight, 500);
+    const countLeft = deckCounts[currentCardLeft];
+    const countRight = deckCounts[currentCardRight];
+    animateValue(document.getElementById('hlCountRight'), 0, countRight, 500);
 
-        let isCorrect = false;
-        if (selectedSide === 'left' && countLeft >= countRight) isCorrect = true;
-        if (selectedSide === 'right' && countRight >= countLeft) isCorrect = true;
+    let isCorrect = false;
+    if (selectedSide === 'left' && countLeft >= countRight) isCorrect = true;
+    if (selectedSide === 'right' && countRight >= countLeft) isCorrect = true;
 
-        const targetEl = selectedSide === 'left' ? hlCardLeftEl : hlCardRightEl;
+    const targetEl = selectedSide === 'left' ? hlCardLeftEl : hlCardRightEl;
 
-        if (isCorrect) {
-            hlStreak++;
-            peakSessionStreak = Math.max(peakSessionStreak, hlStreak);
-            
-            const pointsEarned = Math.round(100 * hlCombo);
-            hlScore += pointsEarned;
-            
-            hlCombo = parseFloat((hlCombo + 0.2).toFixed(1));
-            hlTimeLeft = Math.min(60, hlTimeLeft + 3);
+    if (isCorrect) {
+        hlStreak++;
+        peakSessionStreak = Math.max(peakSessionStreak, hlStreak);
+        
+        const pointsEarned = Math.round(100 * hlCombo);
+        hlScore += pointsEarned;
+        
+        hlCombo = parseFloat((hlCombo + 0.2).toFixed(1));
+        
+        // --- UPDATED: Floating point precision adjustment & gain flash ---
+        hlTimeLeft = Math.min(60, parseFloat((hlTimeLeft + 3).toFixed(1)));
+        hlTimerBar.classList.add('timer-gain-flash');
+        setTimeout(() => hlTimerBar.classList.remove('timer-gain-flash'), 400);
+        // -----------------------------------------------------------------
 
-            // Visual Updates
-            hlScoreVal.textContent = hlScore;
-            hlStreakVal.textContent = hlStreak;
-            
-            hlComboVal.textContent = `${hlCombo}x`;
-            hlComboVal.classList.add('hl-combo-pop');
-            setTimeout(() => hlComboVal.classList.remove('hl-combo-pop'), 400);
+        // Visual Updates
+        hlScoreVal.textContent = hlScore;
+        hlStreakVal.textContent = hlStreak;
+        
+        hlComboVal.textContent = `${hlCombo}x`;
+        hlComboVal.classList.add('hl-combo-pop');
+        setTimeout(() => hlComboVal.classList.remove('hl-combo-pop'), 400);
 
-            targetEl.classList.add('hl-correct-flash');
-            
-            // Combat Text
-            spawnFloatingText(targetEl, `+${pointsEarned}`, '#00f5d4');
-            spawnFloatingText(hlCardLeftEl === targetEl ? hlCardRightEl : hlCardLeftEl, `+3s`, '#00b4d8');
+        targetEl.classList.add('hl-correct-flash');
+        
+        // Combat Text
+        spawnFloatingText(targetEl, `+${pointsEarned}`, '#00f5d4');
+        spawnFloatingText(hlCardLeftEl === targetEl ? hlCardRightEl : hlCardLeftEl, `+3s`, '#00b4d8');
 
-            // Fever Mode Check
-            if (hlCombo >= 2.0 && !hlIsFever) {
-                hlIsFever = true;
-                hlArcadeContainer.classList.add('fever-active');
-                hlComboVal.style.color = '#ffea00';
-                hlVsBadge.textContent = "FEVER!";
-                hlVsBadge.style.color = "#ffea00";
-            }
-
-            if (hlScore > hlBestScore) {
-                hlBestScore = hlScore;
-                hlBestVal.textContent = hlBestScore;
-                localStorage.setItem('hlBestScoreArcade', hlBestScore.toString());
-            }
-
-            cycleCards(targetEl);
-
-        } else {
-            hlPerfectRun = false; // Lost the perfect run
-            const penalty = hlIsFever ? 15 : 10;
-            hlTimeLeft = Math.max(0, hlTimeLeft - penalty); 
-
-            // Reset Combo & Fever
-            hlStreak = 0;
-            hlCombo = 1.0;
-            hlIsFever = false;
-            hlArcadeContainer.classList.remove('fever-active');
-            hlComboVal.style.color = '#00b4d8';
-            hlVsBadge.textContent = "VS";
-            hlVsBadge.style.color = "#ff007f";
-
-            hlStreakVal.textContent = hlStreak;
-            hlComboVal.textContent = "1.0x";
-
-            targetEl.classList.add('hl-wrong-flash');
-            spawnFloatingText(targetEl, `-${penalty}s`, '#ff007f');
-
-            cycleCards(targetEl);
+        // Fever Mode Check
+        if (hlCombo >= 2.0 && !hlIsFever) {
+            hlIsFever = true;
+            hlArcadeContainer.classList.add('fever-active');
+            hlComboVal.style.color = '#ffea00';
+            hlVsBadge.textContent = "FEVER!";
+            hlVsBadge.style.color = "#ffea00";
         }
+
+        if (hlScore > hlBestScore) {
+            hlBestScore = hlScore;
+            hlBestVal.textContent = hlBestScore;
+            localStorage.setItem('hlBestScoreArcade', hlBestScore.toString());
+        }
+
+        cycleCards(targetEl);
+
+    } else {
+        hlPerfectRun = false; // Lost the perfect run
+        const penalty = hlIsFever ? 15 : 10;
+        
+        // --- UPDATED: Floating point precision adjustment & loss flash ---
+        hlTimeLeft = Math.max(0, parseFloat((hlTimeLeft - penalty).toFixed(1))); 
+        hlTimerBar.classList.add('timer-loss-flash');
+        setTimeout(() => hlTimerBar.classList.remove('timer-loss-flash'), 400);
+        // -----------------------------------------------------------------
+
+        // Reset Combo & Fever
+        hlStreak = 0;
+        hlCombo = 1.0;
+        hlIsFever = false;
+        hlArcadeContainer.classList.remove('fever-active');
+        hlComboVal.style.color = '#00b4d8';
+        hlVsBadge.textContent = "VS";
+        hlVsBadge.style.color = "#ff007f";
+
+        hlStreakVal.textContent = hlStreak;
+        hlComboVal.textContent = "1.0x";
+
+        targetEl.classList.add('hl-wrong-flash');
+        spawnFloatingText(targetEl, `-${penalty}s`, '#ff007f');
+
+        cycleCards(targetEl);
     }
+}
 
     function handleSkip() {
         if (hlIsAnimating || hlTimeLeft <= 0 || hlSkipsLeft <= 0) return;
@@ -4606,25 +4616,39 @@ function renderGames() {
     // CHRONO TIMER CLOCK LOOP MANAGEMENT
     // ==========================================
     function startClock() {
-        if (hlTimerInterval) clearInterval(hlTimerInterval);
+    if (hlTimerInterval) clearInterval(hlTimerInterval);
+    
+    hlTimerInterval = setInterval(() => {
+        // Drop by 0.1 seconds every 100ms loop execution
+        hlTimeLeft = parseFloat((hlTimeLeft - 0.1).toFixed(1));
+        if (hlTimeLeft < 0) hlTimeLeft = 0;
         
-        hlTimerInterval = setInterval(() => {
-            hlTimeLeft--;
-            
-            const percent = (hlTimeLeft / 60) * 100;
-            hlTimerBar.style.width = `${percent}%`;
+        // Update precise digital readout text
+        hlTimerText.textContent = `${hlTimeLeft.toFixed(1)}s`;
+        
+        // Update bar width percentile
+        const percent = (hlTimeLeft / 60) * 100;
+        hlTimerBar.style.width = `${percent}%`;
 
-            if (hlTimeLeft <= 15) {
-                hlTimerBar.classList.add('timer-warning');
-            } else {
-                hlTimerBar.classList.remove('timer-warning');
-            }
+        // Handle Alert Stages
+        if (hlTimeLeft <= 15) {
+            hlTimerBar.classList.add('timer-warning', 'timer-panic');
+            hlTimerText.style.color = '#ff007f';
+            hlTimerText.style.textShadow = '0 0 10px rgba(255,0,127,0.5)';
+            // Make the text slightly pulse size-wise on mobile/desktop
+            hlTimerText.style.transform = 'scale(1.1)';
+        } else {
+            hlTimerBar.classList.remove('timer-warning', 'timer-panic');
+            hlTimerText.style.color = '#00f5d4';
+            hlTimerText.style.textShadow = '0 0 10px rgba(0,245,212,0.4)';
+            hlTimerText.style.transform = 'scale(1)';
+        }
 
-            if (hlTimeLeft <= 0) {
-                terminateGameLoop();
-            }
-        }, 1000);
-    }
+        if (hlTimeLeft <= 0) {
+            terminateGameLoop();
+        }
+    }, 100); // 100ms frequency for arcade-grade smoothness
+}
 
     function terminateGameLoop() {
         clearInterval(hlTimerInterval);
@@ -4641,12 +4665,21 @@ function renderGames() {
             }
         }
 
-        hlGameOverScreen.style.display = 'flex';
-        hlFinalSummary.innerHTML = `
-            Final Score: <strong style="color:#00f5d4;">${hlScore}</strong>${perfectRunHTML}<br><br>
-            Peak Streak: <strong style="color:#ffea00;">${peakSessionStreak}</strong><br>
-            All-Time High: <strong style="color:#00b4d8;">${hlBestScore}</strong>
-        `;
+        // Inside your game over function:
+hlFinalSummary.innerHTML = `
+    <div class="hl-stat-line hl-gameover-animate" style="animation-delay: 0.3s;">
+        Final Score: <span style="color: #00f5d4; font-weight: 900;">${hlScore}</span>
+    </div>
+    <div class="hl-stat-line hl-gameover-animate" style="animation-delay: 0.6s;">
+        Peak Streak: <span style="color: #ffea00; font-weight: 900;">${peakSessionStreak}</span>
+    </div>
+    <div class="hl-stat-line hl-gameover-animate" style="animation-delay: 0.9s;">
+        All-Time High: <span style="color: #00b4d8; font-weight: 900;">${hlBestScore}</span>
+    </div>
+`;
+
+// Show the screen (make sure this happens at the same time so animations sync)
+document.getElementById('hlGameOverScreen').style.display = 'flex';
     }
 
     function beginGameSession() {
