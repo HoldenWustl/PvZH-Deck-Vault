@@ -2056,3 +2056,75 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     transform: translateY(1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
+/* Container wrapper for the hero stamps */
+.deck-hero-stamps-wrapper {
+    position: absolute;
+    right: 52px; /* 10px right margin + 34px credit icon + 8px gap */
+    bottom: 10px;
+    display: flex;
+    gap: 6px; /* Spacing between stamps if there are multiple heroes */
+    z-index: 10;
+    pointer-events: none; /* Allows clicks to pass through if necessary */
+}
+
+/* Individual hero badge styling matching your credit icon dimensions */
+.hero-badge-img {
+    width: 34px;
+    height: 34px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg);
+    box-shadow: 0 0 0 1px var(--text-secondary), 0 4px 6px rgba(0, 0, 0, 0.4);
+    display: block;
+    pointer-events: auto; /* Re-enable pointer events for the hover 'title' tooltip */
+    /* Optional: Uncomment these if you want it to blend in smoothly like the credit icon */
+    opacity: 0.55;
+    filter: saturate(0.8);
+}
+/* Center alignment wrapper for the hero badges */
+.title-hero-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+/* Elegant capsule pill layout for each hero */
+.title-hero-pill {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 12px 4px 4px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(4px);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+/* Subtle interactive lifting effect */
+.title-hero-pill:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Circular avatar with a subtle dynamic border */
+.title-hero-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--accent);
+    margin-right: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Clean, clear typography for the hero's name */
+.title-hero-label {
+    font-size: 0.78em;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}

@@ -10,6 +10,32 @@ let charts = {
     buzzwords: null     // NEW
 };
 
+const heroMap = {
+    // Plants
+    "Mega-Grow,Smarty": "Green Shadow",
+    "Kabloom,Solar": "Solar Flare",
+    "Guardian,Solar": "Wall-Knight",
+    "Mega-Grow,Solar": "Chompzilla",
+    "Guardian,Kabloom": "Spudow",
+    "Guardian,Smarty": "Citron / Beta-Carrotina", 
+    "Guardian,Mega-Grow": "Grass Knuckles",
+    "Kabloom,Smarty": "Nightcap",
+    "Kabloom,Mega-Grow": "Captain Combustible",
+    "Smarty,Solar": "Rose",
+    
+    // Zombies
+    "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
+    "Beastly,Hearty": "The Smash",
+    "Crazy,Sneaky": "Impfinity",
+    "Brainy,Hearty": "Rustbolt",
+    "Beastly,Crazy": "Electric Boogaloo",
+    "Beastly,Sneaky": "Brain Freeze",
+    "Brainy,Crazy": "Professor Brainstorm",
+    "Beastly,Brainy": "Immorticia",
+    "Crazy,Hearty": "Z-Mech",
+    "Hearty,Sneaky": "Neptuna"
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Random Funny Adjectives ---
     const adjectives = [
@@ -472,20 +498,18 @@ totalConnection += cardBestConnection * seedA.count;
         const fragment = document.createDocumentFragment();
         const ctx = getVerdictContext(); // built once, reused for the whole loop
 
-        // --- NEW: PRE-PROCESS DUPLICATES ---
+        // --- PRE-PROCESS DUPLICATES ---
         const signatureMap = new Map();
         for (const [deckKey, deckInfo] of Object.entries(data)) {
             if (!deckInfo.cards) continue;
             
-            // Create a unique signature for the exact card list (ignoring order)
             const signature = deckInfo.cards.map(c => {
-    return c.replace(/_/g, ' ')  // Convert all underscores to spaces
-            .replace(/\s+/g, ' ') // Collapse multiple spaces into a single space
-            .trim()
-            .toLowerCase();
-}).sort().join('|');
+                return c.replace(/_/g, ' ')  
+                        .replace(/\s+/g, ' ') 
+                        .trim()
+                        .toLowerCase();
+            }).sort().join('|');
             
-            // Parse date for sorting (fallback to 0 if unknown/invalid)
             let dateVal = 0;
             if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
                 const parsed = Date.parse(deckInfo.upload_date);
@@ -501,10 +525,7 @@ totalConnection += cardBestConnection * seedA.count;
         const duplicateKeys = new Set();
         for (const decks of signatureMap.values()) {
             if (decks.length > 1) {
-                // Sort descending by date (newest first)
                 decks.sort((a, b) => b.dateVal - a.dateVal);
-                
-                // Every deck after the first (index 0) is considered an older duplicate
                 for (let i = 1; i < decks.length; i++) {
                     duplicateKeys.add(decks[i].key);
                 }
@@ -515,40 +536,76 @@ totalConnection += cardBestConnection * seedA.count;
         for (const [deckKey, deckInfo] of Object.entries(data)) {
             const cardEl = document.createElement('div');
             
-            // --- FACTION CHECK LOOP ---
+            // --- FACTION & CLASS EVALUATION LOOP ---
             let factionClass = 'plant-deck'; // Fallback default
+            const uniqueClasses = new Set();
+            let factionFound = false;
             
             if (deckInfo.cards && deckInfo.cards.length > 0) {
-                // Loop through cards until we find one that is definitively Plant or Zombie
                 for (const cardRaw of deckInfo.cards) {
-                    // Strip the "x4", "4x", "1x", etc., and any bullet points
                     let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
                     
-                    // Format for lookup 
                     const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
                     const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
                     
-                    // Try to find the card in the DB
                     const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
                     
-                    if (cardData && (cardData.Type || cardData.type)) {
-                        const typeString = (cardData.Type || cardData.type).toLowerCase();
-                        
-                        // Check for definitive faction keyword
-                        if (typeString.includes('zombie')) {
-                            factionClass = 'zombie-deck';
-                            break; // We found the faction, stop checking this deck's cards
-                        } else if (typeString.includes('plant')) {
-                            factionClass = 'plant-deck';
-                            break; // We found the faction, stop checking this deck's cards
+                    if (cardData) {
+                        // 1. Collect card class if it exists
+                        const cls = cardData.Class || cardData.class;
+                        if (cls) uniqueClasses.add(cls);
+
+                        // 2. Resolve deck faction (only if not found yet)
+                        if (!factionFound && (cardData.Type || cardData.type)) {
+                            const typeString = (cardData.Type || cardData.type).toLowerCase();
+                            
+                            if (typeString.includes('zombie')) {
+                                factionClass = 'zombie-deck';
+                                factionFound = true;
+                            } else if (typeString.includes('plant')) {
+                                factionClass = 'plant-deck';
+                                factionFound = true;
+                            }
                         }
                     }
                 }
             }
             
-            // Apply the base class AND the newly calculated faction class
             cardEl.className = `deck-card ${factionClass}`;
-            // -----------------------------------
+            
+           // --- MATCH HERO STAMP ---
+let heroStampHtml = '';
+if (uniqueClasses.size === 2) {
+    const classesArray = Array.from(uniqueClasses);
+    const comboA = `${classesArray[0]},${classesArray[1]}`;
+    const comboB = `${classesArray[1]},${classesArray[0]}`;
+    const heroName = heroMap[comboA] || heroMap[comboB];
+
+    if (heroName) {
+        // Split shared heroes (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
+        const individualHeroes = heroName.split(/\s*\/\s*/);
+        
+        const badgesHtml = individualHeroes.map(name => {
+            // Converts spaces and hyphens to underscores to match file names
+            // e.g., "Super Brainz" -> "Super_Brainz.webp", "Huge-Gigantacus" -> "Huge_Gigantacus.webp"
+            const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
+            
+            return `
+                <img src="hero_images/${imgFilename}" 
+                     alt="${name}" 
+                     class="hero-badge-img" 
+                     title="${name}">
+            `;
+        }).join('');
+
+        heroStampHtml = `
+            <div class="deck-hero-stamps-wrapper">
+                ${badgesHtml}
+            </div>
+        `;
+    }
+}
+// -----------------------------------
 
             let cardsHtml = '<ul class="card-list">';
             deckInfo.cards.forEach(card => {
@@ -562,25 +619,17 @@ totalConnection += cardBestConnection * seedA.count;
                 : "Unknown Date";
 
             const creditStr = deckInfo.credit || "Unknown";
-
             const videoId = getYouTubeId(deckInfo.youtube_url);
-            const thumbnailUrl = videoId
-                ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-                : '';
-
+            const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
             const creditIconSrc = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
-
-            // 1. Determine if we should show the video section
             const isFryVideo = creditStr === "FryEmUp" && deckInfo.youtube_url;
 
-            // 2. Build the Video Dropdown HTML (only if it's Fry)
             const videoControlsHtml = isFryVideo ? `
                 <details class="video-dropdown" 
                          ontoggle="this.closest('.deck-card').querySelector('.video-preview').classList.toggle('hidden', !this.open)">
                     <summary>View Video</summary>
                 </details>` : '';
 
-            // 3. Build the Video Preview HTML (only if it's Fry)
             const videoPreviewHtml = isFryVideo ? `
                 <div class="video-preview hidden">
                     <a href="${deckInfo.youtube_url}" target="_blank" title="${deckInfo.youtube_title}">
@@ -589,52 +638,50 @@ totalConnection += cardBestConnection * seedA.count;
                     </a>
                 </div>` : '';
                 
-            const verdict = deckInfo.verdict
-                    || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
+            const verdict = deckInfo.verdict || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
             deckInfo.verdict = verdict;
             
-            // --- NEW: DUPLICATE BADGE HTML ---
             const duplicateBadgeHtml = duplicateKeys.has(deckKey) 
                 ? `<span class="deck-duplicate-badge" title="Older Duplicate Deck" style="background:#ffaa00; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.8em; cursor:help;">Dup</span>`
                 : '';
-            // ---------------------------------
 
-            cardEl.innerHTML = `
-                <div class="deck-card-inner">
-                    <div class="deck-header">
-                        <div class="deck-title-group">
-                            <h3 class="deck-title">${deckInfo.name}</h3>
-                            <div class="deck-badges">
-                                <span class="deck-credit" title="${creditStr}">${creditStr}</span>
-                                <span class="deck-rating deck-rating-${deckInfo.verdict.grade}"
-                                      style="color:${deckInfo.verdict.gradeColor}"
-                                      title="Deck rating">
-                                    ${deckInfo.verdict.grade}
-                                </span>
-                                ${duplicateBadgeHtml}
-                            </div>
-                        </div>
-                        <span class="deck-date">${dateStr}</span>
-                    </div>
-                   
-                    <div class="deck-controls-wrapper">
-                        ${videoControlsHtml}
-                        
-                        <details class="visual-deck-details">
-                            <summary class="view-visual-btn" 
-                                     data-title="${deckInfo.name}" 
-                                     data-cards="${encodeURIComponent(JSON.stringify(deckInfo.cards))}">
-                                View Visual Deck
-                            </summary>
-                        </details>
-                    </div>
-
-                    ${videoPreviewHtml}
-                    ${cardsHtml}
-
-                    <img class="credit-icon" src="${creditIconSrc}" alt="${creditStr} icon">
+cardEl.innerHTML = `
+    <div class="deck-card-inner">
+        <div class="deck-header">
+            <div class="deck-title-group">
+                <h3 class="deck-title">${deckInfo.name}</h3>
+                <div class="deck-badges">
+                    <span class="deck-credit" title="${creditStr}">${creditStr}</span>
+                    <span class="deck-rating deck-rating-${deckInfo.verdict.grade}"
+                          style="color:${deckInfo.verdict.gradeColor}"
+                          title="Deck rating">
+                        ${deckInfo.verdict.grade}
+                    </span>
+                    ${duplicateBadgeHtml}
                 </div>
-            `;
+            </div>
+            <span class="deck-date">${dateStr}</span>
+        </div>
+       
+        <div class="deck-controls-wrapper">
+            ${videoControlsHtml}
+            
+            <details class="visual-deck-details">
+                <summary class="view-visual-btn" 
+                         data-title="${deckInfo.name}" 
+                         data-cards="${encodeURIComponent(JSON.stringify(deckInfo.cards))}">
+                    View Visual Deck
+                </summary>
+            </details>
+        </div>
+
+        ${videoPreviewHtml}
+        ${cardsHtml}
+
+        ${heroStampHtml}
+        <img class="credit-icon" src="${creditIconSrc}" alt="${creditStr} icon">
+    </div>
+`;
             
             fragment.appendChild(cardEl);
         }
@@ -1921,31 +1968,6 @@ charts.classDominance = new Chart(ctx7, {
 
 
  // --- AI DECK BUILDER: SMART SEED MANAGEMENT ---
-const heroMap = {
-    // Plants
-    "Mega-Grow,Smarty": "Green Shadow",
-    "Kabloom,Solar": "Solar Flare",
-    "Guardian,Solar": "Wall-Knight",
-    "Mega-Grow,Solar": "Chompzilla",
-    "Guardian,Kabloom": "Spudow",
-    "Guardian,Smarty": "Citron / Beta-Carrotina", 
-    "Guardian,Mega-Grow": "Grass Knuckles",
-    "Kabloom,Smarty": "Nightcap",
-    "Kabloom,Mega-Grow": "Captain Combustible",
-    "Smarty,Solar": "Rose",
-    
-    // Zombies
-    "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
-    "Beastly,Hearty": "The Smash",
-    "Crazy,Sneaky": "Impfinity",
-    "Brainy,Hearty": "Rustbolt",
-    "Beastly,Crazy": "Electric Boogaloo",
-    "Beastly,Sneaky": "Brain Freeze",
-    "Brainy,Crazy": "Professor Brainstorm",
-    "Beastly,Brainy": "Immorticia",
-    "Crazy,Hearty": "Z-Mech",
-    "Hearty,Sneaky": "Neptuna"
-};
 
 const plantClasses = new Set(["Mega-Grow", "Kabloom", "Smarty", "Guardian", "Solar"]);
 let currentSeeds = []; 
@@ -2100,12 +2122,29 @@ function renderSeeds() {
         const aiDeckName = generateDeckName(currentSeeds, isPlant);
         
         if (title) {
-            title.classList.remove('hidden');
-            title.innerHTML = `
-                <div style="font-size: 1.2em; color: var(--accent); font-style: italic;">"${aiDeckName}"</div>
-                <div style="font-size: 0.75em; color: var(--text-secondary); margin-top: 5px;">A Deck for ${heroName}</div>
-            `;
-        }
+    title.classList.remove('hidden');
+    
+    // Split shared heroes safely (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
+    const heroes = heroName ? heroName.split(/\s*\/\s*/) : [];
+    
+    const heroBadgesHtml = heroes.map(name => {
+        // Formats filename to match your image folder structure
+        const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
+        return `
+            <div class="title-hero-pill">
+                <img src="hero_images/${imgFilename}" alt="${name}" class="title-hero-avatar">
+                <span class="title-hero-label">${name}</span>
+            </div>
+        `;
+    }).join('');
+
+    title.innerHTML = `
+        <div style="font-size: 1.2em; color: var(--accent); font-style: italic; margin-bottom: 8px; text-align: center;">"${aiDeckName}"</div>
+        <div class="title-hero-container">
+            ${heroBadgesHtml}
+        </div>
+    `;
+}
         
         currentClipboardText = `Deck: ${aiDeckName}\nHero: ${heroName}\n\n`;
         if (actionContainer) {
