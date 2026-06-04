@@ -3574,13 +3574,11 @@ function showSwapSuggestions(baseCardName) {
     if (!chatFeed) return;
 
     // --- NEW: QoL Toggle Logic ---
-    // If clicking swap on the same card that is already open, close it and return to the normal Co-Pilot
     if (window.activeSwapTarget === baseCardName) {
         window.activeSwapTarget = null;
         triggerAICoPilot(); 
         return;
     }
-    // Otherwise, set it as the new active target
     window.activeSwapTarget = baseCardName;
     // -----------------------------
 
@@ -3590,7 +3588,17 @@ function showSwapSuggestions(baseCardName) {
     const displayName = baseCardName.replace(/_/g, ' ');
     initSynergyMatrix();
 
-    chatFeed.innerHTML = `<div class="ai-message system"><em>Finding the best replacements for ${displayName}...</em></div>`;
+    // Added the same smooth loading spinner here!
+    chatFeed.innerHTML = `
+        <div class="ai-message system" style="display: flex; align-items: center; gap: 8px;">
+            <style>
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                .ai-spinner-small { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+            </style>
+            <div class="ai-spinner-small"></div>
+            <em>Finding the best replacements for ${displayName}...</em>
+        </div>
+    `;
 
     setTimeout(() => {
         const replacements = getTopThreeRecommendations(baseCardName);
@@ -3600,34 +3608,13 @@ function showSwapSuggestions(baseCardName) {
             return;
         }
 
-        let baseScore = 0;
-        const rawWeight = 0.5;
-        const affinityWeight = 0.5;
-        
-        currentSeeds.forEach(deckCard => {
-            if (deckCard.name === baseCardName) return; 
-            
-            if (synergyMatrix && synergyMatrix[baseCardName] && synergyMatrix[baseCardName][deckCard.name]) {
-                const coOccurrences = synergyMatrix[baseCardName][deckCard.name];
-                const baseTotalPlays = cardFrequencies[baseCardName] || 1;
-                
-                let rawSynergy = coOccurrences;
-                let affinitySynergy = (coOccurrences * coOccurrences) / baseTotalPlays;
-                let blendedSynergy = (rawSynergy * rawWeight) + (affinitySynergy * affinityWeight);
-                
-                let classModifier = 1.0;
-                if (cardDatabase[baseCardName].Class !== cardDatabase[deckCard.name].Class) {
-                    classModifier = 4.0;
-                }
-                
-                const deckCardPlays = cardFrequencies[deckCard.name] || 1;
-                const volumeEqualizer = 1000 / deckCardPlays;
-                
-                baseScore += (blendedSynergy * classModifier * volumeEqualizer) * deckCard.count;
-            }
-        });
+        // --- FIXED: Calculate the true baseline score of the current deck ---
+        const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
+        const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
+        const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
+        const baselineScore = baselineVerdict.score;
 
-        let html = `<div class="ai-message system">We might be able to do better than <strong>${displayName}</strong>! Here's the top alternatives:</div>`;
+        let html = `<div class="ai-message system">Here are the top alternatives for <strong>${displayName}</strong>:</div>`;
         html += `<div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: space-between; width: 100%; margin-bottom: 10px; box-sizing: border-box;">`;
         
         replacements.forEach((rec, index) => {
@@ -3635,10 +3622,20 @@ function showSwapSuggestions(baseCardName) {
             const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
             const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
             
-            const isBetter = rec.score > baseScore;
-            const comparisonText = isBetter ? "Better" : "Worse";
-            const comparisonColor = isBetter ? "#4CAF50" : "#f44336"; 
+            // --- FIXED: Compare true percentage scores ---
+            const scoreDiff = Math.round(rec.score - baselineScore);
             
+            let comparisonText = "Equal";
+            let comparisonColor = "#9e9e9e"; // Gray for exact ties
+            
+            if (scoreDiff > 0) {
+                comparisonText = `Better (+${scoreDiff}%)`;
+                comparisonColor = "#4CAF50"; // Green
+            } else if (scoreDiff < 0) {
+                comparisonText = `Worse (${scoreDiff}%)`;
+                comparisonColor = "#f44336"; // Red
+            }
+
             html += `
                 <div class="ai-visual-rec" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 5px; position: relative; height: 100%;">
                     
@@ -3654,7 +3651,7 @@ function showSwapSuggestions(baseCardName) {
                         Swap
                     </button>
 
-                    <div style="text-align: center; font-size: 0.85em; font-weight: bold; color: ${comparisonColor}; margin-top: 6px; letter-spacing: 0.5px;">
+                    <div style="text-align: center; font-size: 0.85em; font-weight: bold; color: ${comparisonColor}; margin-top: 6px; letter-spacing: 0.5px; white-space: nowrap;">
                         ${comparisonText}
                     </div>
                     
