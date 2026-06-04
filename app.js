@@ -711,6 +711,36 @@ function matchesSearch(deckInfo, searchRegex) {
     const ytTitle = deckInfo.youtube_title || "";
     const credit = deckInfo.credit || "";
 
+    // --- NEW: LAZY-CACHE HERO NAME FOR SEARCHING ---
+    if (deckInfo.heroName === undefined) {
+        deckInfo.heroName = ""; // Default fallback if it doesn't meet the 2-class rule
+        
+        if (Array.isArray(deckInfo.cards) && deckInfo.cards.length > 0) {
+            const uniqueClasses = new Set();
+            
+            for (const cardRaw of deckInfo.cards) {
+                let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
+                const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
+                const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
+                
+                const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
+                if (cardData) {
+                    const cls = cardData.Class || cardData.class;
+                    if (cls) uniqueClasses.add(cls);
+                }
+            }
+
+            // Only map to a hero if it has exactly 2 classes
+            if (uniqueClasses.size === 2) {
+                const classesArray = Array.from(uniqueClasses);
+                const comboA = `${classesArray[0]},${classesArray[1]}`;
+                const comboB = `${classesArray[1]},${classesArray[0]}`;
+                deckInfo.heroName = heroMap[comboA] || heroMap[comboB] || "";
+            }
+        }
+    }
+    // -----------------------------------------------
+
     const creditMatches = credit
         .split(",")
         .some(author => searchRegex.test(author.trim()));
@@ -723,6 +753,7 @@ function matchesSearch(deckInfo, searchRegex) {
     return (
         searchRegex.test(deckName) ||
         searchRegex.test(ytTitle) ||
+        searchRegex.test(deckInfo.heroName) || // <-- NEW: Matches against the resolved Hero Name(s)
         creditMatches ||
         hasMatchingCard
     );
