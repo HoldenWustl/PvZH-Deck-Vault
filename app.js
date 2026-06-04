@@ -2485,7 +2485,7 @@ function getVerdictGrade(overallPercent, allTopTier, totalCards) {
     if (totalCards <= 8) {
         grade = "—";
         gradeColor = "rgba(255,255,255,0.3)";
-    } else if (overallPercent >= 90 && allTopTier) {
+    } else if (overallPercent >= 97.5) {
         grade = "S";
         gradeColor = "#00E5FF";
     } else if (overallPercent >= 87.5) {
