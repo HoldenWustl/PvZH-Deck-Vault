@@ -788,7 +788,18 @@ gradeButtons.forEach(button => {
         const dailyUploads = {};
         const pairCounts = {};
         const wordCounts = {};
-        const stopWords = ["the", "in", "a", "of", "and", "to", "is", "for", "with", "this", "on", "most", "ever", "one", "when", "vs", "are", "that", "my", "i", "but", "it", "at", "an"];
+        const stopWords = [
+    // Standard English fluff
+    "the", "in", "a", "of", "and", "to", "is", "for", "with", "this", "on", "most", "ever", 
+    "one", "when", "vs", "are", "that", "my", "i", "but", "it", "at", "an", "how", "why", "what", "you", "your", "can", "out",
+    
+    // YouTube / Gaming Fluff
+    "part", "gameplay", "highlights", "guide", "guides", "video", "new", "best", "top", 
+    "update", "play", "playing", "wins", "win", "stream", "ep", "episode", "season", "let", "lets",
+    
+    // PvZ Heroes Specific Boilerplate
+    "pvz", "pvzh", "plants", "zombies", "heroes", "hero", "deck", "decks", "game", "cards", "card", "zombie", "plant"
+];
 
         // NEW Data Accumulators for card_data
         const costCurve = {};
@@ -866,14 +877,27 @@ gradeButtons.forEach(button => {
     }
 
             // 2. Process Title Buzzwords
-            if (deck.youtube_title) {
-                const words = deck.youtube_title.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/);
-                words.forEach(w => {
-                    if (w.length > 2 && !stopWords.includes(w)) {
-                        wordCounts[w] = (wordCounts[w] || 0) + 1;
-                    }
-                });
-            }
+if (deck.youtube_title) {
+    // Lowercase -> Strip punctuation & underscores -> Strip numbers -> Split by spaces
+    const words = deck.youtube_title.toLowerCase()
+                      .replace(/[^\w\s]|_/g, '')
+                      .replace(/\d+/g, '') 
+                      .split(/\s+/);
+                      
+    words.forEach(w => {
+        // I increased the minimum length to > 3 to filter out random 3-letter junk
+        if (w.length > 3 && !stopWords.includes(w)) {
+            
+            // Optional: Naively group some common plural/singular words together 
+            // so "garg" and "gargs" count as the same buzzword
+            let normalizedWord = w;
+            if (w === "gargs") normalizedWord = "garg";
+            if (w === "otks") normalizedWord = "otk";
+
+            wordCounts[normalizedWord] = (wordCounts[normalizedWord] || 0) + 1;
+        }
+    });
+}
 
             // 3. Process Cards & Metadata
             deck.cards.forEach(card => {
@@ -1570,13 +1594,46 @@ if (historicalInput1) {
     }
 }
 
-        // --- CHART 5: Title Buzzwords ---
-        const ctx5 = document.getElementById('buzzwordChart').getContext('2d');
-        charts.buzzwords = new Chart(ctx5, {
-            type: 'bar',
-            data: { labels: topWords.map(i => i[0].toUpperCase()), datasets: [{ data: topWords.map(i => i[1]), backgroundColor: '#f85149', borderRadius: 4 }] },
-            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { grid: { color: gridColor }, ticks: { color: textColor } }, y: { ticks: { color: '#c9d1d9', font: { weight: 'bold' } }, grid: { display: false } } }, plugins: { legend: { display: false } } }
-        });
+        // --- CHART 5: Title Buzzwords (Word Cloud) ---
+const ctx5 = document.getElementById('buzzwordChart').getContext('2d');
+
+// If you want more words in the cloud, change your topWords slice from (0, 10) to (0, 30) or more!
+charts.buzzwords = new Chart(ctx5, {
+    type: 'wordCloud',
+    data: { 
+        labels: topWords.map(i => i[0].toUpperCase()), 
+        datasets: [{ 
+            data: topWords.map(i => i[1]), 
+            // Randomize colors for a cool visual effect, or keep it to your theme
+            color: () => {
+                const colors = ['#58a6ff', '#f85149', '#3fb950', '#d2a8ff', '#e3b341'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+        }] 
+    },
+    options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { 
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    // Make the tooltip say "GARG: 42 uses" instead of just "42"
+                    label: (context) => `${context.parsed.y} uses`
+                }
+            }
+        },
+        elements: {
+            wordText: {
+                fontFamily: 'sans-serif',
+                fontStyle: 'bold',
+                // Keep the words mostly horizontal or slightly tilted for readability
+                minRotation: -15, 
+                maxRotation: 15,
+            }
+        }
+    }
+});
 
         // --- CHART 6: Cost Curve ---
         const ctx6 = document.getElementById('costCurveChart').getContext('2d');
