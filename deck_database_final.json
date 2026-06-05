@@ -12435,6 +12435,26 @@
         "upload_date": "Apr 6, 2023",
         "credit": "FryEmUp"
     },
+    "deck_5160": {
+        "name": "Aggro WK",
+        "cards": [
+            "x4 Galacta-Cactus",
+            "x4 Garlic",
+            "x4 Haunted_Pumpking",
+            "x4 Primal_Sunflower",
+            "x4 Apple_Saucer",
+            "x4 Corn_Dog",
+            "x3 Jack_O'_Lantern",
+            "x3 Steel_Magnolia",
+            "x4 Elderberry",
+            "x2 Red_Stinger",
+            "x4 Astrocado"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Apr 5, 2023",
+        "credit": "Sushi"
+    },
     "deck_516": {
         "name": "Mime Hunter",
         "cards": [
@@ -13692,6 +13712,47 @@
         "upload_date": "Nov 25, 2022",
         "credit": "FryEmUp"
     },
+    "deck_-240": {
+        "name": "Mission control",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Dog_Walker",
+            "x4 Barrel_Of_Deadbeards",
+            "x3 Botanist",
+            "x4 Cyborg_Zombie",
+            "x4 Exploding_Fruitcake",
+            "x4 Extinction_Event",
+            "x4 Final_Mission",
+            "x2 Fireworks_Zombie",
+            "x4 Bounty_Hunter",
+            "x3 Maniacal_Laugh"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Nov 24, 2022",
+        "credit": "Sushi, LGTQYZ"
+    },
+    "deck_-370": {
+        "name": "Ramp Burst",
+        "cards": [
+            "x4 Galacta-Cactus",
+            "x4 Garlic",
+            "x2 Kernel-Pult",
+            "x4 Wall-Nut",
+            "x2 Corn_Dog",
+            "x2 Grave_Buster",
+            "x4 Hot_Date",
+            "x4 Twin_Sunflower",
+            "x4 Three-Nut",
+            "x3 Whack-a-Zombie",
+            "x4 Pecanolith",
+            "x3 Cob_Cannon"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Nov 24, 2022",
+        "credit": "Regster"
+    },
     "deck_-24": {
         "name": "Bartin Roots",
         "cards": [
@@ -13793,6 +13854,26 @@
         "youtube_url": "",
         "upload_date": "Nov 20, 2022",
         "credit": "Dozza"
+    },
+    "deck_-380": {
+        "name": "Mid Mirror",
+        "cards": [
+            "x4 Galacta-Cactus",
+            "x3 Garlic",
+            "x4 Wall-Nut",
+            "x4 Corn_Dog",
+            "x2 Hot_Date",
+            "x4 Jugger-Nut",
+            "x4 Jack_O'_Lantern",
+            "x4 Three-Nut",
+            "x4 Elderberry",
+            "x4 Mirror-Nut",
+            "x3 Pecanolith"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Nov 20, 2022",
+        "credit": "Franzy"
     },
     "deck_-38": {
         "name": "Player Removal",
