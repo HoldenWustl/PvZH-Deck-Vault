@@ -533,6 +533,8 @@ totalConnection += cardBestConnection * seedA.count;
         }
         // -----------------------------------
 
+        let cardIndex = 0; // NEW: Counter for the stagger effect
+
         for (const [deckKey, deckInfo] of Object.entries(data)) {
             const cardEl = document.createElement('div');
             
@@ -573,39 +575,44 @@ totalConnection += cardBestConnection * seedA.count;
             
             cardEl.className = `deck-card ${factionClass}`;
             
-           // --- MATCH HERO STAMP ---
-let heroStampHtml = '';
-if (uniqueClasses.size === 2) {
-    const classesArray = Array.from(uniqueClasses);
-    const comboA = `${classesArray[0]},${classesArray[1]}`;
-    const comboB = `${classesArray[1]},${classesArray[0]}`;
-    const heroName = heroMap[comboA] || heroMap[comboB];
-
-    if (heroName) {
-        // Split shared heroes (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
-        const individualHeroes = heroName.split(/\s*\/\s*/);
-        
-        const badgesHtml = individualHeroes.map(name => {
-            // Converts spaces and hyphens to underscores to match file names
-            // e.g., "Super Brainz" -> "Super_Brainz.webp", "Huge-Gigantacus" -> "Huge_Gigantacus.webp"
-            const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
+            // NEW: Add a staggered delay. 
+            // 8ms per card means the first ~75 cards cascade beautifully. 
+            // Capped at 600ms so the remaining 1700+ load together instantly out of view.
+            cardEl.style.setProperty('--reveal-delay', `${Math.min(cardIndex * 8, 600)}ms`);
+            cardIndex++;
             
-            return `
-                <img src="hero_images/${imgFilename}" 
-                     alt="${name}" 
-                     class="hero-badge-img" 
-                     title="${name}">
-            `;
-        }).join('');
+            // --- MATCH HERO STAMP ---
+            let heroStampHtml = '';
+            if (uniqueClasses.size === 2) {
+                const classesArray = Array.from(uniqueClasses);
+                const comboA = `${classesArray[0]},${classesArray[1]}`;
+                const comboB = `${classesArray[1]},${classesArray[0]}`;
+                const heroName = heroMap[comboA] || heroMap[comboB];
 
-        heroStampHtml = `
-            <div class="deck-hero-stamps-wrapper">
-                ${badgesHtml}
-            </div>
-        `;
-    }
-}
-// -----------------------------------
+                if (heroName) {
+                    // Split shared heroes (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
+                    const individualHeroes = heroName.split(/\s*\/\s*/);
+                    
+                    const badgesHtml = individualHeroes.map(name => {
+                        // Converts spaces and hyphens to underscores to match file names
+                        const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
+                        
+                        return `
+                            <img src="hero_images/${imgFilename}" 
+                                 alt="${name}" 
+                                 class="hero-badge-img" 
+                                 title="${name}">
+                        `;
+                    }).join('');
+
+                    heroStampHtml = `
+                        <div class="deck-hero-stamps-wrapper">
+                            ${badgesHtml}
+                        </div>
+                    `;
+                }
+            }
+            // -----------------------------------
 
             let cardsHtml = '<ul class="card-list">';
             deckInfo.cards.forEach(card => {
@@ -645,43 +652,43 @@ if (uniqueClasses.size === 2) {
                 ? `<span class="deck-duplicate-badge" title="Older Duplicate Deck" style="background:#ffaa00; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.8em; cursor:help;">Dup</span>`
                 : '';
 
-cardEl.innerHTML = `
-    <div class="deck-card-inner">
-        <div class="deck-header">
-            <div class="deck-title-group">
-                <h3 class="deck-title">${deckInfo.name}</h3>
-                <div class="deck-badges">
-                    <span class="deck-credit" title="${creditStr}">${creditStr}</span>
-                    <span class="deck-rating deck-rating-${deckInfo.verdict.grade}"
-                          style="color:${deckInfo.verdict.gradeColor}"
-                          title="Deck rating">
-                        ${deckInfo.verdict.grade}
-                    </span>
-                    ${duplicateBadgeHtml}
+            cardEl.innerHTML = `
+                <div class="deck-card-inner">
+                    <div class="deck-header">
+                        <div class="deck-title-group">
+                            <h3 class="deck-title">${deckInfo.name}</h3>
+                            <div class="deck-badges">
+                                <span class="deck-credit" title="${creditStr}">${creditStr}</span>
+                                <span class="deck-rating deck-rating-${deckInfo.verdict.grade}"
+                                      style="color:${deckInfo.verdict.gradeColor}"
+                                      title="Deck rating">
+                                    ${deckInfo.verdict.grade}
+                                </span>
+                                ${duplicateBadgeHtml}
+                            </div>
+                        </div>
+                        <span class="deck-date">${dateStr}</span>
+                    </div>
+                   
+                    <div class="deck-controls-wrapper">
+                        ${videoControlsHtml}
+                        
+                        <details class="visual-deck-details">
+                            <summary class="view-visual-btn" 
+                                     data-title="${deckInfo.name}" 
+                                     data-cards="${encodeURIComponent(JSON.stringify(deckInfo.cards))}">
+                                View Visual Deck
+                            </summary>
+                        </details>
+                    </div>
+
+                    ${videoPreviewHtml}
+                    ${cardsHtml}
+
+                    ${heroStampHtml}
+                    <img class="credit-icon" src="${creditIconSrc}" alt="${creditStr} icon">
                 </div>
-            </div>
-            <span class="deck-date">${dateStr}</span>
-        </div>
-       
-        <div class="deck-controls-wrapper">
-            ${videoControlsHtml}
-            
-            <details class="visual-deck-details">
-                <summary class="view-visual-btn" 
-                         data-title="${deckInfo.name}" 
-                         data-cards="${encodeURIComponent(JSON.stringify(deckInfo.cards))}">
-                    View Visual Deck
-                </summary>
-            </details>
-        </div>
-
-        ${videoPreviewHtml}
-        ${cardsHtml}
-
-        ${heroStampHtml}
-        <img class="credit-icon" src="${creditIconSrc}" alt="${creditStr} icon">
-    </div>
-`;
+            `;
             
             fragment.appendChild(cardEl);
         }

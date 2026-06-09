@@ -2128,3 +2128,28 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     letter-spacing: 0.3px;
     text-transform: uppercase;
 }
+.deck-card {
+    /* 'backwards' is the magic word here. 
+       It applies the 0% keyframe (opacity: 0) during the JS delay so cards are hidden,
+       but removes the animation lock when finished so your hover effects work again!
+    */
+    animation: sleekReveal 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    
+    /* Injected by the JS */
+    animation-delay: var(--reveal-delay, 0ms);
+    
+    /* Hardware acceleration for smooth 60fps */
+    will-change: transform, opacity;
+}
+
+@keyframes sleekReveal {
+    0% {
+        opacity: 0;
+        /* A subtle slide-up and scale-up. No messy 3D rotation. */
+        transform: translateY(15px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
