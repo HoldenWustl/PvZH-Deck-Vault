@@ -338,7 +338,7 @@ function getDeckVerdictFromCards(deckCards, selfDeckKey, ctx) {
         else if (rarity === "Legendary")                             sparks = 4000;
         totalSparks += sparks * seedA.count;
 
-        if      (cost <= 1) curve[1]    += seedA.count;
+        if      (cost <= 1) curve[1]   += seedA.count;
         else if (cost === 2) curve[2]   += seedA.count;
         else if (cost === 3) curve[3]   += seedA.count;
         else if (cost === 4) curve[4]   += seedA.count;
@@ -346,15 +346,15 @@ function getDeckVerdictFromCards(deckCards, selfDeckKey, ctx) {
         else                 curve["6+"] += seedA.count;
         
         let cardBestConnection = 0;
-const freqA = cardFrequencies?.[seedA.key] || 1;
-seeds.forEach(seedB => {
-    if (seedA.key === seedB.key) return;
-    const coOccurrences = synergyMatrix?.[seedA.key]?.[seedB.key] || 0;
-    const freqB = cardFrequencies?.[seedB.key] || 1;
-    const cs = coOccurrences / Math.sqrt(freqA * freqB);
-    if (cs > cardBestConnection) cardBestConnection = cs;
-});
-totalConnection += cardBestConnection * seedA.count;
+        const freqA = cardFrequencies?.[seedA.key] || 1;
+        seeds.forEach(seedB => {
+            if (seedA.key === seedB.key) return;
+            const coOccurrences = synergyMatrix?.[seedA.key]?.[seedB.key] || 0;
+            const freqB = cardFrequencies?.[seedB.key] || 1;
+            const cs = coOccurrences / Math.sqrt(freqA * freqB);
+            if (cs > cardBestConnection) cardBestConnection = cs;
+        });
+        totalConnection += cardBestConnection * seedA.count;
     });
 
     const avgCost   = totalCards > 0 ? totalCost   / totalCards : 0;
@@ -416,8 +416,10 @@ totalConnection += cardBestConnection * seedA.count;
         seeds.forEach(s => userSeedCounts.set(s.name, s.count));
 
         const dbComparisons = [];
+        let exactCopyAdded = false; // Flag to track exact card-for-card matches
+
         for (const dbKey in ctx.dbDecks) {
-            // don't compare a deck to itself
+            
             const db = ctx.dbDecks[dbKey];
             let overlap = 0;
             // iterate the smaller side
@@ -428,6 +430,16 @@ totalConnection += cardBestConnection * seedA.count;
                 const other = b.get(name);
                 if (other !== undefined) overlap += Math.min(c, other);
             }
+            
+            // EXACT CARD COPY RULE:
+            // If the matched cards equal totalCards AND both decks have the exact same number of unique cards
+            if (overlap === totalCards && userSeedCounts.size === db.seedCounts.size) {
+                if (exactCopyAdded) {
+                    continue; // We already have our 1 exact copy, skip this one
+                }
+                exactCopyAdded = true; 
+            }
+
             if (overlap >= 6) dbComparisons.push({ overlap, shape: db.shape });
         }
 
@@ -477,7 +489,7 @@ totalConnection += cardBestConnection * seedA.count;
     const allTopTier = curveNumeric >= 87.5 && synergyScore >= 87.5 && consistencyScore >= 87.5 && powerScore >= 87.5;
 
     const { grade, gradeColor } = getVerdictGrade(overallPercent, allTopTier, totalCards);
-    return { grade, gradeColor, score: overallPercent, costLabel, synergyScore, consistencyScore, powerScore, avgCost, curveHealthText };
+    return { grade, gradeColor, score: overallPercent, costLabel, synergyScore, consistencyScore, powerScore, avgCost, curveHealthText, curve, avgSparks, curveNumeric };
 }
     // --- Render Decks Function ---
   function renderDecks(data) {
@@ -2517,75 +2529,27 @@ function getVerdictGrade(overallPercent, allTopTier, totalCards) {
 // --- LIVE DECK ANALYTICS ENGINE ---
 function updateDeckStats() {
     const hud = document.getElementById('deckStatsHud');
-    if (!hud || getTotalCards() === 0) {
+    const totalCards = getTotalCards(); // Assuming this helper exists
+    
+    if (!hud || totalCards === 0) {
         if (hud) hud.style.display = 'none';
         return;
     }
     
     hud.style.display = 'block';
 
-    let totalCards = 0;
-    let totalCost = 0;
-    let totalSparks = 0; // NEW: Track total spark value
-    let curve = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, "6+": 0 };
-    
-    let totalConnection = 0;
+    // 1. Format the current seeds into the string array getDeckVerdictFromCards expects
+    const deckCards = currentSeeds.map(s => `${s.count}x ${s.name}`);
 
-    // 1. Crunch the Numbers
-    currentSeeds.forEach(seedA => {
-        totalCards += seedA.count;
-        
-        const parsedCost = parseInt(seedA.cost);
-        const cost = isNaN(parsedCost) ? 1 : parsedCost;
-        totalCost += (cost * seedA.count);
+    // 2. Delegate all heavy lifting to the verdict function
+    const stats = getDeckVerdictFromCards(deckCards);
 
-        // --- NEW: Calculate Sparks based on Rarity ---
-        const cardData = cardDatabase[seedA.name] || {};
-        const rarity = cardData.Rarity || "Common";
-        let sparks = 0;
-        
-        if (rarity === "Uncommon") sparks = 50;
-        else if (rarity === "Rare") sparks = 250;
-        else if (rarity === "Super-Rare" || rarity === "Event") sparks = 1000;
-        else if (rarity === "Legendary") sparks = 4000;
-        
-        totalSparks += (sparks * seedA.count);
-
-        // Populate Curve
-        if (cost <= 1) curve[1] += seedA.count;
-        else if (cost === 2) curve[2] += seedA.count;
-        else if (cost === 3) curve[3] += seedA.count;
-        else if (cost === 4) curve[4] += seedA.count;
-        else if (cost === 5) curve[5] += seedA.count;
-        else curve["6+"] += seedA.count;
-
-        // COSINE SIMILARITY (True Exclusive Synergy)
-        let cardBestConnection = 0;
-        const freqA = cardFrequencies[seedA.name] || 1;
-
-        currentSeeds.forEach(seedB => {
-            if (seedA.name !== seedB.name) {
-                const coOccurrences = (synergyMatrix && synergyMatrix[seedA.name] && synergyMatrix[seedA.name][seedB.name]) 
-                                      ? synergyMatrix[seedA.name][seedB.name] : 0;
-                
-                const freqB = cardFrequencies[seedB.name] || 1;
-                
-                const cosineSimilarity = coOccurrences / Math.sqrt(freqA * freqB);
-                
-                if (cosineSimilarity > cardBestConnection) {
-                    cardBestConnection = cosineSimilarity;
-                }
-            }
-        });
-        
-        totalConnection += (cardBestConnection * seedA.count);
-    });
-
-    // 2. Render Mana Curve (Smooth Area Chart)
+    // ==========================================
+    // UI 1: Mana Curve Chart (SVG)
+    // ==========================================
     const chart = document.getElementById('manaCurveChart');
-    const maxCurveVal = Math.max(...Object.values(curve), 1); 
-    
-    const counts = [curve[1], curve[2], curve[3], curve[4], curve[5], curve["6+"]];
+    const counts = [stats.curve[1], stats.curve[2], stats.curve[3], stats.curve[4], stats.curve[5], stats.curve["6+"]];
+    const maxCurveVal = Math.max(...counts, 1); 
     
     const width = chart.clientWidth > 0 ? chart.clientWidth : 300; 
     const height = 40;
@@ -2612,403 +2576,126 @@ function updateDeckStats() {
                 </linearGradient>
             </defs>
             <path d="${pathD}" fill="url(#curveGradient)" stroke="#4CAF50" stroke-width="2" stroke-linejoin="round" />
-            
-            ${points.map(p => `
-                <circle cx="${p.x}" cy="${p.y}" r="3" fill="#1e1e24" stroke="#4CAF50" stroke-width="1.5" />
-            `).join('')}
+            ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#1e1e24" stroke="#4CAF50" stroke-width="1.5" />`).join('')}
         </svg>
     `;
 
-    // 3. Render Deck Speed (Average Cost Slider)
-    const avgCost = totalCost / totalCards;
+    // ==========================================
+    // UI 2: Deck Speed & Cost Sliders
+    // ==========================================
     let speedLabel = "Midrange";
-    let leftPercent = 50;
+    let speedPercent = 50;
 
-    if (avgCost <= 2.2) { speedLabel = "Aggro/Rush"; leftPercent = (avgCost / 2.2) * 33; }
-    else if (avgCost > 2.2 && avgCost <= 3.5) { speedLabel = "Midrange"; leftPercent = 33 + (((avgCost - 2.2) / 1.3) * 33); }
-    else { speedLabel = "Control/Late"; leftPercent = 66 + (Math.min((avgCost - 3.5) / 2.5, 1) * 34); }
+    if (stats.avgCost <= 2.2) { 
+        speedLabel = "Aggro/Rush"; 
+        speedPercent = (stats.avgCost / 2.2) * 33; 
+    } else if (stats.avgCost > 2.2 && stats.avgCost <= 3.5) { 
+        speedLabel = "Midrange"; 
+        speedPercent = 33 + (((stats.avgCost - 2.2) / 1.3) * 33); 
+    } else { 
+        speedLabel = "Control/Late"; 
+        speedPercent = 66 + (Math.min((stats.avgCost - 3.5) / 2.5, 1) * 34); 
+    }
 
     document.getElementById('deckSpeedLabel').innerText = speedLabel;
-    document.getElementById('speedPointer').style.left = `calc(${leftPercent}% - 2px)`;
+    document.getElementById('speedPointer').style.left = `calc(${speedPercent}% - 2px)`;
 
-    // --- NEW 3.5. Render Cost Score (Budget to P2W Slider) ---
-    const avgSparks = totalCards > 0 ? totalSparks / totalCards : 0;
-    let costLabel = "Budget";
     let costColor = "#4CAF50";
     let costPercent = 0;
 
-    // Distribute nicely across the slider based on average spark cost per card
-    if (avgSparks <= 250) { 
-        costLabel = "Budget"; 
-        costColor = "#4CAF50"; // Green
-        costPercent = (avgSparks / 250) * 25; 
-    } 
-    else if (avgSparks <= 600) { 
-        costLabel = "Moderate"; 
-        costColor = "#ffb300"; // Yellow
-        costPercent = 25 + ((avgSparks - 250) / 350) * 25; 
-    } 
-    else if (avgSparks <= 1400) { 
-        costLabel = "Expensive"; 
-        costColor = "orange"; // Matches the Red in your gradient
-        // Fixed: 1400 - 600 = 800
-        costPercent = 50 + ((avgSparks - 600) / 800) * 25; 
-    } 
-    else { 
-        costLabel = "P2W"; 
-        costColor = "#e91e63"; // Pink
-        // Hits 100% at 4000 sparks (All Legendary deck)
-        costPercent = 75 + (Math.min((avgSparks - 1400) / 2600, 1) * 25); 
+    if (stats.avgSparks <= 250) { 
+        costColor = "#4CAF50"; 
+        costPercent = (stats.avgSparks / 250) * 25; 
+    } else if (stats.avgSparks <= 600) { 
+        costColor = "#ffb300"; 
+        costPercent = 25 + ((stats.avgSparks - 250) / 350) * 25; 
+    } else if (stats.avgSparks <= 1400) { 
+        costColor = "orange"; 
+        costPercent = 50 + ((stats.avgSparks - 600) / 800) * 25; 
+    } else { 
+        costColor = "#e91e63"; 
+        costPercent = 75 + (Math.min((stats.avgSparks - 1400) / 2600, 1) * 25); 
     }
 
     const costLabelEl = document.getElementById('deckCostLabel');
-    costLabelEl.innerText = costLabel;
+    costLabelEl.innerText = stats.costLabel;
     costLabelEl.style.color = costColor;
     document.getElementById('costPointer').style.left = `calc(${costPercent}% - 2px)`;
 
-
-    // 4. Render True Synergy Score
-    let synergyScore = 0;
-    if (totalCards > 0 && currentSeeds.length > 1) {
-        let rawAvg = totalConnection / totalCards;
-        synergyScore = Math.min(Math.round(rawAvg*100), 100);
+    // ==========================================
+    // UI 3: Progress Bars (Helper Function)
+    // ==========================================
+    const updateBar = (idPrefix, score, isCurve = false) => {
+        let color = "#ff4b4b"; // Red
+        if (score >= 85) color = "#00E5FF"; // Cyan
+        else if (score >= 70) color = "#4CAF50"; // Green
+        else if (score >= 50) color = "#ffb300"; // Yellow
         
-        if (totalCards < 6) {
-            synergyScore = Math.round(synergyScore * (totalCards / 6));
-        }
-    } else if (totalCards === 1) {
-        synergyScore = 5; 
-    }
+        const labelEl = document.getElementById(`${idPrefix}Label`) || document.getElementById(`${idPrefix}Percent`);
+        const fillEl = document.getElementById(`${idPrefix}Fill`);
 
-    const percentTextEl = document.getElementById('synergyPercent');
-    const fillBar = document.getElementById('synergyFill');
-
-    percentTextEl.innerText = `${synergyScore}%`;
-    fillBar.style.width = `${synergyScore}%`;
-    
-    // Determine the color based on the score
-    // Determine the color based on the score
-    let synergyColor;
-    if (synergyScore >= 85) {
-        synergyColor = "#00E5FF"; // Electric Cyan (S-Tier)
-    } else if (synergyScore >= 70) {
-        synergyColor = "#4CAF50"; // Green (Good)
-    } else if (synergyScore >= 50) {
-        synergyColor = "#ffb300"; // Yellow (Average)
-    } else {
-        synergyColor = "#ff4b4b"; // Red (Poor)
-    }
-
-    // Apply the color to BOTH the text and the progress bar
-    fillBar.style.background = synergyColor;
-    percentTextEl.style.color = synergyColor;
-
-
-    // 5. SMART CURVE ANALYSIS (Weighted Archetype Envelope)
-    if (totalCards >= 10 && typeof fullDatabase !== 'undefined' && typeof cardDatabase !== 'undefined') {
-        
-        const userShape = [
-            curve[1] / totalCards, 
-            curve[2] / totalCards, 
-            curve[3] / totalCards, 
-            curve[4] / totalCards, 
-            curve[5] / totalCards, 
-            curve["6+"] / totalCards
-        ];
-
-        let dbComparisons = [];
-
-        for (const deckKey in fullDatabase) {
-            const dbDeck = fullDatabase[deckKey];
-            let overlapScore = 0;
-            let dbTotalCards = 0;
-            let dbCurve = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, "6+": 0 };
-
-            dbDeck.cards.forEach(cardString => {
-                const parts = cardString.split(" ");
-                if (parts.length < 2) return;
-                
-                const count = parseInt(parts[0].replace('x', '')) || 0;
-                const rawName = parts.slice(1).join(" "); 
-                const cleanName = rawName.replace(/_/g, ' '); 
-
-                dbTotalCards += count;
-
-                const userSeed = currentSeeds.find(s => s.name === cleanName || s.name === rawName);
-                if (userSeed) {
-                    overlapScore += Math.min(count, userSeed.count);
-                }
-
-                const cardData = cardDatabase[cleanName] || cardDatabase[rawName];
-                const cost = cardData ? parseInt(cardData.Cost) : 1; 
-
-                if (cost <= 1) dbCurve[1] += count;
-                else if (cost === 2) dbCurve[2] += count;
-                else if (cost === 3) dbCurve[3] += count;
-                else if (cost === 4) dbCurve[4] += count;
-                else if (cost === 5) dbCurve[5] += count;
-                else dbCurve["6+"] += count;
-            });
-
-            if (dbTotalCards > 0 && overlapScore >= 6) {
-                dbComparisons.push({
-                    name: dbDeck.name,
-                    overlap: overlapScore,
-                    shape: [
-                        dbCurve[1] / dbTotalCards, dbCurve[2] / dbTotalCards,
-                        dbCurve[3] / dbTotalCards, dbCurve[4] / dbTotalCards,
-                        dbCurve[5] / dbTotalCards, dbCurve["6+"] / dbTotalCards
-                    ]
-                });
-            }
+        // Handle the "Unique" edge case for curve health
+        if (isCurve && stats.curveHealthText === "Unique") {
+            labelEl.innerText = "Unique";
+            labelEl.style.color = "#888";
+            fillEl.style.width = "0%";
+            fillEl.style.backgroundColor = "transparent";
+            return;
         }
 
-        dbComparisons.sort((a, b) => b.overlap - a.overlap);
-        
-        let closestDecks = [];
-        if (dbComparisons.length > 0) {
-            const bestOverlap = dbComparisons[0].overlap;
-            const dynamicThreshold = bestOverlap * 0.85; 
-            closestDecks = dbComparisons.filter(d => d.overlap >= dynamicThreshold).slice(0, 10);
-
-            // FORCE MINIMUM 2 DECKS
-            // If the 85% threshold was too strict and left us with only 1 (or 0) decks,
-            // but the database found at least 2 overlapping decks overall, grab the top 2.
-            if (closestDecks.length < 4 && dbComparisons.length >= 4) {
-                closestDecks = dbComparisons.slice(0, 4);
-            }
+        if (labelEl) {
+            labelEl.innerText = isCurve ? stats.curveHealthText : `${score}%`;
+            labelEl.style.color = color;
         }
-        console.log("Closest Decks for Curve Analysis:", closestDecks);
-
-        if (closestDecks.length > 0) {
-            let totalWeight = 0;
-            closestDecks.forEach(d => totalWeight += d.overlap);
-
-            let idealShape = [0, 0, 0, 0, 0, 0];
-            closestDecks.forEach(deck => {
-                const weight = deck.overlap / totalWeight; 
-                for (let i = 0; i < 6; i++) {
-                    idealShape[i] += deck.shape[i] * weight;
-                }
-            });
-
-            const tolerance = 0.05; 
-            let totalPenalty = 0;
-
-            for (let i = 0; i < 6; i++) {
-                let diff = Math.abs(userShape[i] - idealShape[i]);
-                if (diff > tolerance) {
-                    totalPenalty += (diff - tolerance);
-                }
-            }
-            
-            let deviationPercent = (totalPenalty / 6) * 100;
-            let healthScore = Math.max(0, 100 - (deviationPercent * 10)); 
-
-            const healthLabelEl = document.getElementById('curveHealthLabel');
-            const healthFillEl = document.getElementById('curveHealthFill');
-
-            healthFillEl.style.width = `${healthScore}%`;
-
-            if (deviationPercent <= 2.0) {
-                healthLabelEl.innerText = "Excellent";
-                healthLabelEl.style.color = "#00E5FF"; 
-                healthFillEl.style.backgroundColor = "#00E5FF";
-            } else if (deviationPercent <= 3.0) {
-                healthLabelEl.innerText = "Good"; 
-                healthLabelEl.style.color = "#4CAF50"; 
-                healthFillEl.style.backgroundColor = "#4CAF50";
-            } 
-            else if (deviationPercent <= 5.0) {
-                healthLabelEl.innerText = "Playable"; 
-                healthLabelEl.style.color = "#ffb300"; 
-                healthFillEl.style.backgroundColor = "#ffb300";
-            }
-            else {
-                healthLabelEl.innerText = "Awkward";
-                healthLabelEl.style.color = "#ff4b4b"; 
-                healthFillEl.style.backgroundColor = "#ff4b4b";
-            }
-
-        } else {
-            document.getElementById('curveHealthLabel').innerText = "Unique";
-            document.getElementById('curveHealthLabel').style.color = "#888";
-            document.getElementById('curveHealthFill').style.width = "0%";
-            document.getElementById('curveHealthFill').style.backgroundColor = "transparent";
+        if (fillEl) {
+            fillEl.style.width = `${score}%`;
+            fillEl.style.backgroundColor = color;
         }
-    } else {
-        document.getElementById('curveHealthLabel').innerText = "...";
-        document.getElementById('curveHealthLabel').style.color = "#4CAF50"; 
-        document.getElementById('curveHealthFill').style.width = "0%";
-        document.getElementById('curveHealthFill').style.backgroundColor = "#4CAF50";
-    }
+    };
+
+    updateBar('synergy', stats.synergyScore);
+    updateBar('consistency', stats.consistencyScore);
+    updateBar('power', stats.powerScore);
+    updateBar('curveHealth', stats.curveNumeric, true); 
 
     // ==========================================
-    // 5. CONSISTENCY SCORE
+    // UI 4: Verdict Grade & Callouts
     // ==========================================
-    let consistencyScore = 0;
-    if (totalCards > 0 && currentSeeds.length > 0) {
-        let totalConsistencyPoints = 0;
-
-        currentSeeds.forEach(seed => {
-            // Grade each card slot individually to penalize variance
-            if (seed.count === 1) {
-                totalConsistencyPoints += 0;     // Singletons ruin consistency
-            } else if (seed.count === 2) {
-                totalConsistencyPoints += 50;    // Decent
-            } else if (seed.count === 3) {
-                totalConsistencyPoints += 80;    // Great
-            } else if (seed.count >= 4) {
-                totalConsistencyPoints += 100;   // Perfect
-            }
-        });
-
-        // Average the graded points across the unique cards
-        consistencyScore = Math.round(totalConsistencyPoints / currentSeeds.length);
-    }
-
-    const consistencyPercentEl = document.getElementById('consistencyPercent');
-    const consistencyFillEl = document.getElementById('consistencyFill');
-    consistencyPercentEl.innerText = `${consistencyScore}%`;
-    consistencyFillEl.style.width = `${consistencyScore}%`;
-
-    let consistencyColor;
-    if (consistencyScore >= 85) consistencyColor = "#00E5FF"; // Cyan
-    else if (consistencyScore >= 70) consistencyColor = "#4CAF50"; // Green
-    else if (consistencyScore >= 50) consistencyColor = "#ffb300"; // Yellow
-    else consistencyColor = "#ff4b4b"; // Red
-
-    consistencyPercentEl.style.color = consistencyColor;
-    consistencyFillEl.style.backgroundColor = consistencyColor;
-
-
-    // ==========================================
-    // 6. POWER (META) SCORE
-    // ==========================================
-    let powerScore = 0;
-    if (totalCards > 0 && typeof fullDatabase !== 'undefined') {
-        let cardPopularity = {};
-        
-        // Step 1: Scan database to count TOTAL COPIES of every card in the meta
-        for (const key in fullDatabase) {
-            const dbDeck = fullDatabase[key];
-            dbDeck.cards.forEach(cardString => {
-                const parts = cardString.split(" ");
-                if (parts.length < 2) return;
-                
-                const cleanName = parts.slice(1).join(" ").replace(/_/g, ' ');
-                const copies = parseInt(parts[0].replace('x', '')) || 1; 
-                
-                cardPopularity[cleanName] = (cardPopularity[cleanName] || 0) + copies;
-            });
-        }
-        
-        // Step 2: Establish the absolute maximum copies for scaling
-        const metaValues = Object.values(cardPopularity);
-        const maxMetaCopies = metaValues.length > 0 ? Math.max(...metaValues) : 0;
-
-        // Step 3: Grade every single card slot using a Tunable Power Curve
-        if (maxMetaCopies > 0) {
-            let totalPowerPoints = 0;
-            
-            // THE TUNING DIAL: 
-            // Lower number = pushes scores UP (flatter variance)
-            // Higher number = pushes scores DOWN (steeper variance)
-            // 0.5 is Square Root. 0.3 to 0.4 is usually the sweet spot for card games.
-            const curveFactor = 1; 
-            
-            currentSeeds.forEach(seed => {
-                let cleanName = seed.name.replace(/_/g, ' ');
-                let metaCopies = cardPopularity[cleanName] || 0;
-                
-                // Calculate the raw ratio, then apply the smoothing exponent
-                let rawRatio = metaCopies / maxMetaCopies;
-                let cardPowerPercent = Math.pow(rawRatio, curveFactor) * 100;
-                
-                totalPowerPoints += (cardPowerPercent * seed.count);
-            });
-            
-            powerScore = Math.min(100, Math.round(totalPowerPoints*3 / totalCards));
-        }
-    }
-
-    const powerLabelEl = document.getElementById('powerLabel');
-    const powerFillEl = document.getElementById('powerFill');
-    powerLabelEl.innerText = `${powerScore}%`;
-    powerFillEl.style.width = `${powerScore}%`;
-
-    let powerColor;
-    if (powerScore >= 85) powerColor = "#00E5FF"; // Cyan
-    else if (powerScore >= 70) powerColor = "#4CAF50"; // Green
-    else if (powerScore >= 50) powerColor = "#ffb300"; // Yellow
-    else powerColor = "#ff4b4b"; // Red
-
-    powerLabelEl.style.color = powerColor;
-    powerFillEl.style.backgroundColor = powerColor;
-
-   // ==========================================
-    // 7. VERDICT GRADE + CALLOUTS
-    // ==========================================
-    const curveHealthText = document.getElementById('curveHealthLabel').innerText;
-
-    // Convert curve label to a 0–100 score so all four dims average cleanly
-    const curveNumeric = ({"Excellent":100, "Good":80, "Playable":55, "Awkward":20, "Unique":65})[curveHealthText] ?? 55;
-
-    // Weighted base: curve and synergy carry the deck; power matters less;
-// consistency contributes only a little here — its real role is the penalty below.
-const base = (curveNumeric * 0.3)
-           + (synergyScore  * 0.35)
-           + (powerScore    * 0.3)
-           + (consistencyScore * 0.05);
-
-// Consistency penalty: nothing if it's "good" (70+), but ramps up sharply below that.
-// Bad consistency genuinely breaks decks, so this needs teeth.
-const consistencyPenalty = consistencyScore < 70 ? (70 - consistencyScore) * 0.8 : 0;
-
-const overallPercent = Math.max(0, base - consistencyPenalty);
-const allTopTier = curveNumeric >= 87.5 && synergyScore >= 87.5 && consistencyScore >= 87.5 && powerScore >= 87.5;
-
-    // Map to letter grade. S requires both a high average AND no weak stat —
-    // keeps S genuinely rare instead of handing it out for one carrying score.
-  const { grade, gradeColor } = getVerdictGrade(overallPercent, allTopTier, totalCards);
-
     const gradeEl = document.getElementById('verdictGrade');
-    gradeEl.innerText = grade;
-    gradeEl.style.color = gradeColor;
+    gradeEl.innerText = stats.grade;
+    gradeEl.style.color = stats.gradeColor;
 
-    const archetype = speedLabel.split('/')[0]; // "Aggro/Rush" → "Aggro"
+    const archetype = speedLabel.split('/')[0];
     document.getElementById('verdictArchetype').innerText = archetype;
-    document.getElementById('verdictSubtitle').innerText =
-        `${totalCards} cards · avg cost ${avgCost.toFixed(1)} · ${costLabel.toLowerCase()}`;
+    document.getElementById('verdictSubtitle').innerText = `${totalCards} cards · avg cost ${stats.avgCost.toFixed(1)} · ${stats.costLabel.toLowerCase()}`;
+    
     const callouts = [];
     if (totalCards >= 6) {
-        if      (synergyScore     >= 88) callouts.push({dir:'up',   text:'Elite synergy',      val:synergyScore+'%',     pri:5});
-        else if (synergyScore     >= 75) callouts.push({dir:'up',   text:'Strong synergy',     val:synergyScore+'%',     pri:3});
-        else if (synergyScore     <  65) callouts.push({dir:'down', text:'Weak synergy',       val:synergyScore+'%',     pri:5});
-        else if (synergyScore     <  50) callouts.push({dir:'down', text:'Low synergy',        val:synergyScore+'%',     pri:3});
+        if (stats.synergyScore >= 88) callouts.push({dir:'up', text:'Elite synergy', val:stats.synergyScore+'%', pri:5});
+        else if (stats.synergyScore >= 75) callouts.push({dir:'up', text:'Strong synergy', val:stats.synergyScore+'%', pri:3});
+        else if (stats.synergyScore < 65) callouts.push({dir:'down', text:'Weak synergy', val:stats.synergyScore+'%', pri:5});
+        else if (stats.synergyScore < 50) callouts.push({dir:'down', text:'Low synergy', val:stats.synergyScore+'%', pri:3});
 
-        if      (consistencyScore >= 85) callouts.push({dir:'up',   text:'Highly consistent',  val:consistencyScore+'%', pri:4});
-        else if (consistencyScore <  40) callouts.push({dir:'down', text:'Inconsistent',       val:consistencyScore+'%', pri:5});
-        else if (consistencyScore <  65) callouts.push({dir:'down', text:'Low consistency',    val:consistencyScore+'%', pri:3});
+        if (stats.consistencyScore >= 85) callouts.push({dir:'up', text:'Highly consistent', val:stats.consistencyScore+'%', pri:4});
+        else if (stats.consistencyScore < 40) callouts.push({dir:'down', text:'Inconsistent', val:stats.consistencyScore+'%', pri:5});
+        else if (stats.consistencyScore < 65) callouts.push({dir:'down', text:'Low consistency', val:stats.consistencyScore+'%', pri:3});
 
-        if      (powerScore       >= 85) callouts.push({dir:'up',   text:'Meta powerhouse',    val:powerScore+'%',       pri:4});
-        else if (powerScore       <  50) callouts.push({dir:'down', text:'Off-meta',           val:powerScore+'%',       pri:2});
+        if (stats.powerScore >= 85) callouts.push({dir:'up', text:'Meta powerhouse', val:stats.powerScore+'%', pri:4});
+        else if (stats.powerScore < 50) callouts.push({dir:'down', text:'Off-meta', val:stats.powerScore+'%', pri:2});
 
-        if      (curveHealthText === "Excellent") callouts.push({dir:'up',   text:'Excellent curve', val:'', pri:4});
-        else if (curveHealthText === "Awkward")   callouts.push({dir:'down', text:'Awkward curve',   val:'', pri:5});
+        if (stats.curveHealthText === "Excellent") callouts.push({dir:'up', text:'Excellent curve', val:'', pri:4});
+        else if (stats.curveHealthText === "Awkward") callouts.push({dir:'down', text:'Awkward curve', val:'', pri:5});
 
-        if      (costLabel === "P2W")    callouts.push({dir:'down', text:'P2W cost',           val:'', pri:2});
-        else if (costLabel === "Budget" && powerScore >= 60)
-                                         callouts.push({dir:'up',   text:'Budget powerhouse',  val:'', pri:3});
+        if (stats.costLabel === "P2W") callouts.push({dir:'down', text:'P2W cost', val:'', pri:2});
+        else if (stats.costLabel === "Budget" && stats.powerScore >= 60) callouts.push({dir:'up', text:'Budget powerhouse', val:'', pri:3});
     }
 
     callouts.sort((a,b) => b.pri - a.pri);
     const top = callouts.slice(0, 3);
     const calloutHost = document.getElementById('verdictCallouts');
+    
     calloutHost.innerHTML = top.length === 0
-        ? (totalCards >= 6
-            ? '<div style="font-size:0.7em; color:rgba(255,255,255,0.3); padding:2px 0;">No notable highs or lows.</div>'
-            : '')
+        ? (totalCards >= 6 ? '<div style="font-size:0.7em; color:rgba(255,255,255,0.3); padding:2px 0;">No notable highs or lows.</div>' : '')
         : top.map(c => `
             <div style="display:flex; align-items:center; gap:8px; font-size:0.72em;">
                 <span style="width:12px; color:${c.dir==='up' ? '#4CAF50' : '#ffb300'}; font-weight:600; text-align:center;">${c.dir==='up' ? '↑' : '↓'}</span>
@@ -3725,7 +3412,38 @@ function initSynergyMatrix() {
     cardFrequencies = {}; 
     cardAverageCopies = {}; 
 
-    const decks = Object.values(fullDatabase);
+    const rawDecks = Object.values(fullDatabase);
+    const seenSignatures = new Set();
+    
+    // ==========================================
+    // PASS 0: Assign Weights to Decks
+    // ==========================================
+    const decks = rawDecks.map(deck => {
+        // Fallback for empty/malformed decks
+        if (!deck.cards || deck.cards.length === 0) {
+            return { ...deck, weight: 1.0 };
+        }
+
+        // Generate the unique signature for the 60-card list
+        const signature = deck.cards.map(c => {
+            const firstSpace = c.indexOf(' ');
+            const countStr = c.substring(0, firstSpace).replace(/x/i, '');
+            const count = parseInt(countStr) || 1; 
+            const cardName = c.substring(firstSpace + 1).trim().toLowerCase();
+            return `${count}x ${cardName}`;
+        }).sort().join('|');
+
+        let weight = 1.0;
+        if (seenSignatures.has(signature)) {
+            weight = 0.5; // It's a duplicate, halve its value
+        } else {
+            seenSignatures.add(signature); // First time seeing it, keep full value
+        }
+        
+        // Return a new deck object that includes our calculated weight
+        return { ...deck, weight: weight };
+    });
+
     const deckTimestamps = decks.map(d => {
         const time = d.upload_date ? new Date(d.upload_date).getTime() : 0;
         return isNaN(time) ? 0 : time;
@@ -3752,8 +3470,9 @@ function initSynergyMatrix() {
         const validTime = isNaN(time) ? 0 : time;
         const isNewEra = validTime >= recentThreshold;
 
-        if (isNewEra) newDeckCount++;
-        else oldDeckCount++;
+        // Add the deck's weight instead of just a flat "1"
+        if (isNewEra) newDeckCount += deck.weight;
+        else oldDeckCount += deck.weight;
 
         // Get unique cards in this deck to track play rate
         const uniqueCards = new Set();
@@ -3765,9 +3484,9 @@ function initSynergyMatrix() {
 
         uniqueCards.forEach(cardName => {
             if (isNewEra) {
-                newFreq[cardName] = (newFreq[cardName] || 0) + 1;
+                newFreq[cardName] = (newFreq[cardName] || 0) + deck.weight;
             } else {
-                oldFreq[cardName] = (oldFreq[cardName] || 0) + 1;
+                oldFreq[cardName] = (oldFreq[cardName] || 0) + deck.weight;
             }
         });
     });
@@ -3804,16 +3523,17 @@ function initSynergyMatrix() {
         const cleanCards = parsedCards.map(pc => pc.name);
 
         parsedCards.forEach(card => {
-            // Apply the card's individual meta momentum instead of an arbitrary deck weight
+            // Include both the individual card meta momentum AND the deck's uniqueness weight
             const momentum = cardMomentum[card.name] || 1.0;
+            const finalWeight = momentum * deck.weight;
             
-            cardFrequencies[card.name] = (cardFrequencies[card.name] || 0) + momentum;
+            cardFrequencies[card.name] = (cardFrequencies[card.name] || 0) + finalWeight;
             
             if (!cardAverageCopies[card.name]) {
                 cardAverageCopies[card.name] = { total: 0, appearances: 0 };
             }
-            cardAverageCopies[card.name].total += (card.count * momentum);
-            cardAverageCopies[card.name].appearances += momentum;
+            cardAverageCopies[card.name].total += (card.count * finalWeight);
+            cardAverageCopies[card.name].appearances += finalWeight;
         });
 
         for (let i = 0; i < cleanCards.length; i++) {
@@ -3827,8 +3547,8 @@ function initSynergyMatrix() {
                 const cardB = cleanCards[j];
                 const momentumB = cardMomentum[cardB] || 1.0;
                 
-                // The synergy weight is amplified if BOTH cards are trending up in the meta!
-                const synergyWeight = momentumA * momentumB;
+                // Synergy is amplified by both cards trending, but dampened if the deck is a clone
+                const synergyWeight = momentumA * momentumB * deck.weight;
                 
                 synergyMatrix[cardA][cardB] = (synergyMatrix[cardA][cardB] || 0) + synergyWeight;
             }
@@ -3976,25 +3696,29 @@ function buildOptimizedDeck() {
 
 // --- 6. NAMING & COPY LOGIC ---
 function generateDeckName(deck, isPlant) {
-    const plantAdjectives = ["Blooming", "Verdant", "Photosynthetic", "Savage", "Radiant", "Overgrown", "Rooted", "Spicy", "Leafy", "Sun-Soaked", "Vengeful", "Primal", "Flourishing", "Thorny", "Botanical", "Wild", "Untamed", "Raging", "Solar", "Fierce", "Bark-Biting", "Bountiful", "Vibrant", "Enraged", "Majestic", "Vineswept"];
-    const zombieAdjectives = ["Undead", "Toxic", "Gargantuan", "Vicious", "Ruthless", "Chaotic", "Dastardly", "Sneaky", "Brain-Hungry", "Galvanized", "Necrotic", "Ghastly", "Mad", "Cryptic", "Shambling", "Bizarre", "Mechanical", "Grotesque", "Apocalyptic", "Relentless", "Monstrous", "Vile", "Cybernetic", "Diabolical", "Mutated", "Stinky"];
+    if (!deck || deck.length === 0) return isPlant ? "Plant Deck" : "Zombie Deck";
+
+    // 1. Cleaner, mechanic-focused prefixes instead of cheesy adjectives
+    const plantPrefixes = ["Green", "Bloom", "Thicket", "Solar", "Savage", "Root", "Petal", "Timber"];
+    const zombiePrefixes = ["Grave", "Brain", "Scrap", "Tech", "Doom", "Bolt", "Plague", "Rust"];
+    const neutralPrefixes = ["Turbo", "Heavy", "Classic", "Greedy", "Miracle", "Tempo", "Core", "Value"];
+
+    // 2. Real CCG archetype nouns
+    const aggroNouns = ["Rush", "Swarm", "Burn", "Zoo", "Face", "Blitz", "Beatdown"];
+    const midNouns = ["Midrange", "Tempo", "Stompy", "Goodstuff", "Engine", "Flex", "Company"];
+    const controlNouns = ["Control", "Ramp", "Grinder", "Stall", "Prison", "Endgame", "Attrition"];
+
+    // 3. SMART SIGNATURE CARDS: Find the top 2 highest (cost * count) cards
+    // This allows for "Card A / Card B" formats.
+    const sortedDeck = [...deck].sort((a, b) => (b.count * b.cost) - (a.count * a.cost));
     
-    // Categorized Nouns based on deck speed
-    const aggroNouns = ["Rush", "Swarm", "Blitz", "Aggro", "Beatdown", "Ambush", "Assault"];
-    const midNouns = ["Synergy", "Brigade", "Tempo", "Engine", "Tactics", "Vanguard", "Syndicate"];
-    const controlNouns = ["Control", "Uprising", "Horde", "Protocol", "Onslaught", "Empire", "Legion"];
+    const cleanName = (name) => name.replace(/_/g, ' ').replace(/^The /i, '');
+    
+    const sigCard1 = cleanName(sortedDeck[0].name);
+    // Fallback to sigCard1 if the deck only has 1 unique card in it
+    const sigCard2 = sortedDeck.length > 1 ? cleanName(sortedDeck[1].name) : sigCard1;
 
-    // 1. SMART SIGNATURE CARD: Find highest (cost * count)
-    const signatureCard = deck.reduce((prev, current) => {
-        const prevImpact = prev.count * prev.cost;
-        const currImpact = current.count * current.cost;
-        return (currImpact > prevImpact) ? current : prev;
-    });
-
-    // Clean the name (remove underscores and leading "The")
-    const signatureCardName = signatureCard.name.replace(/_/g, ' ').replace(/^The /i, '');
-
-    // 2. ARCHETYPE DETECTION: Calculate average cost
+    // 4. ARCHETYPE DETECTION: Calculate average cost
     let totalCost = 0;
     let totalCards = 0;
     deck.forEach(c => {
@@ -4003,36 +3727,42 @@ function generateDeckName(deck, isPlant) {
     });
     const avgCost = totalCost / (totalCards || 1);
 
-    // Pick the noun pool based on deck speed
+    // Pick the noun pool and a baseline archetype name based on deck speed
     let nounPool = midNouns;
-    if (avgCost <= 2.8) nounPool = aggroNouns;
-    else if (avgCost >= 4.0) nounPool = controlNouns;
+    let baseArchetype = "Midrange";
+    
+    if (avgCost <= 2.8) { 
+        nounPool = aggroNouns; 
+        baseArchetype = "Aggro"; 
+    } else if (avgCost >= 4.0) { 
+        nounPool = controlNouns; 
+        baseArchetype = "Control"; 
+    }
 
-    // 3. GENERATION
-    const prefixes = isPlant ? plantAdjectives : zombieAdjectives;
-    const adj = prefixes[Math.floor(Math.random() * prefixes.length)];
+    // 5. GENERATION
+    const factionPrefixes = isPlant ? plantPrefixes : zombiePrefixes;
+    const prefix = factionPrefixes[Math.floor(Math.random() * factionPrefixes.length)];
+    const neutral = neutralPrefixes[Math.floor(Math.random() * neutralPrefixes.length)];
     const noun = nounPool[Math.floor(Math.random() * nounPool.length)];
 
+    // Serious, community-style CCG formats
     const formats = [
-        `The ${signatureCardName} ${noun}`,
-        `${adj} ${signatureCardName}`,
-        `${signatureCardName} Protocol`,
-        `Project: ${signatureCardName}`,
-        `${adj} ${signatureCardName} ${noun}`,
-        `Dawn of the ${signatureCardName}`,
-        `Rise of the ${signatureCardName}`,
-        `${signatureCardName} Awakening`,
-        `Operation: ${signatureCardName}`,
-        `The ${signatureCardName} Incident`,
-        `Return of the ${signatureCardName}`,
-        `${signatureCardName} Overdrive`,
-        `Beware the ${signatureCardName}`,
-        `Secret ${signatureCardName} Society`,
-        `${signatureCardName} and Friends`,
-        `The ${adj} ${noun}` 
+        `${sigCard1} ${noun}`,                     // e.g., Valkyrie Burn
+        `${prefix} ${sigCard1}`,                   // e.g., Scrap Valkyrie
+        `${neutral} ${sigCard1}`,                  // e.g., Turbo Valkyrie
+        `${sigCard1} ${baseArchetype}`,            // e.g., Valkyrie Midrange
+        `${sigCard1} / ${sigCard2}`,               // e.g., Valkyrie / Trickster
+        `${sigCard1} & ${sigCard2} ${noun}`,       // e.g., Valkyrie & Trickster Control
+        `${prefix} ${noun}`,                       // e.g., Scrap Midrange
+        `${sigCard1} Core`,                        // e.g., Valkyrie Core
+        `${noun} ${sigCard1}`                      // e.g., Burn Valkyrie
     ];
     
-    return formats[Math.floor(Math.random() * formats.length)];
+    // Optional: Filter out duplicates if sigCard1 and sigCard2 are the same 
+    // (Happens if a deck only has 1 type of card)
+    const validFormats = formats.filter(f => !f.includes(`${sigCard1} / ${sigCard1}`));
+    
+    return validFormats[Math.floor(Math.random() * validFormats.length)];
 }
 
 const copyDeckBtn = document.getElementById('copyDeckBtn');
