@@ -1,4 +1,5 @@
 {
+     
     "deck_-122": {
         "name": "Treat or Tricksterazzi",
         "cards": [
@@ -3280,6 +3281,27 @@
         "youtube_url": "https://www.youtube.com/watch?v=QvvSPgsS_RU",
         "upload_date": "Oct 5, 2025",
         "credit": "FryEmUp"
+    },
+    "deck_-123": {
+        "name": "Garg Maker",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Cheese_Cutter",
+            "x2 Quickdraw_Con_Man",
+            "x3 Barrel_Of_Deadbeards",
+            "x4 Botanist",
+            "x2 Final_Mission",
+            "x4 Quazard",
+            "x2 Synchronized_Swimmer",
+            "x4 Area_22",
+            "x4 Gargantuar-Throwing_Imp",
+            "x4 Frankentuar",
+            "x3 Supernova_Garg"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Oct 5, 2025",
+        "credit": "Coffee, Slewer"
     },
     "deck_140": {
         "name": "Riidaet | eafv",
