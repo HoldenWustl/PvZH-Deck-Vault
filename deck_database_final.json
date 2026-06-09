@@ -1,5 +1,46 @@
-{
-     
+{ 
+    "deck_-124": {
+        "name": "Secret Swimmer Blob",
+        "cards": [
+            "x4 Cheese_Cutter",
+            "x4 Dog_Walker",
+            "x2 Fraidy_Cat",
+            "x4 Secret_Agent",
+            "x4 Teleport",
+            "x3 Lurch_For_Lunch",
+            "x4 Synchronized_Swimmer",
+            "x4 Teleportation_Zombie",
+            "x4 Area_22",
+            "x3 Brain_Vendor",
+            "x4 Zom-Blob"
+        ],
+        "youtube_title": "This Deck Wins Crazily Fast",
+        "youtube_url": "https://www.youtube.com/watch?v=xzmDlzFPOG4",
+        "upload_date": "Jun 09, 2026",
+        "credit": "FryEmUp"
+    },   
+    "deck_8": {
+        "name": "Cartas Buenas",
+        "cards": [
+            "x4 Bonk_Choy",
+            "x4 Clique_Peas",
+            "x4 Lima_Pleurodon",
+            "x4 Split_Pea",
+            "x3 Lily_of_the_Valley",
+            "x3 Laser_Cattail",
+            "x3 Rotobaga",
+            "x3 Fertilizer",
+            "x2 Sportacus",
+            "x3 Jelly_Bean",
+            "x2 Plant_Food",
+            "x3 Gatling_Pea",
+            "x2 Brainana"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Jun 09, 2026",
+        "credit": "Pillowy"
+    }, 
     "deck_-122": {
         "name": "Treat or Tricksterazzi",
         "cards": [
@@ -497,28 +538,7 @@
         "upload_date": "Apr 13, 2026",
         "credit": "Pasta"
     },
-    "deck_8": {
-        "name": "Cartas Buenas",
-        "cards": [
-            "x4 Bonk_Choy",
-            "x4 Clique_Peas",
-            "x4 Lima_Pleurodon",
-            "x4 Split_Pea",
-            "x2 Cabbage_Pult",
-            "x2 Lily_of_the_Valley",
-            "x3 Laser_Cattail",
-            "x2 Rotobaga",
-            "x3 Fertilizer",
-            "x3 Jelly_Bean",
-            "x4 Gatling_Pea",
-            "x3 Brainana",
-            "x2 Espresso_Fiesta"
-        ],
-        "youtube_title": "",
-        "youtube_url": "",
-        "upload_date": "Apr 13, 2026",
-        "credit": "Pilowy"
-    },
+    
     "deck_9": {
         "name": "hmr",
         "cards": [
