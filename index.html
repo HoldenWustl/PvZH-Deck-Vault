@@ -17,7 +17,7 @@
             <h1>PvZH Deck Vault</h1>
             <p>Browsing <span id="deckCount" class="highlight">...</span> <span id="randomAdjective">glorious</span> PvZ
                 Heroes decks <button id="infoBtn" class="info-btn">?</button></p>
-            <p class="last-updated">Last updated: June 3, 2026</p>
+            <p class="last-updated">Last updated: June 9, 2026</p>
 
             <div id="controls" class="controls-container">
                 <div id="topControls">
@@ -36,9 +36,9 @@
                 </div>
                 </div>
                 <button id="crafterBtn">Deck Builder</button>
+                <button id="tiersBtn">Tier List</button>
                 <button id="statsBtn">View Stats</button>
-                <button id="synergyBtn">Synergy Web</button>
-                <button id="gamesBtn">Mini-Games</button>
+                <button id="gamesBtn">Mini-Game</button>
                 <button id="backBtn" class="hidden">Back to Decks</button>
             </div>
         </div>
@@ -56,6 +56,24 @@
 
             </div>
         </section>
+
+       <section id="tiersView" class="hidden" style="padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box;">
+    
+    <div class="crafter-header" style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
+        <button id="prevClassBtn" style="padding: 8px 16px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">&#8592; Prev</button>
+        
+        <div style="text-align: center;">
+            <h2><span class="version-effect" id="tierClassTitle">Card Tier List</span></h2>
+            <p style="color: var(--text-secondary); margin-top: 5px;">The definitive ranking of PvZ Heroes cards.</p>
+        </div>
+        
+        <button id="nextClassBtn" style="padding: 8px 16px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">Next &#8594;</button>
+    </div>
+
+    <div class="tier-list-container">
+        </div>
+
+</section>
 
         <section id="statsView" class="hidden">
             <div class="stats-container">
@@ -145,29 +163,35 @@
 
 
                     <div class="chart-box">
-                        <div class="chart-header-flex">
-                            <div class="chart-titles">
-                                <h3>Ultimate Synergies</h3>
-                                <p class="chart-subtitle">Cards most frequently played together in the same deck.</p>
-                            </div>
+    <div class="chart-header-flex">
+        <div class="chart-titles">
+            <h3>Ultimate Synergies</h3>
+            <p class="chart-subtitle">Cards most frequently played together in the same deck.</p>
+        </div>
 
-                            <div class="synergy-toggle">
-                                <input type="radio" id="synergyRaw" name="synergyType" value="raw" checked
-                                    onchange="toggleSynergyChart('raw')">
-                                <label for="synergyRaw">Raw Count</label>
+        <div class="synergy-toggle">
+            <input type="radio" id="synergyRaw" name="synergyType" value="raw" checked
+                onchange="toggleSynergyChart('raw')">
+            <label for="synergyRaw">Raw Count</label>
 
-                                <input type="radio" id="synergyNorm" name="synergyType" value="normalized"
-                                    onchange="toggleSynergyChart('normalized')">
-                                <label for="synergyNorm">Normalized</label>
+            <input type="radio" id="synergyNorm" name="synergyType" value="normalized"
+                onchange="toggleSynergyChart('normalized')">
+            <label for="synergyNorm">Normalized</label>
 
-                                <div class="toggle-slider"></div>
-                            </div>
-                        </div>
+            <div class="toggle-slider"></div>
+        </div>
+    </div>
 
-                        <div class="canvas-wrapper">
-                            <canvas id="pairsChart"></canvas>
-                        </div>
-                    </div>
+    <div class="canvas-wrapper">
+        <canvas id="pairsChart"></canvas>
+    </div>
+    
+    <div style="text-align: right; margin-top: 8px;">
+    <span id="synergyEasterEgg" style="cursor: pointer; font-size: 0.75em;">
+        Generate Synergy Web
+    </span>
+</div>
+</div>
 
 
 

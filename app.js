@@ -17,12 +17,12 @@ const heroMap = {
     "Guardian,Solar": "Wall-Knight",
     "Mega-Grow,Solar": "Chompzilla",
     "Guardian,Kabloom": "Spudow",
-    "Guardian,Smarty": "Citron / Beta-Carrotina", 
+    "Guardian,Smarty": "Citron / Beta-Carrotina",
     "Guardian,Mega-Grow": "Grass Knuckles",
     "Kabloom,Smarty": "Nightcap",
     "Kabloom,Mega-Grow": "Captain Combustible",
     "Smarty,Solar": "Rose",
-    
+
     // Zombies
     "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
     "Beastly,Hearty": "The Smash",
@@ -86,112 +86,124 @@ document.addEventListener('DOMContentLoaded', () => {
     // View/Tab Elements
     const deckView = document.getElementById('deckView');
     const statsView = document.getElementById('statsView');
+    const tiersView = document.getElementById('tiersView');
     const searchWrapper = document.getElementById('searchWrapper');
     const statsBtn = document.getElementById('statsBtn');
+    const tiersBtn = document.getElementById('tiersBtn');
     const backBtn = document.getElementById('backBtn');
     const crafterBtn = document.getElementById('crafterBtn');
     const crafterView = document.getElementById('crafterView');
     const gamesView = document.getElementById('gamesView');
-const gamesBtn = document.getElementById('gamesBtn');
-const synergyBtn = document.getElementById('synergyBtn');
-const synergyView = document.getElementById('synergyView');
+    const gamesBtn = document.getElementById('gamesBtn');
+    const synergyEasterEgg = document.getElementById('synergyEasterEgg');
+    const synergyView = document.getElementById('synergyView');
 
     // --- Fetch Database ---
-   // --- 1. SET UP A "DATA LOADED" FLAG ---
-let isDataLoaded = false; 
+    // --- 1. SET UP A "DATA LOADED" FLAG ---
+    let isDataLoaded = false;
 
-// --- 2. YOUR FETCH CALLS (Slightly updated) ---
-// We use Promise.all to wait for BOTH JSON files to finish downloading
-Promise.all([
-    fetch('deck_database_final.json').then(res => {
-        if (!res.ok) throw new Error("Could not load the database file.");
-        return res.json();
-    }),
-    fetch('card_data.json').then(res => {
-        if (!res.ok) throw new Error("Could not load the card data file.");
-        return res.json();
-    })
-])
-.then(([deckData, cardData]) => {
-    // Both files are successfully downloaded!
-    fullDatabase = deckData;
-    cardDatabase = cardData;
+    // --- 2. YOUR FETCH CALLS (Slightly updated) ---
+    // We use Promise.all to wait for BOTH JSON files to finish downloading
+    Promise.all([
+        fetch('deck_database_final.json').then(res => {
+            if (!res.ok) throw new Error("Could not load the database file.");
+            return res.json();
+        }),
+        fetch('card_data.json').then(res => {
+            if (!res.ok) throw new Error("Could not load the card data file.");
+            return res.json();
+        })
+    ])
+        .then(([deckData, cardData]) => {
+            // Both files are successfully downloaded!
+            fullDatabase = deckData;
+            cardDatabase = cardData;
 
-    loadingEl.style.display = 'none';
-    const totalDecks = Object.keys(deckData).length;
-    deckCountEl.textContent = totalDecks;
-    
-    // We set our flag to true, meaning it is safe to draw charts now.
-    isDataLoaded = true;
-    
-    // Kick off the initial render of the main deck list
-    renderDecks(fullDatabase);
+            loadingEl.style.display = 'none';
+            const totalDecks = Object.keys(deckData).length;
+            deckCountEl.textContent = totalDecks;
 
-    // KICK OFF THE ROUTER NOW THAT WE HAVE DATA!
-    handleRouting(); 
-    renderSeeds(); // Initial render to show empty state
-})
-.catch(error => {
-    loadingEl.textContent = `Error loading data: ${error.message}`;
-    console.error("Fetch error:", error);
-});
-const gradeFilter = document.getElementById('gradeFilter');
-function handleRouting() {
-    // IMPORTANT: If the data hasn't finished downloading yet, stop right here!
-    if (!isDataLoaded) return; 
+            // We set our flag to true, meaning it is safe to draw charts now.
+            isDataLoaded = true;
 
-    const hash = window.location.hash;
+            // Kick off the initial render of the main deck list
+            renderDecks(fullDatabase);
 
-    // 1. Hide absolutely everything first
-    gradeFilter.classList.add('hidden');
-    deckView.classList.add('hidden');
-    statsView.classList.add('hidden');
-    crafterView.classList.add('hidden');
-    gamesView.classList.add('hidden');
-    searchWrapper.classList.add('hidden');
-    statsBtn.classList.add('hidden');
-    crafterBtn.classList.add('hidden');
-    gamesBtn.classList.add('hidden'); 
-    synergyView.classList.add('hidden');
-    synergyBtn.classList.add('hidden');
-    if (typeof backBtn !== 'undefined') backBtn.classList.add('hidden');
+            // KICK OFF THE ROUTER NOW THAT WE HAVE DATA!
+            handleRouting();
+            renderSeeds(); // Initial render to show empty state
+        })
+        .catch(error => {
+            loadingEl.textContent = `Error loading data: ${error.message}`;
+            console.error("Fetch error:", error);
+        });
+    const gradeFilter = document.getElementById('gradeFilter');
+    function handleRouting() {
+        // IMPORTANT: If the data hasn't finished downloading yet, stop right here!
+        if (!isDataLoaded) return;
 
-    // 2. Determine what to show based on the hash
-    if (hash === '#stats') {
-        statsView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-        
-        const currentLimit = document.getElementById('deckLimitFilter') ? document.getElementById('deckLimitFilter').value : 'all';
-        if (typeof renderStatsChart === 'function') renderStatsChart(currentLimit);
+        const hash = window.location.hash;
 
-    } else if (hash === '#crafter') {
-        crafterView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+        // 1. Hide absolutely everything first
+        gradeFilter.classList.add('hidden');
+        deckView.classList.add('hidden');
+        statsView.classList.add('hidden');
+        tiersView.classList.add('hidden');
+        crafterView.classList.add('hidden');
+        gamesView.classList.add('hidden');
+        searchWrapper.classList.add('hidden');
+        statsBtn.classList.add('hidden');
+        crafterBtn.classList.add('hidden');
+        gamesBtn.classList.add('hidden');
+        tiersBtn.classList.add('hidden');
+        synergyView.classList.add('hidden');
 
-    } else if (hash === '#games') { // <-- NEW ROUTE
-        gamesView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-        if (typeof renderGames === 'function') renderGames();
+        // REMOVED: synergyBtn.classList.add('hidden');
 
-    } 
-    else if (hash === '#synergy') { // <-- NEW ROUTE
-        synergyView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-        // We will define this function next!
-        if (typeof renderSynergyWeb === 'function') renderSynergyWeb();
+        if (typeof backBtn !== 'undefined') backBtn.classList.add('hidden');
 
+        // 2. Determine what to show based on the hash
+        if (hash === '#stats') {
+            statsView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+
+            const currentLimit = document.getElementById('deckLimitFilter') ? document.getElementById('deckLimitFilter').value : 'all';
+            if (typeof renderStatsChart === 'function') renderStatsChart(currentLimit);
+
+        } else if (hash === '#crafter') {
+            crafterView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+
+        } else if (hash === '#games') {
+            gamesView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+            if (typeof renderGames === 'function') renderGames();
+
+        }
+        else if (hash === '#synergy') {
+            synergyView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+            if (typeof renderSynergyWeb === 'function') renderSynergyWeb();
+
+        }
+        else if (hash === '#tiers') {
+            tiersView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+            if (typeof renderTiers === 'function') renderTiers();
+        }
+        else {
+            // Default Home UI
+            deckView.classList.remove('hidden');
+            searchWrapper.classList.remove('hidden');
+            statsBtn.classList.remove('hidden');
+            tiersBtn.classList.remove('hidden');
+            crafterBtn.classList.remove('hidden');
+            gamesBtn.classList.remove('hidden');
+            gradeFilter.classList.remove('hidden');
+
+            // REMOVED: synergyBtn.classList.remove('hidden');
+        }
     }
-    else {
-        // Default Home UI
-        deckView.classList.remove('hidden');
-        searchWrapper.classList.remove('hidden');
-        statsBtn.classList.remove('hidden');
-        crafterBtn.classList.remove('hidden');
-        gamesBtn.classList.remove('hidden');
-        synergyBtn.classList.remove('hidden');
-        gradeFilter.classList.remove('hidden');
-    }
-}
     // --- Helper Functions ---
     function getYouTubeId(url) {
         if (!url) return null;
@@ -203,468 +215,469 @@ function handleRouting() {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
     function parseCardEntry(cardString) {
-    if (!cardString || typeof cardString !== "string") return null;
-    const parts = cardString.trim().split(/\s+/);
-    if (parts.length === 0 || !parts[0]) return null;
+        if (!cardString || typeof cardString !== "string") return null;
+        const parts = cardString.trim().split(/\s+/);
+        if (parts.length === 0 || !parts[0]) return null;
 
-    let count = 1;
-    let nameParts = parts;
-    const first = parts[0];
-    const m1 = first.match(/^x(\d+)$/i);
-    const m2 = first.match(/^(\d+)x$/i);
-    const m3 = first.match(/^(\d+)$/);
+        let count = 1;
+        let nameParts = parts;
+        const first = parts[0];
+        const m1 = first.match(/^x(\d+)$/i);
+        const m2 = first.match(/^(\d+)x$/i);
+        const m3 = first.match(/^(\d+)$/);
 
-    if (m1)                       { count = parseInt(m1[1], 10); nameParts = parts.slice(1); }
-    else if (m2)                  { count = parseInt(m2[1], 10); nameParts = parts.slice(1); }
-    else if (m3 && parts.length > 1) { count = parseInt(m3[1], 10); nameParts = parts.slice(1); }
+        if (m1) { count = parseInt(m1[1], 10); nameParts = parts.slice(1); }
+        else if (m2) { count = parseInt(m2[1], 10); nameParts = parts.slice(1); }
+        else if (m3 && parts.length > 1) { count = parseInt(m3[1], 10); nameParts = parts.slice(1); }
 
-    const rawName = nameParts.join(" ").trim();
-    if (!rawName) return null;
+        const rawName = nameParts.join(" ").trim();
+        if (!rawName) return null;
 
-    const name = rawName.replace(/_/g, " ").replace(/\s+/g, " ").trim();
-    const key  = name.replace(/ /g, "_");
-    return { name, key, count: Number.isFinite(count) ? count : 1 };
-}
+        const name = rawName.replace(/_/g, " ").replace(/\s+/g, " ").trim();
+        const key = name.replace(/ /g, "_");
+        return { name, key, count: Number.isFinite(count) ? count : 1 };
+    }
 
-let _verdictContext = null;
-let _verdictContextSource = null;
+    let _verdictContext = null;
+    let _verdictContextSource = null;
 
-function getVerdictContext() {
-    if (_verdictContext && _verdictContextSource === fullDatabase) return _verdictContext;
+    function getVerdictContext() {
+        if (_verdictContext && _verdictContextSource === fullDatabase) return _verdictContext;
 
-    const ctx = { cardPopularity: {}, maxMetaCopies: 0, dbDecks: {} };
-    if (typeof fullDatabase === "undefined") {
+        const ctx = { cardPopularity: {}, maxMetaCopies: 0, dbDecks: {} };
+        if (typeof fullDatabase === "undefined") {
+            _verdictContext = ctx;
+            _verdictContextSource = fullDatabase;
+            return ctx;
+        }
+
+        for (const deckKey in fullDatabase) {
+            const dbDeck = fullDatabase[deckKey];
+            if (!dbDeck || !Array.isArray(dbDeck.cards)) continue;
+
+            const seedCounts = new Map(); // spaced name -> count (used for overlap)
+            let dbTotalCards = 0;
+            const dbCurve = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, "6+": 0 };
+
+            for (const cardString of dbDeck.cards) {
+                // EXACT live-builder parsing — do not "improve" this
+                const parts = (cardString || "").split(" ");
+                if (parts.length < 2) continue;
+
+                const count = parseInt(parts[0].replace('x', '')) || 0; // live: curve uses || 0
+                const copiesPower = parseInt(parts[0].replace('x', '')) || 1; // live: power uses || 1
+                const rawName = parts.slice(1).join(" ");
+                const cleanName = rawName.replace(/_/g, ' ');
+
+                seedCounts.set(cleanName, (seedCounts.get(cleanName) || 0) + count);
+                dbTotalCards += count;
+                ctx.cardPopularity[cleanName] = (ctx.cardPopularity[cleanName] || 0) + copiesPower;
+
+                // Mirror the live builder's cost lookup EXACTLY, including the
+                // "NaN cost falls to 6+" quirk. Do NOT normalize NaN to 1 here.
+                const cardData = cardDatabase[cleanName] || cardDatabase[rawName];
+                const cost = cardData ? parseInt(cardData.Cost) : 1;
+
+                if (cost <= 1) dbCurve[1] += count;
+                else if (cost === 2) dbCurve[2] += count;
+                else if (cost === 3) dbCurve[3] += count;
+                else if (cost === 4) dbCurve[4] += count;
+                else if (cost === 5) dbCurve[5] += count;
+                else dbCurve["6+"] += count;
+            }
+
+            if (dbTotalCards === 0) continue;
+
+            ctx.dbDecks[deckKey] = {
+                seedCounts,
+                totalCards: dbTotalCards,
+                shape: [
+                    dbCurve[1] / dbTotalCards,
+                    dbCurve[2] / dbTotalCards,
+                    dbCurve[3] / dbTotalCards,
+                    dbCurve[4] / dbTotalCards,
+                    dbCurve[5] / dbTotalCards,
+                    dbCurve["6+"] / dbTotalCards,
+                ],
+            };
+        }
+
+        const metaValues = Object.values(ctx.cardPopularity);
+        ctx.maxMetaCopies = metaValues.length > 0 ? Math.max(...metaValues) : 0;
+
         _verdictContext = ctx;
         _verdictContextSource = fullDatabase;
         return ctx;
     }
 
-    for (const deckKey in fullDatabase) {
-        const dbDeck = fullDatabase[deckKey];
-        if (!dbDeck || !Array.isArray(dbDeck.cards)) continue;
-
-        const seedCounts = new Map(); // spaced name -> count (used for overlap)
-        let dbTotalCards = 0;
-        const dbCurve = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, "6+": 0 };
-
-        for (const cardString of dbDeck.cards) {
-            // EXACT live-builder parsing — do not "improve" this
-            const parts = (cardString || "").split(" ");
-            if (parts.length < 2) continue;
-
-            const count        = parseInt(parts[0].replace('x', '')) || 0; // live: curve uses || 0
-            const copiesPower  = parseInt(parts[0].replace('x', '')) || 1; // live: power uses || 1
-            const rawName      = parts.slice(1).join(" ");
-            const cleanName    = rawName.replace(/_/g, ' ');
-
-            seedCounts.set(cleanName, (seedCounts.get(cleanName) || 0) + count);
-            dbTotalCards += count;
-            ctx.cardPopularity[cleanName] = (ctx.cardPopularity[cleanName] || 0) + copiesPower;
-
-            // Mirror the live builder's cost lookup EXACTLY, including the
-            // "NaN cost falls to 6+" quirk. Do NOT normalize NaN to 1 here.
-            const cardData = cardDatabase[cleanName] || cardDatabase[rawName];
-            const cost = cardData ? parseInt(cardData.Cost) : 1;
-
-            if      (cost <= 1)  dbCurve[1]    += count;
-            else if (cost === 2) dbCurve[2]    += count;
-            else if (cost === 3) dbCurve[3]    += count;
-            else if (cost === 4) dbCurve[4]    += count;
-            else if (cost === 5) dbCurve[5]    += count;
-            else                 dbCurve["6+"] += count;
+    function getDeckVerdictFromCards(deckCards, selfDeckKey, ctx) {
+        if (typeof initSynergyMatrix === "function") {
+            initSynergyMatrix();
         }
+        ctx = ctx || getVerdictContext();
 
-        if (dbTotalCards === 0) continue;
+        // --- Parse own deck ---
+        const seedMap = new Map(); // name -> {name, key, count, cost}
+        for (const cardString of deckCards || []) {
+            const parsed = parseCardEntry(cardString);
+            if (!parsed) continue;
+            const { name, key, count } = parsed;
 
-        ctx.dbDecks[deckKey] = {
-            seedCounts,
-            totalCards: dbTotalCards,
-            shape: [
-                dbCurve[1]    / dbTotalCards,
-                dbCurve[2]    / dbTotalCards,
-                dbCurve[3]    / dbTotalCards,
-                dbCurve[4]    / dbTotalCards,
-                dbCurve[5]    / dbTotalCards,
-                dbCurve["6+"] / dbTotalCards,
-            ],
-        };
-    }
-
-    const metaValues = Object.values(ctx.cardPopularity);
-    ctx.maxMetaCopies = metaValues.length > 0 ? Math.max(...metaValues) : 0;
-
-    _verdictContext = ctx;
-    _verdictContextSource = fullDatabase;
-    return ctx;
-}
-
-function getDeckVerdictFromCards(deckCards, selfDeckKey, ctx) {
-    if (typeof initSynergyMatrix === "function") {
-        initSynergyMatrix();
-    }
-    ctx = ctx || getVerdictContext();
-
-    // --- Parse own deck ---
-    const seedMap = new Map(); // name -> {name, key, count, cost}
-    for (const cardString of deckCards || []) {
-        const parsed = parseCardEntry(cardString);
-        if (!parsed) continue;
-        const { name, key, count } = parsed;
-
-        const existing = seedMap.get(name) || { name, key, count: 0, cost: 1 };
-        existing.count += count;
-        const cardData = cardDatabase?.[key] || cardDatabase?.[name] || {};
-        const parsedCost = parseInt(cardData.Cost, 10);
-        existing.cost = Number.isFinite(parsedCost) ? parsedCost : 1;
-        seedMap.set(name, existing);
-    }
-    const seeds = [...seedMap.values()];
-
-    // --- Totals, curve, sparks, synergy ---
-    let totalCards = 0, totalCost = 0, totalSparks = 0, totalConnection = 0;
-    const curve = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, "6+": 0 };
-
-    seeds.forEach(seedA => {
-        totalCards += seedA.count;
-        const cost = seedA.cost || 1;
-        totalCost  += cost * seedA.count;
-
-        const cardData = cardDatabase?.[seedA.key] || cardDatabase?.[seedA.name] || {};
-        const rarity = cardData.Rarity || "Common";
-        let sparks = 0;
-        if      (rarity === "Uncommon")                              sparks = 50;
-        else if (rarity === "Rare")                                  sparks = 250;
-        else if (rarity === "Super-Rare" || rarity === "Event")      sparks = 1000;
-        else if (rarity === "Legendary")                             sparks = 4000;
-        totalSparks += sparks * seedA.count;
-
-        if      (cost <= 1) curve[1]   += seedA.count;
-        else if (cost === 2) curve[2]   += seedA.count;
-        else if (cost === 3) curve[3]   += seedA.count;
-        else if (cost === 4) curve[4]   += seedA.count;
-        else if (cost === 5) curve[5]   += seedA.count;
-        else                 curve["6+"] += seedA.count;
-        
-        let cardBestConnection = 0;
-        const freqA = cardFrequencies?.[seedA.key] || 1;
-        seeds.forEach(seedB => {
-            if (seedA.key === seedB.key) return;
-            const coOccurrences = synergyMatrix?.[seedA.key]?.[seedB.key] || 0;
-            const freqB = cardFrequencies?.[seedB.key] || 1;
-            const cs = coOccurrences / Math.sqrt(freqA * freqB);
-            if (cs > cardBestConnection) cardBestConnection = cs;
-        });
-        totalConnection += cardBestConnection * seedA.count;
-    });
-
-    const avgCost   = totalCards > 0 ? totalCost   / totalCards : 0;
-    const avgSparks = totalCards > 0 ? totalSparks / totalCards : 0;
-
-    let costLabel = "Budget";
-    if      (avgSparks <=  250) costLabel = "Budget";
-    else if (avgSparks <=  600) costLabel = "Moderate";
-    else if (avgSparks <= 1400) costLabel = "Expensive";
-    else                        costLabel = "P2W";
-
-    // --- Synergy ---
-    let synergyScore = 0;
-    if (totalCards > 0 && seeds.length > 1) {
-        const rawAvg = totalConnection / totalCards;
-        synergyScore = Math.min(Math.round(rawAvg * 100), 100);
-        if (totalCards < 6) synergyScore = Math.round(synergyScore * (totalCards / 6));
-    } else if (totalCards === 1) {
-        synergyScore = 5;
-    }
-
-    // --- Consistency ---
-    let consistencyScore = 0;
-    if (totalCards > 0 && seeds.length > 0) {
-        let pts = 0;
-        seeds.forEach(s => {
-            if      (s.count === 1)  pts += 0;
-            else if (s.count === 2)  pts += 50;
-            else if (s.count === 3)  pts += 80;
-            else if (s.count >= 4)   pts += 100;
-        });
-        consistencyScore = Math.round(pts / seeds.length);
-    }
-
-    // --- Power (uses precomputed popularity) ---
-    let powerScore = 0;
-    if (totalCards > 0 && ctx.maxMetaCopies > 0) {
-        let totalPowerPoints = 0;
-        const curveFactor = 1;
-        seeds.forEach(seed => {
-            const metaCopies = ctx.cardPopularity[seed.name] || 0;
-            const rawRatio = metaCopies / ctx.maxMetaCopies;
-            totalPowerPoints += Math.pow(rawRatio, curveFactor) * 100 * seed.count;
-        });
-        powerScore = Math.min(100, Math.round((totalPowerPoints * 3) / totalCards));
-    }
-
-    // --- Curve health (full archetype envelope, like the live builder) ---
-    let curveHealthText = "...";
-    let curveNumeric = 55;
-
-    if (totalCards >= 10) {
-        const userShape = [
-            curve[1] / totalCards, curve[2] / totalCards, curve[3] / totalCards,
-            curve[4] / totalCards, curve[5] / totalCards, curve["6+"] / totalCards,
-        ];
-
-        const userSeedCounts = new Map();
-        seeds.forEach(s => userSeedCounts.set(s.name, s.count));
-
-        const dbComparisons = [];
-        let exactCopyAdded = false; // Flag to track exact card-for-card matches
-
-        for (const dbKey in ctx.dbDecks) {
-            
-            const db = ctx.dbDecks[dbKey];
-            let overlap = 0;
-            // iterate the smaller side
-            const [a, b] = userSeedCounts.size < db.seedCounts.size
-                ? [userSeedCounts, db.seedCounts]
-                : [db.seedCounts, userSeedCounts];
-            for (const [name, c] of a) {
-                const other = b.get(name);
-                if (other !== undefined) overlap += Math.min(c, other);
-            }
-            
-            // EXACT CARD COPY RULE:
-            // If the matched cards equal totalCards AND both decks have the exact same number of unique cards
-            if (overlap === totalCards && userSeedCounts.size === db.seedCounts.size) {
-                if (exactCopyAdded) {
-                    continue; // We already have our 1 exact copy, skip this one
-                }
-                exactCopyAdded = true; 
-            }
-
-            if (overlap >= 6) dbComparisons.push({ overlap, shape: db.shape });
+            const existing = seedMap.get(name) || { name, key, count: 0, cost: 1 };
+            existing.count += count;
+            const cardData = cardDatabase?.[key] || cardDatabase?.[name] || {};
+            const parsedCost = parseInt(cardData.Cost, 10);
+            existing.cost = Number.isFinite(parsedCost) ? parsedCost : 1;
+            seedMap.set(name, existing);
         }
+        const seeds = [...seedMap.values()];
 
-        dbComparisons.sort((a, b) => b.overlap - a.overlap);
+        // --- Totals, curve, sparks, synergy ---
+        let totalCards = 0, totalCost = 0, totalSparks = 0, totalConnection = 0;
+        const curve = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, "6+": 0 };
 
-        let closestDecks = [];
-        if (dbComparisons.length > 0) {
-            const best = dbComparisons[0].overlap;
-            closestDecks = dbComparisons.filter(d => d.overlap >= best * 0.85).slice(0, 10);
-            if (closestDecks.length < 4 && dbComparisons.length >= 4) {
-                closestDecks = dbComparisons.slice(0, 4);
-            }
-        }
+        seeds.forEach(seedA => {
+            totalCards += seedA.count;
+            const cost = seedA.cost || 1;
+            totalCost += cost * seedA.count;
 
-        if (closestDecks.length > 0) {
-            let totalWeight = 0;
-            closestDecks.forEach(d => totalWeight += d.overlap);
+            const cardData = cardDatabase?.[seedA.key] || cardDatabase?.[seedA.name] || {};
+            const rarity = cardData.Rarity || "Common";
+            let sparks = 0;
+            if (rarity === "Uncommon") sparks = 50;
+            else if (rarity === "Rare") sparks = 250;
+            else if (rarity === "Super-Rare" || rarity === "Event") sparks = 1000;
+            else if (rarity === "Legendary") sparks = 4000;
+            totalSparks += sparks * seedA.count;
 
-            const idealShape = [0, 0, 0, 0, 0, 0];
-            closestDecks.forEach(d => {
-                const w = d.overlap / totalWeight;
-                for (let i = 0; i < 6; i++) idealShape[i] += d.shape[i] * w;
+            if (cost <= 1) curve[1] += seedA.count;
+            else if (cost === 2) curve[2] += seedA.count;
+            else if (cost === 3) curve[3] += seedA.count;
+            else if (cost === 4) curve[4] += seedA.count;
+            else if (cost === 5) curve[5] += seedA.count;
+            else curve["6+"] += seedA.count;
+
+            let cardBestConnection = 0;
+            const freqA = cardFrequencies?.[seedA.key] || 1;
+            seeds.forEach(seedB => {
+                if (seedA.key === seedB.key) return;
+                const coOccurrences = synergyMatrix?.[seedA.key]?.[seedB.key] || 0;
+                const freqB = cardFrequencies?.[seedB.key] || 1;
+                const cs = coOccurrences / Math.sqrt(freqA * freqB);
+                if (cs > cardBestConnection) cardBestConnection = cs;
             });
+            totalConnection += cardBestConnection * seedA.count;
+        });
 
-            const tolerance = 0.05;
-            let totalPenalty = 0;
-            for (let i = 0; i < 6; i++) {
-                const diff = Math.abs(userShape[i] - idealShape[i]);
-                if (diff > tolerance) totalPenalty += diff - tolerance;
-            }
-            const deviationPercent = (totalPenalty / 6) * 100;
+        const avgCost = totalCards > 0 ? totalCost / totalCards : 0;
+        const avgSparks = totalCards > 0 ? totalSparks / totalCards : 0;
 
-            if      (deviationPercent <= 2.0) { curveHealthText = "Excellent"; curveNumeric = 100; }
-            else if (deviationPercent <= 3.0) { curveHealthText = "Good";      curveNumeric = 80;  }
-            else if (deviationPercent <= 5.0) { curveHealthText = "Playable";  curveNumeric = 55;  }
-            else                              { curveHealthText = "Awkward";   curveNumeric = 20;  }
-        } else {
-            curveHealthText = "Unique";
-            curveNumeric = 65;
+        let costLabel = "Budget";
+        if (avgSparks <= 250) costLabel = "Budget";
+        else if (avgSparks <= 600) costLabel = "Moderate";
+        else if (avgSparks <= 1400) costLabel = "Expensive";
+        else costLabel = "P2W";
+
+        // --- Synergy ---
+        let synergyScore = 0;
+        if (totalCards > 0 && seeds.length > 1) {
+            const rawAvg = totalConnection / totalCards;
+            synergyScore = Math.min(Math.round(rawAvg * 100), 100);
+            if (totalCards < 6) synergyScore = Math.round(synergyScore * (totalCards / 6));
+        } else if (totalCards === 1) {
+            synergyScore = 5;
         }
+
+        // --- Consistency ---
+        let consistencyScore = 0;
+        if (totalCards > 0 && seeds.length > 0) {
+            let pts = 0;
+            seeds.forEach(s => {
+                if (s.count === 1) pts += 0;
+                else if (s.count === 2) pts += 50;
+                else if (s.count === 3) pts += 80;
+                else if (s.count >= 4) pts += 100;
+            });
+            consistencyScore = Math.round(pts / seeds.length);
+        }
+
+        // --- Power (uses precomputed popularity) ---
+        let powerScore = 0;
+        if (totalCards > 0 && ctx.maxMetaCopies > 0) {
+            let totalPowerPoints = 0;
+            const curveFactor = 1;
+            seeds.forEach(seed => {
+                const metaCopies = ctx.cardPopularity[seed.name] || 0;
+                const rawRatio = metaCopies / ctx.maxMetaCopies;
+                totalPowerPoints += Math.pow(rawRatio, curveFactor) * 100 * seed.count;
+            });
+            powerScore = Math.min(100, Math.round((totalPowerPoints * 3) / totalCards));
+        }
+
+        // --- Curve health (full archetype envelope, like the live builder) ---
+        let curveHealthText = "...";
+        let curveNumeric = 55;
+
+        if (totalCards >= 10) {
+            const userShape = [
+                curve[1] / totalCards, curve[2] / totalCards, curve[3] / totalCards,
+                curve[4] / totalCards, curve[5] / totalCards, curve["6+"] / totalCards,
+            ];
+
+            const userSeedCounts = new Map();
+            seeds.forEach(s => userSeedCounts.set(s.name, s.count));
+
+            const dbComparisons = [];
+            let exactCopyAdded = false; // Flag to track exact card-for-card matches
+
+            for (const dbKey in ctx.dbDecks) {
+
+                const db = ctx.dbDecks[dbKey];
+                let overlap = 0;
+                // iterate the smaller side
+                const [a, b] = userSeedCounts.size < db.seedCounts.size
+                    ? [userSeedCounts, db.seedCounts]
+                    : [db.seedCounts, userSeedCounts];
+                for (const [name, c] of a) {
+                    const other = b.get(name);
+                    if (other !== undefined) overlap += Math.min(c, other);
+                }
+
+                // EXACT CARD COPY RULE:
+                // If the matched cards equal totalCards AND both decks have the exact same number of unique cards
+                if (overlap === totalCards && userSeedCounts.size === db.seedCounts.size) {
+                    if (exactCopyAdded) {
+                        continue; // We already have our 1 exact copy, skip this one
+                    }
+                    exactCopyAdded = true;
+                }
+
+                if (overlap >= 6) dbComparisons.push({ overlap, shape: db.shape });
+            }
+
+            dbComparisons.sort((a, b) => b.overlap - a.overlap);
+
+            let closestDecks = [];
+            if (dbComparisons.length > 0) {
+                const best = dbComparisons[0].overlap;
+                closestDecks = dbComparisons.filter(d => d.overlap >= best * 0.85).slice(0, 10);
+                if (closestDecks.length < 4 && dbComparisons.length >= 4) {
+                    closestDecks = dbComparisons.slice(0, 4);
+                }
+            }
+
+            if (closestDecks.length > 0) {
+                let totalWeight = 0;
+                closestDecks.forEach(d => totalWeight += d.overlap);
+
+                const idealShape = [0, 0, 0, 0, 0, 0];
+                closestDecks.forEach(d => {
+                    const w = d.overlap / totalWeight;
+                    for (let i = 0; i < 6; i++) idealShape[i] += d.shape[i] * w;
+                });
+
+                const tolerance = 0.05;
+                let totalPenalty = 0;
+                for (let i = 0; i < 6; i++) {
+                    const diff = Math.abs(userShape[i] - idealShape[i]);
+                    if (diff > tolerance) totalPenalty += diff - tolerance;
+                }
+                const deviationPercent = (totalPenalty / 6) * 100;
+
+                if (deviationPercent <= 2.0) { curveHealthText = "Excellent"; curveNumeric = 100; }
+                else if (deviationPercent <= 3.0) { curveHealthText = "Good"; curveNumeric = 80; }
+                else if (deviationPercent <= 5.0) { curveHealthText = "Playable"; curveNumeric = 55; }
+                else { curveHealthText = "Awkward"; curveNumeric = 20; }
+            } else {
+                curveHealthText = "Unique";
+                curveNumeric = 65;
+            }
+        }
+
+        // --- Verdict ---
+        const base = (curveNumeric * 0.3) + (synergyScore * 0.35) + (powerScore * 0.3) + (consistencyScore * 0.05);
+        const consistencyPenalty = consistencyScore < 70 ? (70 - consistencyScore) * 0.8 : 0;
+        const overallPercent = Math.max(0, base - consistencyPenalty);
+        const allTopTier = curveNumeric >= 87.5 && synergyScore >= 87.5 && consistencyScore >= 87.5 && powerScore >= 87.5;
+
+        const { grade, gradeColor } = getVerdictGrade(overallPercent, allTopTier, totalCards);
+        return { grade, gradeColor, score: overallPercent, costLabel, synergyScore, consistencyScore, powerScore, avgCost, curveHealthText, curve, avgSparks, curveNumeric };
     }
-
-    // --- Verdict ---
-    const base = (curveNumeric * 0.3) + (synergyScore * 0.35) + (powerScore * 0.3) + (consistencyScore * 0.05);
-    const consistencyPenalty = consistencyScore < 70 ? (70 - consistencyScore) * 0.8 : 0;
-    const overallPercent = Math.max(0, base - consistencyPenalty);
-    const allTopTier = curveNumeric >= 87.5 && synergyScore >= 87.5 && consistencyScore >= 87.5 && powerScore >= 87.5;
-
-    const { grade, gradeColor } = getVerdictGrade(overallPercent, allTopTier, totalCards);
-    return { grade, gradeColor, score: overallPercent, costLabel, synergyScore, consistencyScore, powerScore, avgCost, curveHealthText, curve, avgSparks, curveNumeric };
-}
     // --- Render Decks Function ---
-  function renderDecks(data) {
-    const searchInput = document.getElementById('searchInput');
-    const statsBtn = document.getElementById('statsBtn');
-    const loadingIndicator = document.getElementById('loadingIndicator');
+    function renderDecks(data) {
+        const searchInput = document.getElementById('searchInput');
+        const statsBtn = document.getElementById('statsBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
 
-    // 1. Show loader and disable controls BEFORE rendering
-    if (loadingIndicator) loadingIndicator.classList.remove('hidden');
-    deckGrid.classList.add('hidden'); 
-    if (statsBtn) statsBtn.disabled = true;
-    if (crafterBtn) crafterBtn.disabled = true;
-    if (gamesBtn) gamesBtn.disabled = true;
-    if (synergyBtn) synergyBtn.disabled = true;
+        // 1. Show loader and disable controls BEFORE rendering
+        if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+        deckGrid.classList.add('hidden');
+        if (statsBtn) statsBtn.disabled = true;
+        if (crafterBtn) crafterBtn.disabled = true;
+        if (gamesBtn) gamesBtn.disabled = true;
+        if (tiersBtn) tiersBtn.disabled = true;
 
-    setTimeout(() => {
-        deckGrid.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        const ctx = getVerdictContext(); // built once, reused for the whole loop
 
-        // --- PRE-PROCESS DUPLICATES ---
-        const signatureMap = new Map();
-        for (const [deckKey, deckInfo] of Object.entries(data)) {
-            if (!deckInfo.cards) continue;
-            
-            const signature = deckInfo.cards.map(c => {
-                return c.replace(/_/g, ' ')  
-                        .replace(/\s+/g, ' ') 
+        setTimeout(() => {
+            deckGrid.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            const ctx = getVerdictContext(); // built once, reused for the whole loop
+
+            // --- PRE-PROCESS DUPLICATES ---
+            const signatureMap = new Map();
+            for (const [deckKey, deckInfo] of Object.entries(data)) {
+                if (!deckInfo.cards) continue;
+
+                const signature = deckInfo.cards.map(c => {
+                    return c.replace(/_/g, ' ')
+                        .replace(/\s+/g, ' ')
                         .trim()
                         .toLowerCase();
-            }).sort().join('|');
-            
-            let dateVal = 0;
-            if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
-                const parsed = Date.parse(deckInfo.upload_date);
-                if (!isNaN(parsed)) dateVal = parsed;
+                }).sort().join('|');
+
+                let dateVal = 0;
+                if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
+                    const parsed = Date.parse(deckInfo.upload_date);
+                    if (!isNaN(parsed)) dateVal = parsed;
+                }
+
+                if (!signatureMap.has(signature)) {
+                    signatureMap.set(signature, []);
+                }
+                signatureMap.get(signature).push({ key: deckKey, dateVal: dateVal });
             }
 
-            if (!signatureMap.has(signature)) {
-                signatureMap.set(signature, []);
-            }
-            signatureMap.get(signature).push({ key: deckKey, dateVal: dateVal });
-        }
-
-        const duplicateKeys = new Set();
-        for (const decks of signatureMap.values()) {
-            if (decks.length > 1) {
-                decks.sort((a, b) => b.dateVal - a.dateVal);
-                for (let i = 1; i < decks.length; i++) {
-                    duplicateKeys.add(decks[i].key);
+            const duplicateKeys = new Set();
+            for (const decks of signatureMap.values()) {
+                if (decks.length > 1) {
+                    decks.sort((a, b) => b.dateVal - a.dateVal);
+                    for (let i = 1; i < decks.length; i++) {
+                        duplicateKeys.add(decks[i].key);
+                    }
                 }
             }
-        }
-        // -----------------------------------
+            // -----------------------------------
 
-        let cardIndex = 0; // NEW: Counter for the stagger effect
+            let cardIndex = 0; // NEW: Counter for the stagger effect
 
-        for (const [deckKey, deckInfo] of Object.entries(data)) {
-            const cardEl = document.createElement('div');
-            
-            // --- FACTION & CLASS EVALUATION LOOP ---
-            let factionClass = 'plant-deck'; // Fallback default
-            const uniqueClasses = new Set();
-            let factionFound = false;
-            
-            if (deckInfo.cards && deckInfo.cards.length > 0) {
-                for (const cardRaw of deckInfo.cards) {
-                    let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
-                    
-                    const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
-                    const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
-                    
-                    const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
-                    
-                    if (cardData) {
-                        // 1. Collect card class if it exists
-                        const cls = cardData.Class || cardData.class;
-                        if (cls) uniqueClasses.add(cls);
+            for (const [deckKey, deckInfo] of Object.entries(data)) {
+                const cardEl = document.createElement('div');
 
-                        // 2. Resolve deck faction (only if not found yet)
-                        if (!factionFound && (cardData.Type || cardData.type)) {
-                            const typeString = (cardData.Type || cardData.type).toLowerCase();
-                            
-                            if (typeString.includes('zombie')) {
-                                factionClass = 'zombie-deck';
-                                factionFound = true;
-                            } else if (typeString.includes('plant')) {
-                                factionClass = 'plant-deck';
-                                factionFound = true;
+                // --- FACTION & CLASS EVALUATION LOOP ---
+                let factionClass = 'plant-deck'; // Fallback default
+                const uniqueClasses = new Set();
+                let factionFound = false;
+
+                if (deckInfo.cards && deckInfo.cards.length > 0) {
+                    for (const cardRaw of deckInfo.cards) {
+                        let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
+
+                        const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
+                        const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
+
+                        const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
+
+                        if (cardData) {
+                            // 1. Collect card class if it exists
+                            const cls = cardData.Class || cardData.class;
+                            if (cls) uniqueClasses.add(cls);
+
+                            // 2. Resolve deck faction (only if not found yet)
+                            if (!factionFound && (cardData.Type || cardData.type)) {
+                                const typeString = (cardData.Type || cardData.type).toLowerCase();
+
+                                if (typeString.includes('zombie')) {
+                                    factionClass = 'zombie-deck';
+                                    factionFound = true;
+                                } else if (typeString.includes('plant')) {
+                                    factionClass = 'plant-deck';
+                                    factionFound = true;
+                                }
                             }
                         }
                     }
                 }
-            }
-            
-            cardEl.className = `deck-card ${factionClass}`;
-            
-            // NEW: Add a staggered delay. 
-            // 8ms per card means the first ~75 cards cascade beautifully. 
-            // Capped at 600ms so the remaining 1700+ load together instantly out of view.
-            cardEl.style.setProperty('--reveal-delay', `${Math.min(cardIndex * 8, 600)}ms`);
-            cardIndex++;
-            
-            // --- MATCH HERO STAMP ---
-            let heroStampHtml = '';
-            if (uniqueClasses.size === 2) {
-                const classesArray = Array.from(uniqueClasses);
-                const comboA = `${classesArray[0]},${classesArray[1]}`;
-                const comboB = `${classesArray[1]},${classesArray[0]}`;
-                const heroName = heroMap[comboA] || heroMap[comboB];
 
-                if (heroName) {
-                    // Split shared heroes (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
-                    const individualHeroes = heroName.split(/\s*\/\s*/);
-                    
-                    const badgesHtml = individualHeroes.map(name => {
-                        // Converts spaces and hyphens to underscores to match file names
-                        const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
-                        
-                        return `
+                cardEl.className = `deck-card ${factionClass}`;
+
+                // NEW: Add a staggered delay. 
+                // 8ms per card means the first ~75 cards cascade beautifully. 
+                // Capped at 600ms so the remaining 1700+ load together instantly out of view.
+                cardEl.style.setProperty('--reveal-delay', `${Math.min(cardIndex * 8, 600)}ms`);
+                cardIndex++;
+
+                // --- MATCH HERO STAMP ---
+                let heroStampHtml = '';
+                if (uniqueClasses.size === 2) {
+                    const classesArray = Array.from(uniqueClasses);
+                    const comboA = `${classesArray[0]},${classesArray[1]}`;
+                    const comboB = `${classesArray[1]},${classesArray[0]}`;
+                    const heroName = heroMap[comboA] || heroMap[comboB];
+
+                    if (heroName) {
+                        // Split shared heroes (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
+                        const individualHeroes = heroName.split(/\s*\/\s*/);
+
+                        const badgesHtml = individualHeroes.map(name => {
+                            // Converts spaces and hyphens to underscores to match file names
+                            const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
+
+                            return `
                             <img src="hero_images/${imgFilename}" 
                                  alt="${name}" 
                                  class="hero-badge-img" 
                                  title="${name}">
                         `;
-                    }).join('');
+                        }).join('');
 
-                    heroStampHtml = `
+                        heroStampHtml = `
                         <div class="deck-hero-stamps-wrapper">
                             ${badgesHtml}
                         </div>
                     `;
+                    }
                 }
-            }
-            // -----------------------------------
+                // -----------------------------------
 
-            let cardsHtml = '<ul class="card-list">';
-            deckInfo.cards.forEach(card => {
-                const cleanCardName = card.replace(/_/g, ' ');
-                cardsHtml += `<li>${cleanCardName}</li>`;
-            });
-            cardsHtml += '</ul>';
+                let cardsHtml = '<ul class="card-list">';
+                deckInfo.cards.forEach(card => {
+                    const cleanCardName = card.replace(/_/g, ' ');
+                    cardsHtml += `<li>${cleanCardName}</li>`;
+                });
+                cardsHtml += '</ul>';
 
-            const dateStr = deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
-                ? deckInfo.upload_date
-                : "Unknown Date";
+                const dateStr = deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
+                    ? deckInfo.upload_date
+                    : "Unknown Date";
 
-            const creditStr = deckInfo.credit || "Unknown";
-            const videoId = getYouTubeId(deckInfo.youtube_url);
-            const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
-            const creditIconSrc = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
-            const isFryVideo = creditStr === "FryEmUp" && deckInfo.youtube_url;
+                const creditStr = deckInfo.credit || "Unknown";
+                const videoId = getYouTubeId(deckInfo.youtube_url);
+                const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+                const creditIconSrc = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
+                const isFryVideo = creditStr === "FryEmUp" && deckInfo.youtube_url;
 
-            const videoControlsHtml = isFryVideo ? `
+                const videoControlsHtml = isFryVideo ? `
                 <details class="video-dropdown" 
                          ontoggle="this.closest('.deck-card').querySelector('.video-preview').classList.toggle('hidden', !this.open)">
                     <summary>View Video</summary>
                 </details>` : '';
 
-            const videoPreviewHtml = isFryVideo ? `
+                const videoPreviewHtml = isFryVideo ? `
                 <div class="video-preview hidden">
                     <a href="${deckInfo.youtube_url}" target="_blank" title="${deckInfo.youtube_title}">
                         <img src="${thumbnailUrl}" alt="Video Thumbnail" loading="lazy">
                         <div class="video-title-overlay">${deckInfo.youtube_title}</div>
                     </a>
                 </div>` : '';
-                
-            const verdict = deckInfo.verdict || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
-            deckInfo.verdict = verdict;
-            
-            const duplicateBadgeHtml = duplicateKeys.has(deckKey) 
-                ? `<span class="deck-duplicate-badge" title="Older Duplicate Deck" style="background:#ffaa00; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.8em; cursor:help;">Dup</span>`
-                : '';
 
-            cardEl.innerHTML = `
+                const verdict = deckInfo.verdict || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
+                deckInfo.verdict = verdict;
+
+                const duplicateBadgeHtml = duplicateKeys.has(deckKey)
+                    ? `<span class="deck-duplicate-badge" title="Older Duplicate Deck" style="background:#ffaa00; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.8em; cursor:help;">Dup</span>`
+                    : '';
+
+                cardEl.innerHTML = `
                 <div class="deck-card-inner">
                     <div class="deck-header">
                         <div class="deck-title-group">
@@ -701,121 +714,122 @@ function getDeckVerdictFromCards(deckCards, selfDeckKey, ctx) {
                     <img class="credit-icon" src="${creditIconSrc}" alt="${creditStr} icon">
                 </div>
             `;
-            
-            fragment.appendChild(cardEl);
-        }
 
-        deckGrid.appendChild(fragment);
+                fragment.appendChild(cardEl);
+            }
 
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
-        deckGrid.classList.remove('hidden');
-        if (statsBtn) statsBtn.disabled = false;
-        if (crafterBtn) crafterBtn.disabled = false;
-        if (gamesBtn) gamesBtn.disabled = false;
-        if (synergyBtn) synergyBtn.disabled = false;
+            deckGrid.appendChild(fragment);
 
-    }, 50); 
-}
+            if (loadingIndicator) loadingIndicator.classList.add('hidden');
+            deckGrid.classList.remove('hidden');
+            if (statsBtn) statsBtn.disabled = false;
+            if (tiersBtn) tiersBtn.disabled = false;
+            if (crafterBtn) crafterBtn.disabled = false;
+            if (gamesBtn) gamesBtn.disabled = false;
+
+
+        }, 50);
+    }
 
     // --- Combined Search + Grade Filter ---
 
-let currentSearchTerm = "";
-let currentGradeFilter = "";
+    let currentSearchTerm = "";
+    let currentGradeFilter = "";
 
 
-const gradeButtons = document.querySelectorAll(".grade-chip");
+    const gradeButtons = document.querySelectorAll(".grade-chip");
 
-function matchesSearch(deckInfo, searchRegex) {
-    const deckName = deckInfo.name || "";
-    const ytTitle = deckInfo.youtube_title || "";
-    const credit = deckInfo.credit || "";
+    function matchesSearch(deckInfo, searchRegex) {
+        const deckName = deckInfo.name || "";
+        const ytTitle = deckInfo.youtube_title || "";
+        const credit = deckInfo.credit || "";
 
-    // --- NEW: LAZY-CACHE HERO NAME FOR SEARCHING ---
-    if (deckInfo.heroName === undefined) {
-        deckInfo.heroName = ""; // Default fallback if it doesn't meet the 2-class rule
-        
-        if (Array.isArray(deckInfo.cards) && deckInfo.cards.length > 0) {
-            const uniqueClasses = new Set();
-            
-            for (const cardRaw of deckInfo.cards) {
-                let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
-                const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
-                const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
-                
-                const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
-                if (cardData) {
-                    const cls = cardData.Class || cardData.class;
-                    if (cls) uniqueClasses.add(cls);
+        // --- NEW: LAZY-CACHE HERO NAME FOR SEARCHING ---
+        if (deckInfo.heroName === undefined) {
+            deckInfo.heroName = ""; // Default fallback if it doesn't meet the 2-class rule
+
+            if (Array.isArray(deckInfo.cards) && deckInfo.cards.length > 0) {
+                const uniqueClasses = new Set();
+
+                for (const cardRaw of deckInfo.cards) {
+                    let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
+                    const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
+                    const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
+
+                    const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
+                    if (cardData) {
+                        const cls = cardData.Class || cardData.class;
+                        if (cls) uniqueClasses.add(cls);
+                    }
+                }
+
+                // Only map to a hero if it has exactly 2 classes
+                if (uniqueClasses.size === 2) {
+                    const classesArray = Array.from(uniqueClasses);
+                    const comboA = `${classesArray[0]},${classesArray[1]}`;
+                    const comboB = `${classesArray[1]},${classesArray[0]}`;
+                    deckInfo.heroName = heroMap[comboA] || heroMap[comboB] || "";
                 }
             }
-
-            // Only map to a hero if it has exactly 2 classes
-            if (uniqueClasses.size === 2) {
-                const classesArray = Array.from(uniqueClasses);
-                const comboA = `${classesArray[0]},${classesArray[1]}`;
-                const comboB = `${classesArray[1]},${classesArray[0]}`;
-                deckInfo.heroName = heroMap[comboA] || heroMap[comboB] || "";
-            }
         }
-    }
-    // -----------------------------------------------
+        // -----------------------------------------------
 
-    const creditMatches = credit
-        .split(",")
-        .some(author => searchRegex.test(author.trim()));
+        const creditMatches = credit
+            .split(",")
+            .some(author => searchRegex.test(author.trim()));
 
-    const hasMatchingCard = Array.isArray(deckInfo.cards) && deckInfo.cards.some(card => {
-        const cleanName = card.replace(/_/g, " ");
-        return searchRegex.test(cleanName);
-    });
+        const hasMatchingCard = Array.isArray(deckInfo.cards) && deckInfo.cards.some(card => {
+            const cleanName = card.replace(/_/g, " ");
+            return searchRegex.test(cleanName);
+        });
 
-    return (
-        searchRegex.test(deckName) ||
-        searchRegex.test(ytTitle) ||
-        searchRegex.test(deckInfo.heroName) || // <-- NEW: Matches against the resolved Hero Name(s)
-        creditMatches ||
-        hasMatchingCard
-    );
-}
-
-function applyFilters() {
-    const filteredData = {};
-
-    const searchRegex = currentSearchTerm
-        ? new RegExp("\\b" + escapeRegExp(currentSearchTerm), "i")
-        : null;
-
-    for (const [deckKey, deckInfo] of Object.entries(fullDatabase)) {
-        const grade = deckInfo.verdict?.grade || "—";
-
-        // Grade filter
-        if (currentGradeFilter && grade !== currentGradeFilter) continue;
-
-        // Search filter
-        if (searchRegex && !matchesSearch(deckInfo, searchRegex)) continue;
-
-        filteredData[deckKey] = deckInfo;
+        return (
+            searchRegex.test(deckName) ||
+            searchRegex.test(ytTitle) ||
+            searchRegex.test(deckInfo.heroName) || // <-- NEW: Matches against the resolved Hero Name(s)
+            creditMatches ||
+            hasMatchingCard
+        );
     }
 
-    renderDecks(filteredData);
-}
+    function applyFilters() {
+        const filteredData = {};
 
-// --- Search input ---
-searchInput.addEventListener("input", (e) => {
-    currentSearchTerm = e.target.value.trim();
-    applyFilters();
-});
+        const searchRegex = currentSearchTerm
+            ? new RegExp("\\b" + escapeRegExp(currentSearchTerm), "i")
+            : null;
 
-// --- Grade buttons ---
-gradeButtons.forEach(button => {
-    button.addEventListener("click", () => {
-        gradeButtons.forEach(btn => btn.classList.remove("active"));
-        button.classList.add("active");
+        for (const [deckKey, deckInfo] of Object.entries(fullDatabase)) {
+            const grade = deckInfo.verdict?.grade || "—";
 
-        currentGradeFilter = button.dataset.grade; // "" = All
+            // Grade filter
+            if (currentGradeFilter && grade !== currentGradeFilter) continue;
+
+            // Search filter
+            if (searchRegex && !matchesSearch(deckInfo, searchRegex)) continue;
+
+            filteredData[deckKey] = deckInfo;
+        }
+
+        renderDecks(filteredData);
+    }
+
+    // --- Search input ---
+    searchInput.addEventListener("input", (e) => {
+        currentSearchTerm = e.target.value.trim();
         applyFilters();
     });
-});
+
+    // --- Grade buttons ---
+    gradeButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            gradeButtons.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            currentGradeFilter = button.dataset.grade; // "" = All
+            applyFilters();
+        });
+    });
 
     // --- Modal Logic ---
     infoBtn.addEventListener('click', () => infoModal.style.display = 'block');
@@ -833,21 +847,23 @@ gradeButtons.forEach(button => {
         });
     }
 
-   backBtn.addEventListener('click', () => {
-    // Hide BOTH secondary views and the back button
-    statsView.classList.add('hidden');
-    crafterView.classList.add('hidden'); // Hide the new view
-    backBtn.classList.add('hidden');
+    backBtn.addEventListener('click', () => {
+        // Hide BOTH secondary views and the back button
+        statsView.classList.add('hidden');
+        tiersView.classList.add('hidden');
+        crafterView.classList.add('hidden'); // Hide the new view
+        backBtn.classList.add('hidden');
 
-    // Restore Main UI
-    deckView.classList.remove('hidden');
-    searchWrapper.classList.remove('hidden');
-    statsBtn.classList.remove('hidden');
-    crafterBtn.classList.remove('hidden'); // Restore the new button
-    gamesBtn.classList.remove('hidden'); // Restore the games button
-    synergyBtn.classList.remove('hidden'); // Restore the synergy button
+        // Restore Main UI
+        deckView.classList.remove('hidden');
+        searchWrapper.classList.remove('hidden');
+        statsBtn.classList.remove('hidden');
+        tiersBtn.classList.remove('hidden');
+        crafterBtn.classList.remove('hidden'); // Restore the new button
+        gamesBtn.classList.remove('hidden'); // Restore the games button
 
-});
+
+    });
 
     // --- Stats Rendering Logic ---
     function renderStatsChart(limit = 'all') {
@@ -886,17 +902,17 @@ gradeButtons.forEach(button => {
         const pairCounts = {};
         const wordCounts = {};
         const stopWords = [
-    // Standard English fluff
-    "the", "in", "a", "of", "and", "to", "is", "for", "with", "this", "on", "most", "ever", 
-    "one", "when", "vs", "are", "that", "my", "i", "but", "it", "at", "an", "how", "why", "what", "you", "your", "can", "out",
-    
-    // YouTube / Gaming Fluff
-    "part", "gameplay", "highlights", "guide", "guides", "video", "new", "best", "top", 
-    "update", "play", "playing", "wins", "win", "stream", "ep", "episode", "season", "let", "lets",
-    
-    // PvZ Heroes Specific Boilerplate
-    "pvz", "pvzh", "plants", "zombies", "heroes", "hero", "deck", "decks", "game", "cards", "card", "zombie", "plant"
-];
+            // Standard English fluff
+            "the", "in", "a", "of", "and", "to", "is", "for", "with", "this", "on", "most", "ever",
+            "one", "when", "vs", "are", "that", "my", "i", "but", "it", "at", "an", "how", "why", "what", "you", "your", "can", "out",
+
+            // YouTube / Gaming Fluff
+            "part", "gameplay", "highlights", "guide", "guides", "video", "new", "best", "top",
+            "update", "play", "playing", "wins", "win", "stream", "ep", "episode", "season", "let", "lets",
+
+            // PvZ Heroes Specific Boilerplate
+            "pvz", "pvzh", "plants", "zombies", "heroes", "hero", "deck", "decks", "game", "cards", "card", "zombie", "plant"
+        ];
 
         // NEW Data Accumulators for card_data
         const costCurve = {};
@@ -965,36 +981,36 @@ gradeButtons.forEach(button => {
                 }
             }
             if (deck.upload_date && deck.upload_date !== "UNKNOWN_DATE") {
-        const parsedDate = new Date(deck.upload_date);
-        
-        if (!isNaN(parsedDate)) {
-            const dateKey = parsedDate.toISOString().split('T')[0];
-            dailyUploads[dateKey] = (dailyUploads[dateKey] || 0) + 1;
-        }
-    }
+                const parsedDate = new Date(deck.upload_date);
+
+                if (!isNaN(parsedDate)) {
+                    const dateKey = parsedDate.toISOString().split('T')[0];
+                    dailyUploads[dateKey] = (dailyUploads[dateKey] || 0) + 1;
+                }
+            }
 
             // 2. Process Title Buzzwords
-if (deck.youtube_title) {
-    // Lowercase -> Strip punctuation & underscores -> Strip numbers -> Split by spaces
-    const words = deck.youtube_title.toLowerCase()
-                      .replace(/[^\w\s]|_/g, '')
-                      .replace(/\d+/g, '') 
-                      .split(/\s+/);
-                      
-    words.forEach(w => {
-        // I increased the minimum length to > 3 to filter out random 3-letter junk
-        if (w.length > 3 && !stopWords.includes(w)) {
-            
-            // Optional: Naively group some common plural/singular words together 
-            // so "garg" and "gargs" count as the same buzzword
-            let normalizedWord = w;
-            if (w === "gargs") normalizedWord = "garg";
-            if (w === "otks") normalizedWord = "otk";
+            if (deck.youtube_title) {
+                // Lowercase -> Strip punctuation & underscores -> Strip numbers -> Split by spaces
+                const words = deck.youtube_title.toLowerCase()
+                    .replace(/[^\w\s]|_/g, '')
+                    .replace(/\d+/g, '')
+                    .split(/\s+/);
 
-            wordCounts[normalizedWord] = (wordCounts[normalizedWord] || 0) + 1;
-        }
-    });
-}
+                words.forEach(w => {
+                    // I increased the minimum length to > 3 to filter out random 3-letter junk
+                    if (w.length > 3 && !stopWords.includes(w)) {
+
+                        // Optional: Naively group some common plural/singular words together 
+                        // so "garg" and "gargs" count as the same buzzword
+                        let normalizedWord = w;
+                        if (w === "gargs") normalizedWord = "garg";
+                        if (w === "otks") normalizedWord = "otk";
+
+                        wordCounts[normalizedWord] = (wordCounts[normalizedWord] || 0) + 1;
+                    }
+                });
+            }
 
             // 3. Process Cards & Metadata
             deck.cards.forEach(card => {
@@ -1137,83 +1153,83 @@ if (deck.youtube_title) {
             return match ? match[1] : null;
         }
 
-       function setExtremeCard({
-    linkId,
-    imgId,
-    nameId,
-    costId,
-    deck,
-    costText,
-    youtubeId
-}) {
-    const linkEl = document.getElementById(linkId);
-    const imgEl = document.getElementById(imgId);
-    const nameEl = document.getElementById(nameId);
-    const costEl = document.getElementById(costId);
+        function setExtremeCard({
+            linkId,
+            imgId,
+            nameId,
+            costId,
+            deck,
+            costText,
+            youtubeId
+        }) {
+            const linkEl = document.getElementById(linkId);
+            const imgEl = document.getElementById(imgId);
+            const nameEl = document.getElementById(nameId);
+            const costEl = document.getElementById(costId);
 
-    if (!linkEl || !imgEl || !nameEl || !costEl) return;
+            if (!linkEl || !imgEl || !nameEl || !costEl) return;
 
-    nameEl.innerText = deck.name || deck.youtube_title || '-';
-    costEl.innerText = costText;
+            nameEl.innerText = deck.name || deck.youtube_title || '-';
+            costEl.innerText = costText;
 
-    if (youtubeId) {
-        imgEl.src = `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
-    } else {
-        imgEl.removeAttribute('src');
-    }
+            if (youtubeId) {
+                imgEl.src = `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
+            } else {
+                imgEl.removeAttribute('src');
+            }
 
-    imgEl.alt = `${deck.name || deck.youtube_title || 'Deck'} thumbnail`;
-    linkEl.href = deck.youtube_url || "#";
-}
-if (document.getElementById('mostP2wDeck') && mostExpensiveDeck && leastExpensiveDeck) {
-    const mostId = getYouTubeId(mostExpensiveDeck.youtube_url);
-    const leastId = getYouTubeId(leastExpensiveDeck.youtube_url);
+            imgEl.alt = `${deck.name || deck.youtube_title || 'Deck'} thumbnail`;
+            linkEl.href = deck.youtube_url || "#";
+        }
+        if (document.getElementById('mostP2wDeck') && mostExpensiveDeck && leastExpensiveDeck) {
+            const mostId = getYouTubeId(mostExpensiveDeck.youtube_url);
+            const leastId = getYouTubeId(leastExpensiveDeck.youtube_url);
 
-    setExtremeCard({
-        linkId: 'mostP2wLink',
-        imgId: 'mostP2wImg',
-        nameId: 'mostP2wDeck',
-        costId: 'mostP2wCost',
-        deck: mostExpensiveDeck,
-        costText: maxSparkCost.toLocaleString() + ' Sparks',
-        youtubeId: mostId
-    });
+            setExtremeCard({
+                linkId: 'mostP2wLink',
+                imgId: 'mostP2wImg',
+                nameId: 'mostP2wDeck',
+                costId: 'mostP2wCost',
+                deck: mostExpensiveDeck,
+                costText: maxSparkCost.toLocaleString() + ' Sparks',
+                youtubeId: mostId
+            });
 
-    setExtremeCard({
-        linkId: 'leastP2wLink',
-        imgId: 'leastP2wImg',
-        nameId: 'leastP2wDeck',
-        costId: 'leastP2wCost',
-        deck: leastExpensiveDeck,
-        costText: minSparkCost.toLocaleString() + ' Sparks',
-        youtubeId: leastId
-    });
+            setExtremeCard({
+                linkId: 'leastP2wLink',
+                imgId: 'leastP2wImg',
+                nameId: 'leastP2wDeck',
+                costId: 'leastP2wCost',
+                deck: leastExpensiveDeck,
+                costText: minSparkCost.toLocaleString() + ' Sparks',
+                youtubeId: leastId
+            });
 
-    if (heaviestDeck && lightestDeck) {
-        const heaviestId = getYouTubeId(heaviestDeck.youtube_url);
-        const lightestId = getYouTubeId(lightestDeck.youtube_url);
+            if (heaviestDeck && lightestDeck) {
+                const heaviestId = getYouTubeId(heaviestDeck.youtube_url);
+                const lightestId = getYouTubeId(lightestDeck.youtube_url);
 
-        setExtremeCard({
-            linkId: 'heaviestLink',
-            imgId: 'heaviestImg',
-            nameId: 'heaviestDeck',
-            costId: 'heaviestCost',
-            deck: heaviestDeck,
-            costText: maxAvgCost.toFixed(2) + ' Avg Cost',
-            youtubeId: heaviestId
-        });
+                setExtremeCard({
+                    linkId: 'heaviestLink',
+                    imgId: 'heaviestImg',
+                    nameId: 'heaviestDeck',
+                    costId: 'heaviestCost',
+                    deck: heaviestDeck,
+                    costText: maxAvgCost.toFixed(2) + ' Avg Cost',
+                    youtubeId: heaviestId
+                });
 
-        setExtremeCard({
-            linkId: 'lightestLink',
-            imgId: 'lightestImg',
-            nameId: 'lightestDeck',
-            costId: 'lightestCost',
-            deck: lightestDeck,
-            costText: minAvgCost.toFixed(2) + ' Avg Cost',
-            youtubeId: lightestId
-        });
-    }
-}
+                setExtremeCard({
+                    linkId: 'lightestLink',
+                    imgId: 'lightestImg',
+                    nameId: 'lightestDeck',
+                    costId: 'lightestCost',
+                    deck: lightestDeck,
+                    costText: minAvgCost.toFixed(2) + ' Avg Cost',
+                    youtubeId: lightestId
+                });
+            }
+        }
 
         // Prepare Data for Charts 
         const topCopied = Object.entries(cardCopies).sort((a, b) => b[1] - a[1]);
@@ -1221,18 +1237,18 @@ if (document.getElementById('mostP2wDeck') && mostExpensiveDeck && leastExpensiv
         const topPresence = Object.entries(deckPresence).sort((a, b) => b[1] - a[1]).slice(0, 10);
         const yearsSorted = Object.keys(uploadsByYear).sort();
         const sortedDates = Object.keys(dailyUploads).sort();
-       const cumulativeData = [];
-let runningTotal = 0;
+        const cumulativeData = [];
+        let runningTotal = 0;
 
-sortedDates.forEach(dateStr => {
-    runningTotal += dailyUploads[dateStr];
-    
-    // Convert date to a pure numeric timestamp (milliseconds) for linear spacing
-    const timestamp = new Date(dateStr + 'T12:00:00Z').getTime(); 
-    
-    // Store as an x/y coordinate pair
-    cumulativeData.push({ x: timestamp, y: runningTotal });
-});
+        sortedDates.forEach(dateStr => {
+            runningTotal += dailyUploads[dateStr];
+
+            // Convert date to a pure numeric timestamp (milliseconds) for linear spacing
+            const timestamp = new Date(dateStr + 'T12:00:00Z').getTime();
+
+            // Store as an x/y coordinate pair
+            cumulativeData.push({ x: timestamp, y: runningTotal });
+        });
         const topRawPairs = Object.entries(pairCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
         const topNormalizedPairs = Object.entries(normalizedPairsObj).sort((a, b) => b[1] - a[1]).slice(0, 10);
         const topWords = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
@@ -1249,181 +1265,181 @@ sortedDates.forEach(dateStr => {
         const gridColor = '#30363d';
         const textColor = '#8b949e';
         const standardColors = ['#ff7b72', '#79c0ff', '#d2a8ff', '#a5d6ff', '#ffa657', '#3fb950', '#f85149', '#8957e5', '#2f81f7', '#d4ed31'];
-       // --- 1. SET UP THE PAST BASELINE ---
-const dropCount = Math.min(100, Math.floor(totalDecks * 0.5)); 
-const safeDropCount = Math.max(1, dropCount); 
-const pastDecks = allDecks.slice(safeDropCount);
+        // --- 1. SET UP THE PAST BASELINE ---
+        const dropCount = Math.min(100, Math.floor(totalDecks * 0.5));
+        const safeDropCount = Math.max(1, dropCount);
+        const pastDecks = allDecks.slice(safeDropCount);
 
-// --- 2. DYNAMIC RANKING FUNCTIONS ---
-// Helper function to extract a sorted array of card names, WITH filtering logic included
-function getRankedCards(deckArray, filterValue = 'all') {
-    const counts = {};
-    
-    deckArray.forEach(deck => {
-        deck.cards.forEach(cardString => {
-            const match = cardString.match(/^x(\d+)\s+(.+)$/);
-            
-            if (match) {
-                const count = parseInt(match[1], 10);
-                const cardName = match[2].replace(/_/g, ' '); 
-                
-                // --- Apply the filter check ---
-                let keep = true;
-                if (filterValue !== 'all') {
-                    const dbKey = cardName.replace(/ /g, '_');
-                    const info = cardDatabase[dbKey] || {}; 
-                    
-                    const typeStr = info.Type ? info.Type.toLowerCase() : "";
-                    const isTrick = typeStr.includes("trick");
-                    const isEnv = typeStr.includes("environment");
-                    const isMinion = info.Type && !isTrick && !isEnv;
-                    const cost = parseInt(info.Cost, 10) || 0;
+        // --- 2. DYNAMIC RANKING FUNCTIONS ---
+        // Helper function to extract a sorted array of card names, WITH filtering logic included
+        function getRankedCards(deckArray, filterValue = 'all') {
+            const counts = {};
 
-                    keep = false;
-                    if (filterValue === "minion" && isMinion) keep = true;
-                    else if (filterValue === "trick" && isTrick) keep = true;
-                    else if (filterValue === "environment" && isEnv) keep = true;
-                    else if (filterValue === "wincon" && cost >= 5) keep = true;
+            deckArray.forEach(deck => {
+                deck.cards.forEach(cardString => {
+                    const match = cardString.match(/^x(\d+)\s+(.+)$/);
+
+                    if (match) {
+                        const count = parseInt(match[1], 10);
+                        const cardName = match[2].replace(/_/g, ' ');
+
+                        // --- Apply the filter check ---
+                        let keep = true;
+                        if (filterValue !== 'all') {
+                            const dbKey = cardName.replace(/ /g, '_');
+                            const info = cardDatabase[dbKey] || {};
+
+                            const typeStr = info.Type ? info.Type.toLowerCase() : "";
+                            const isTrick = typeStr.includes("trick");
+                            const isEnv = typeStr.includes("environment");
+                            const isMinion = info.Type && !isTrick && !isEnv;
+                            const cost = parseInt(info.Cost, 10) || 0;
+
+                            keep = false;
+                            if (filterValue === "minion" && isMinion) keep = true;
+                            else if (filterValue === "trick" && isTrick) keep = true;
+                            else if (filterValue === "environment" && isEnv) keep = true;
+                            else if (filterValue === "wincon" && cost >= 5) keep = true;
+                        }
+
+                        if (keep) {
+                            counts[cardName] = (counts[cardName] || 0) + count;
+                        }
+                    }
+                });
+            });
+
+            // Sort by total copies (highest first) and return just an array of the names
+            return Object.entries(counts)
+                .sort((a, b) => b[1] - a[1])
+                .map(entry => entry[0]);
+        }
+
+        // Function to generate the dictionary of text arrows based on a specific category
+        function generateRankChanges(filterValue) {
+            const currentList = getRankedCards(allDecks, filterValue);
+            const pastList = getRankedCards(pastDecks, filterValue);
+
+            const changes = {};
+            currentList.forEach((card, currentIndex) => {
+                const pastIndex = pastList.indexOf(card);
+
+                if (pastIndex === -1) {
+                    changes[card] = '  (NEW)';
+                } else {
+                    const change = pastIndex - currentIndex;
+                    if (change > 0) changes[card] = `  (+${change} ▲)`;
+                    else if (change < 0) changes[card] = `  (-${Math.abs(change)} ▼)`;
+                    else changes[card] = `  (--)`;
                 }
+            });
+            return changes;
+        }
 
-                if (keep) {
-                    counts[cardName] = (counts[cardName] || 0) + count;
-                }
+        // Initialize the global rankings for the default 'all' view when page loads
+        let currentRankChanges = generateRankChanges('all');
+
+
+        // --- 3. CHART 1: Total Copies ---
+        const ctx1 = document.getElementById('topCardsChart').getContext('2d');
+        charts.topCards = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                // Use currentRankChanges to map the initial labels
+                labels: topCopiedSliced.map(i => `${i[0]}${currentRankChanges[i[0]] || ''}`),
+                datasets: [{ label: 'Total Copies', data: topCopiedSliced.map(i => i[1]), backgroundColor: '#238636', borderRadius: 4, hoverBackgroundColor: '#2ea043' }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                scales: { x: { grid: { color: gridColor }, ticks: { color: textColor } }, y: { ticks: { color: '#c9d1d9' }, grid: { display: false } } },
+                plugins: { legend: { display: false }, tooltip: { callbacks: { footer: () => '👉 Click to search for this card' } } },
+                onClick: (e, activeElements) => {
+                    if (activeElements.length > 0) {
+                        const clickedCard = charts.topCards.data.labels[activeElements[0].index];
+
+                        window.location.hash = '#';
+
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                const searchInput = document.getElementById('searchInput');
+                                if (searchInput) {
+                                    const cleanCardName = clickedCard.split(/  \(/)[0];
+                                    searchInput.value = cleanCardName;
+                                    searchInput.dispatchEvent(new Event('input'));
+                                }
+                            });
+                        });
+                    }
+                },
+                onHover: (e, activeElements) => { e.native.target.style.cursor = activeElements.length ? 'pointer' : 'default'; }
             }
         });
-    });
-    
-    // Sort by total copies (highest first) and return just an array of the names
-    return Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .map(entry => entry[0]); 
-}
 
-// Function to generate the dictionary of text arrows based on a specific category
-function generateRankChanges(filterValue) {
-    const currentList = getRankedCards(allDecks, filterValue);
-    const pastList = getRankedCards(pastDecks, filterValue);
-    
-    const changes = {};
-    currentList.forEach((card, currentIndex) => {
-        const pastIndex = pastList.indexOf(card);
-        
-        if (pastIndex === -1) {
-            changes[card] = '  (NEW)'; 
-        } else {
-            const change = pastIndex - currentIndex; 
-            if (change > 0) changes[card] = `  (+${change} ▲)`; 
-            else if (change < 0) changes[card] = `  (-${Math.abs(change)} ▼)`; 
-            else changes[card] = `  (--)`; 
+
+        // --- 4. TOP CARDS FILTER LOGIC ---
+        window.applyTopCardsFilter = function (filterValue) {
+            if (!charts.topCards) return;
+
+            let filteredArray = [];
+
+            Object.entries(cardCopies).forEach(([cardName, count]) => {
+                if (count === 0) return;
+
+                const dbKey = cardName.replace(/ /g, '_');
+                const info = cardDatabase[dbKey] || {};
+
+                const typeStr = info.Type ? info.Type.toLowerCase() : "";
+                const isTrick = typeStr.includes("trick");
+                const isEnv = typeStr.includes("environment");
+                const isMinion = info.Type && !isTrick && !isEnv;
+                const cost = parseInt(info.Cost, 10) || 0;
+
+                let keep = false;
+                if (filterValue === "all") keep = true;
+                else if (filterValue === "minion" && isMinion) keep = true;
+                else if (filterValue === "trick" && isTrick) keep = true;
+                else if (filterValue === "environment" && isEnv) keep = true;
+                else if (filterValue === "wincon" && cost >= 5) keep = true;
+
+                if (keep) {
+                    filteredArray.push([cardName, count]);
+                }
+            });
+
+            // Sort by count (highest first) and slice the top 15
+            filteredArray.sort((a, b) => b[1] - a[1]);
+            const newTopSliced = filteredArray.slice(0, 15);
+
+            // --- THE FIX: Recalculate rank changes for this specific category ---
+            currentRankChanges = generateRankChanges(filterValue);
+
+            charts.topCards.data.labels = newTopSliced.map(i => {
+                const cleanName = i[0];
+                // Use the freshly generated context-aware arrows
+                return `${cleanName}${currentRankChanges[cleanName] || ''}`;
+            });
+
+            charts.topCards.data.datasets[0].data = newTopSliced.map(i => i[1]);
+
+            // Update Colors based on filter
+            let newColor = '#238636';
+            let hoverColor = '#2ea043';
+
+            if (filterValue === 'trick') { newColor = '#8957e5'; hoverColor = '#a371f7'; }
+            else if (filterValue === 'environment') { newColor = '#58a6ff'; hoverColor = '#79c0ff'; }
+            else if (filterValue === 'wincon') { newColor = '#f85149'; hoverColor = '#ff7b72'; }
+
+            charts.topCards.data.datasets[0].backgroundColor = newColor;
+            charts.topCards.data.datasets[0].hoverBackgroundColor = hoverColor;
+
+            // Redraw smoothly
+            charts.topCards.update();
+        };
+
+        const currentTopCardsFilter = document.getElementById('topCardsFilter').value;
+        if (currentTopCardsFilter !== 'all') {
+            window.applyTopCardsFilter(currentTopCardsFilter);
         }
-    });
-    return changes;
-}
-
-// Initialize the global rankings for the default 'all' view when page loads
-let currentRankChanges = generateRankChanges('all');
-
-
-// --- 3. CHART 1: Total Copies ---
-const ctx1 = document.getElementById('topCardsChart').getContext('2d');
-charts.topCards = new Chart(ctx1, {
-    type: 'bar',
-    data: {
-        // Use currentRankChanges to map the initial labels
-        labels: topCopiedSliced.map(i => `${i[0]}${currentRankChanges[i[0]] || ''}`),
-        datasets: [{ label: 'Total Copies', data: topCopiedSliced.map(i => i[1]), backgroundColor: '#238636', borderRadius: 4, hoverBackgroundColor: '#2ea043' }]
-    },
-    options: {
-        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-        scales: { x: { grid: { color: gridColor }, ticks: { color: textColor } }, y: { ticks: { color: '#c9d1d9' }, grid: { display: false } } },
-        plugins: { legend: { display: false }, tooltip: { callbacks: { footer: () => '👉 Click to search for this card' } } },
-        onClick: (e, activeElements) => {
-            if (activeElements.length > 0) {
-                const clickedCard = charts.topCards.data.labels[activeElements[0].index];
-                
-                window.location.hash = '#'; 
-
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        const searchInput = document.getElementById('searchInput');
-                        if (searchInput) {
-                            const cleanCardName = clickedCard.split(/  \(/)[0];
-                            searchInput.value = cleanCardName;
-                            searchInput.dispatchEvent(new Event('input'));
-                        }
-                    });
-                });
-            }
-        },
-        onHover: (e, activeElements) => { e.native.target.style.cursor = activeElements.length ? 'pointer' : 'default'; }
-    }
-});
-
-
-// --- 4. TOP CARDS FILTER LOGIC ---
-window.applyTopCardsFilter = function (filterValue) {
-    if (!charts.topCards) return; 
-
-    let filteredArray = [];
-
-    Object.entries(cardCopies).forEach(([cardName, count]) => {
-        if (count === 0) return;
-
-        const dbKey = cardName.replace(/ /g, '_');
-        const info = cardDatabase[dbKey] || {}; 
-        
-        const typeStr = info.Type ? info.Type.toLowerCase() : "";
-        const isTrick = typeStr.includes("trick");
-        const isEnv = typeStr.includes("environment");
-        const isMinion = info.Type && !isTrick && !isEnv;
-        const cost = parseInt(info.Cost, 10) || 0;
-
-        let keep = false;
-        if (filterValue === "all") keep = true;
-        else if (filterValue === "minion" && isMinion) keep = true;
-        else if (filterValue === "trick" && isTrick) keep = true;
-        else if (filterValue === "environment" && isEnv) keep = true;
-        else if (filterValue === "wincon" && cost >= 5) keep = true;
-
-        if (keep) {
-            filteredArray.push([cardName, count]);
-        }
-    });
-
-    // Sort by count (highest first) and slice the top 15
-    filteredArray.sort((a, b) => b[1] - a[1]);
-    const newTopSliced = filteredArray.slice(0, 15);
-
-    // --- THE FIX: Recalculate rank changes for this specific category ---
-    currentRankChanges = generateRankChanges(filterValue);
-
-    charts.topCards.data.labels = newTopSliced.map(i => {
-        const cleanName = i[0]; 
-        // Use the freshly generated context-aware arrows
-        return `${cleanName}${currentRankChanges[cleanName] || ''}`;
-    });
-    
-    charts.topCards.data.datasets[0].data = newTopSliced.map(i => i[1]);
-
-    // Update Colors based on filter
-    let newColor = '#238636';       
-    let hoverColor = '#2ea043';
-
-    if (filterValue === 'trick') { newColor = '#8957e5'; hoverColor = '#a371f7'; } 
-    else if (filterValue === 'environment') { newColor = '#58a6ff'; hoverColor = '#79c0ff'; } 
-    else if (filterValue === 'wincon') { newColor = '#f85149'; hoverColor = '#ff7b72'; } 
-
-    charts.topCards.data.datasets[0].backgroundColor = newColor;
-    charts.topCards.data.datasets[0].hoverBackgroundColor = hoverColor;
-
-    // Redraw smoothly
-    charts.topCards.update();
-};
-
-const currentTopCardsFilter = document.getElementById('topCardsFilter').value;
-if (currentTopCardsFilter !== 'all') {
-    window.applyTopCardsFilter(currentTopCardsFilter);
-}
         // --- CHART 2: Deck Presence ---
         const ctx2 = document.getElementById('deckPresenceChart').getContext('2d');
         charts.deckPresence = new Chart(ctx2, {
@@ -1432,69 +1448,69 @@ if (currentTopCardsFilter !== 'all') {
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#c9d1d9', font: { size: 10 } } } } }
         });
 
-       // --- CHART 3: Cumulative Upload Timeline ---
-const ctx3 = document.getElementById('timelineChart').getContext('2d');
-charts.timeline = new Chart(ctx3, {
-    type: 'line',
-    data: {
-        // Notice we removed the "labels" array entirely!
-        datasets: [{ 
-            label: 'Total Decks', 
-            data: cumulativeData, // Now contains {x, y} coordinate objects
-            borderColor: '#58a6ff', 
-            backgroundColor: 'rgba(88, 166, 255, 0.2)', 
-            borderWidth: 3, 
-            tension: 0.1, 
-            fill: true, 
-            pointBackgroundColor: '#1f6feb', 
-            pointRadius: 1, 
-            pointHitRadius: 10 
-        }]
-    },
-    options: { 
-        responsive: true, 
-        maintainAspectRatio: false, 
-        scales: { 
-            x: { 
-                type: 'linear', // CRITICAL: This mathematically spaces out the dates!
-                grid: { color: gridColor }, 
-                ticks: { 
-                    color: textColor,
-                    maxTicksLimit: 8,
-                    // Convert the raw timestamp back into a readable Date string
-                    callback: function(value) {
-                        return new Date(value).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            year: 'numeric' 
-                        });
+        // --- CHART 3: Cumulative Upload Timeline ---
+        const ctx3 = document.getElementById('timelineChart').getContext('2d');
+        charts.timeline = new Chart(ctx3, {
+            type: 'line',
+            data: {
+                // Notice we removed the "labels" array entirely!
+                datasets: [{
+                    label: 'Total Decks',
+                    data: cumulativeData, // Now contains {x, y} coordinate objects
+                    borderColor: '#58a6ff',
+                    backgroundColor: 'rgba(88, 166, 255, 0.2)',
+                    borderWidth: 3,
+                    tension: 0.1,
+                    fill: true,
+                    pointBackgroundColor: '#1f6feb',
+                    pointRadius: 1,
+                    pointHitRadius: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear', // CRITICAL: This mathematically spaces out the dates!
+                        grid: { color: gridColor },
+                        ticks: {
+                            color: textColor,
+                            maxTicksLimit: 8,
+                            // Convert the raw timestamp back into a readable Date string
+                            callback: function (value) {
+                                return new Date(value).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    year: 'numeric'
+                                });
+                            }
+                        }
+                    },
+                    y: {
+                        grid: { color: gridColor },
+                        ticks: { color: textColor, precision: 0 }
                     }
-                } 
-            }, 
-            y: { 
-                grid: { color: gridColor }, 
-                ticks: { color: textColor, precision: 0 } 
-            } 
-        }, 
-        plugins: { 
-            legend: { display: false },
-            tooltip: {
-                mode: 'index',
-                intersect: false,
-                callbacks: {
-                    // Make the tooltip show the exact date when you hover over a point
-                    title: function(tooltipItems) {
-                        const rawTimestamp = tooltipItems[0].parsed.x;
-                        return new Date(rawTimestamp).toLocaleDateString('en-US', { 
-                            month: 'long', 
-                            day: 'numeric', 
-                            year: 'numeric' 
-                        });
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            // Make the tooltip show the exact date when you hover over a point
+                            title: function (tooltipItems) {
+                                const rawTimestamp = tooltipItems[0].parsed.x;
+                                return new Date(rawTimestamp).toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                });
+                            }
+                        }
                     }
                 }
             }
-        } 
-    }
-});
+        });
 
         // --- CHART 4: Ultimate Synergies ---
         const ctx4 = document.getElementById('pairsChart').getContext('2d');
@@ -1545,192 +1561,192 @@ charts.timeline = new Chart(ctx3, {
         if (rawToggle) rawToggle.checked = true;
 
         // --- POPULATE HISTORICAL AUTOCOMPLETE DATALIST ---
-const historicalDataList = document.getElementById('historicalOptions');
-if (historicalDataList && historicalDataList.options.length === 0 && typeof cardDatabase !== 'undefined') {
-    Object.keys(cardDatabase).forEach(rawName => {
-        const cleanName = rawName.replace(/_/g, ' ');
-        const option = document.createElement('option');
-        option.value = cleanName;
-        historicalDataList.appendChild(option);
-    });
-}
+        const historicalDataList = document.getElementById('historicalOptions');
+        if (historicalDataList && historicalDataList.options.length === 0 && typeof cardDatabase !== 'undefined') {
+            Object.keys(cardDatabase).forEach(rawName => {
+                const cleanName = rawName.replace(/_/g, ' ');
+                const option = document.createElement('option');
+                option.value = cleanName;
+                historicalDataList.appendChild(option);
+            });
+        }
 
-// --- NEW CHART: Historical Card Tracker ---
-const historicalCtx = document.getElementById('historicalCardChart');
+        // --- NEW CHART: Historical Card Tracker ---
+        const historicalCtx = document.getElementById('historicalCardChart');
 
-window.updateHistoricalChart = function () {
-    if (!historicalCtx) return; // Safety check
+        window.updateHistoricalChart = function () {
+            if (!historicalCtx) return; // Safety check
 
-    // Grab both inputs (Assuming you rename the first to '1' and add a '2')
-    const input1 = document.getElementById('historicalSearchInput1');
-    const input2 = document.getElementById('historicalSearchInput2');
-    
-    const searchInput1 = input1 ? input1.value.trim() : '';
-    const searchInput2 = input2 ? input2.value.trim() : '';
+            // Grab both inputs (Assuming you rename the first to '1' and add a '2')
+            const input1 = document.getElementById('historicalSearchInput1');
+            const input2 = document.getElementById('historicalSearchInput2');
 
-    const emptyMsg = document.getElementById('historicalEmptyMsg');
-    const canvas = document.getElementById('historicalCardChart');
+            const searchInput1 = input1 ? input1.value.trim() : '';
+            const searchInput2 = input2 ? input2.value.trim() : '';
 
-    // Check if inputs are valid and exist in our filtered data
-    const valid1 = searchInput1 && cardPresenceByYear[searchInput1];
-    const valid2 = searchInput2 && cardPresenceByYear[searchInput2];
+            const emptyMsg = document.getElementById('historicalEmptyMsg');
+            const canvas = document.getElementById('historicalCardChart');
 
-    // If NEITHER input is valid, hide the chart
-    if (!valid1 && !valid2) {
-        canvas.style.display = 'none';
-        emptyMsg.style.display = 'flex';
-        return;
-    }
+            // Check if inputs are valid and exist in our filtered data
+            const valid1 = searchInput1 && cardPresenceByYear[searchInput1];
+            const valid2 = searchInput2 && cardPresenceByYear[searchInput2];
 
-    canvas.style.display = 'block';
-    emptyMsg.style.display = 'none';
+            // If NEITHER input is valid, hide the chart
+            if (!valid1 && !valid2) {
+                canvas.style.display = 'none';
+                emptyMsg.style.display = 'flex';
+                return;
+            }
 
-    const years = Object.keys(uploadsByYear).sort();
-    const activeDatasets = [];
+            canvas.style.display = 'block';
+            emptyMsg.style.display = 'none';
 
-    // Helper function to generate percentage arrays
-    const getPercentages = (cardName) => {
-        return years.map(year => {
-            const totalDecksThisYear = uploadsByYear[year] || 1; 
-            const cardDecksThisYear = cardPresenceByYear[cardName]?.[year] || 0;
-            return ((cardDecksThisYear / totalDecksThisYear) * 100).toFixed(1);
-        });
-    };
+            const years = Object.keys(uploadsByYear).sort();
+            const activeDatasets = [];
 
-    // Build dataset for Card 1 (Blue)
-    if (valid1) {
-        activeDatasets.push({
-            label: `${searchInput1} Usage (%)`,
-            data: getPercentages(searchInput1),
-            borderColor: '#79c0ff', 
-            backgroundColor: 'rgba(121, 192, 255, 0.2)',
-            borderWidth: 3,
-            tension: 0.3,
-            fill: true,
-            pointBackgroundColor: '#2f81f7',
-            pointRadius: 4,
-            pointHoverRadius: 6
-        });
-    }
+            // Helper function to generate percentage arrays
+            const getPercentages = (cardName) => {
+                return years.map(year => {
+                    const totalDecksThisYear = uploadsByYear[year] || 1;
+                    const cardDecksThisYear = cardPresenceByYear[cardName]?.[year] || 0;
+                    return ((cardDecksThisYear / totalDecksThisYear) * 100).toFixed(1);
+                });
+            };
 
-    // Build dataset for Card 2 (Coral/Red for contrast)
-    if (valid2) {
-        activeDatasets.push({
-            label: `${searchInput2} Usage (%)`,
-            data: getPercentages(searchInput2),
-            borderColor: '#ff7b72', 
-            backgroundColor: 'rgba(255, 123, 114, 0.2)',
-            borderWidth: 3,
-            tension: 0.3,
-            fill: true,
-            pointBackgroundColor: '#f85149',
-            pointRadius: 4,
-            pointHoverRadius: 6
-        });
-    }
+            // Build dataset for Card 1 (Blue)
+            if (valid1) {
+                activeDatasets.push({
+                    label: `${searchInput1} Usage (%)`,
+                    data: getPercentages(searchInput1),
+                    borderColor: '#79c0ff',
+                    backgroundColor: 'rgba(121, 192, 255, 0.2)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#2f81f7',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                });
+            }
 
-    // Update existing chart or create a new one
-    if (charts.historical) {
-        charts.historical.data.labels = years;
-        charts.historical.data.datasets = activeDatasets; // Swap in the new array
-        charts.historical.update();
-    } else {
-        charts.historical = new Chart(historicalCtx.getContext('2d'), {
-            type: 'line',
+            // Build dataset for Card 2 (Coral/Red for contrast)
+            if (valid2) {
+                activeDatasets.push({
+                    label: `${searchInput2} Usage (%)`,
+                    data: getPercentages(searchInput2),
+                    borderColor: '#ff7b72',
+                    backgroundColor: 'rgba(255, 123, 114, 0.2)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#f85149',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                });
+            }
+
+            // Update existing chart or create a new one
+            if (charts.historical) {
+                charts.historical.data.labels = years;
+                charts.historical.data.datasets = activeDatasets; // Swap in the new array
+                charts.historical.update();
+            } else {
+                charts.historical = new Chart(historicalCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: years,
+                        datasets: activeDatasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { grid: { color: gridColor }, ticks: { color: textColor } },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor },
+                                beginAtZero: true,
+                                title: { display: true, text: '% of Decks that year', color: textColor }
+                            }
+                        },
+                        plugins: {
+                            // Make sure legend is visible now that we have multiple lines
+                            legend: { display: true, labels: { color: textColor } },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => ` ${ctx.dataset.label.replace(' Usage (%)', '')}: ${ctx.parsed.y}%`
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        };
+
+        // Initialize the chart with the top 2 most popular cards on first load
+        const historicalInput1 = document.getElementById('historicalSearchInput1');
+        const historicalInput2 = document.getElementById('historicalSearchInput2');
+
+        if (historicalInput1) {
+            const defaultCard1 = topCopiedSliced.length > 0 ? topCopiedSliced[0][0] : null;
+            const defaultCard2 = topCopiedSliced.length > 1 ? topCopiedSliced[1][0] : null;
+
+            if (defaultCard1) {
+                historicalInput1.value = defaultCard1;
+
+                // Populate the second input if the element and data exist
+                if (historicalInput2 && defaultCard2) {
+                    historicalInput2.value = defaultCard2;
+                }
+
+                // Call the update function once both inputs are populated
+                window.updateHistoricalChart();
+            } else {
+                document.getElementById('historicalCardChart').style.display = 'none';
+                document.getElementById('historicalEmptyMsg').style.display = 'flex';
+            }
+        }
+
+        // --- CHART 5: Title Buzzwords (Word Cloud) ---
+        const ctx5 = document.getElementById('buzzwordChart').getContext('2d');
+
+        // If you want more words in the cloud, change your topWords slice from (0, 10) to (0, 30) or more!
+        charts.buzzwords = new Chart(ctx5, {
+            type: 'wordCloud',
             data: {
-                labels: years,
-                datasets: activeDatasets
+                labels: topWords.map(i => i[0].toUpperCase()),
+                datasets: [{
+                    data: topWords.map(i => i[1]),
+                    // Randomize colors for a cool visual effect, or keep it to your theme
+                    color: () => {
+                        const colors = ['#58a6ff', '#f85149', '#3fb950', '#d2a8ff', '#e3b341'];
+                        return colors[Math.floor(Math.random() * colors.length)];
+                    }
+                }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    x: { grid: { color: gridColor }, ticks: { color: textColor } },
-                    y: {
-                        grid: { color: gridColor },
-                        ticks: { color: textColor },
-                        beginAtZero: true,
-                        title: { display: true, text: '% of Decks that year', color: textColor }
-                    }
-                },
                 plugins: {
-                    // Make sure legend is visible now that we have multiple lines
-                    legend: { display: true, labels: { color: textColor } }, 
+                    legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: (ctx) => ` ${ctx.dataset.label.replace(' Usage (%)', '')}: ${ctx.parsed.y}%`
+                            // Make the tooltip say "GARG: 42 uses" instead of just "42"
+                            label: (context) => `${context.parsed.y} uses`
                         }
+                    }
+                },
+                elements: {
+                    wordText: {
+                        fontFamily: 'sans-serif',
+                        fontStyle: 'bold',
+                        // Keep the words mostly horizontal or slightly tilted for readability
+                        minRotation: -15,
+                        maxRotation: 15,
                     }
                 }
             }
         });
-    }
-};
-
-// Initialize the chart with the top 2 most popular cards on first load
-const historicalInput1 = document.getElementById('historicalSearchInput1');
-const historicalInput2 = document.getElementById('historicalSearchInput2');
-
-if (historicalInput1) {
-    const defaultCard1 = topCopiedSliced.length > 0 ? topCopiedSliced[0][0] : null;
-    const defaultCard2 = topCopiedSliced.length > 1 ? topCopiedSliced[1][0] : null;
-
-    if (defaultCard1) {
-        historicalInput1.value = defaultCard1;
-        
-        // Populate the second input if the element and data exist
-        if (historicalInput2 && defaultCard2) {
-            historicalInput2.value = defaultCard2;
-        }
-
-        // Call the update function once both inputs are populated
-        window.updateHistoricalChart();
-    } else {
-        document.getElementById('historicalCardChart').style.display = 'none';
-        document.getElementById('historicalEmptyMsg').style.display = 'flex';
-    }
-}
-
-        // --- CHART 5: Title Buzzwords (Word Cloud) ---
-const ctx5 = document.getElementById('buzzwordChart').getContext('2d');
-
-// If you want more words in the cloud, change your topWords slice from (0, 10) to (0, 30) or more!
-charts.buzzwords = new Chart(ctx5, {
-    type: 'wordCloud',
-    data: { 
-        labels: topWords.map(i => i[0].toUpperCase()), 
-        datasets: [{ 
-            data: topWords.map(i => i[1]), 
-            // Randomize colors for a cool visual effect, or keep it to your theme
-            color: () => {
-                const colors = ['#58a6ff', '#f85149', '#3fb950', '#d2a8ff', '#e3b341'];
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-        }] 
-    },
-    options: { 
-        responsive: true, 
-        maintainAspectRatio: false, 
-        plugins: { 
-            legend: { display: false },
-            tooltip: {
-                callbacks: {
-                    // Make the tooltip say "GARG: 42 uses" instead of just "42"
-                    label: (context) => `${context.parsed.y} uses`
-                }
-            }
-        },
-        elements: {
-            wordText: {
-                fontFamily: 'sans-serif',
-                fontStyle: 'bold',
-                // Keep the words mostly horizontal or slightly tilted for readability
-                minRotation: -15, 
-                maxRotation: 15,
-            }
-        }
-    }
-});
 
         // --- CHART 6: Cost Curve ---
         const ctx6 = document.getElementById('costCurveChart').getContext('2d');
@@ -1816,47 +1832,47 @@ charts.buzzwords = new Chart(ctx5, {
             }
         }
 
-       // --- CHART 7: Class Dominance ---
-const ctx7 = document.getElementById('classRadarChart').getContext('2d');
+        // --- CHART 7: Class Dominance ---
+        const ctx7 = document.getElementById('classRadarChart').getContext('2d');
 
-// Sort the classes by count (highest to lowest) to create a smooth shape
-const sortedClassEntries = Object.entries(classCounts).sort((a, b) => b[1] - a[1]);
-const sortedClassLabels = sortedClassEntries.map(e => e[0]);
-const sortedClassData = sortedClassEntries.map(e => e[1]);
+        // Sort the classes by count (highest to lowest) to create a smooth shape
+        const sortedClassEntries = Object.entries(classCounts).sort((a, b) => b[1] - a[1]);
+        const sortedClassLabels = sortedClassEntries.map(e => e[0]);
+        const sortedClassData = sortedClassEntries.map(e => e[1]);
 
-charts.classDominance = new Chart(ctx7, {
-    type: 'radar',
-    data: {
-        labels: sortedClassLabels,
-        datasets: [{ 
-            label: 'Total Copies Across Decks', 
-            data: sortedClassData, 
-            backgroundColor: 'rgba(210, 168, 255, 0.4)', 
-            borderColor: '#d2a8ff', 
-            pointBackgroundColor: '#a371f7', 
-            borderWidth: 2,
-            tension: 0.3 // NEW: Curves the lines between points to reduce jaggedness
-        }]
-    },
-    options: { 
-        responsive: true, 
-        maintainAspectRatio: false, 
-        scales: { 
-            r: { 
-                beginAtZero: true, // NEW: Keeps the center anchored
-                grid: { color: gridColor }, 
-                angleLines: { color: gridColor }, 
-                ticks: { display: false }, 
-                pointLabels: { color: '#c9d1d9', font: { size: 12 } } 
-            } 
-        }, 
-        plugins: { 
-            legend: { display: false } 
-        } 
-    }
-});
+        charts.classDominance = new Chart(ctx7, {
+            type: 'radar',
+            data: {
+                labels: sortedClassLabels,
+                datasets: [{
+                    label: 'Total Copies Across Decks',
+                    data: sortedClassData,
+                    backgroundColor: 'rgba(210, 168, 255, 0.4)',
+                    borderColor: '#d2a8ff',
+                    pointBackgroundColor: '#a371f7',
+                    borderWidth: 2,
+                    tension: 0.3 // NEW: Curves the lines between points to reduce jaggedness
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true, // NEW: Keeps the center anchored
+                        grid: { color: gridColor },
+                        angleLines: { color: gridColor },
+                        ticks: { display: false },
+                        pointLabels: { color: '#c9d1d9', font: { size: 12 } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
 
-       // --- CHART 10: Hero Playrates (Toggleable Radar) ---
+        // --- CHART 10: Hero Playrates (Toggleable Radar) ---
 
         // 1. Define the base lists to determine who belongs to which faction
         const plantHeroes = [
@@ -1877,10 +1893,10 @@ charts.classDominance = new Chart(ctx7, {
                 name: hero,
                 count: heroCounts[hero] || 0
             }));
-            
+
             // Sort descending by count
             paired.sort((a, b) => b.count - a.count);
-            
+
             // Return separated arrays for Chart.js
             return {
                 labels: paired.map(item => item.name),
@@ -1890,7 +1906,7 @@ charts.classDominance = new Chart(ctx7, {
 
         // 2. Initialize the chart with sorted Plant data
         const initialPlantData = getSortedHeroData(plantHeroes);
-        
+
         const ctx10 = document.getElementById('heroChart').getContext('2d');
         charts.heroPlayrates = new Chart(ctx10, {
             type: 'radar',
@@ -1955,7 +1971,7 @@ charts.classDominance = new Chart(ctx7, {
                     const sortedPlants = getSortedHeroData(plantHeroes);
                     charts.heroPlayrates.data.labels = sortedPlants.labels;
                     dataset.data = sortedPlants.data;
-                    
+
                     dataset.backgroundColor = 'rgba(63, 185, 80, 0.3)'; // Plant Green
                     dataset.borderColor = '#3fb950';
                     dataset.pointBorderColor = '#3fb950';
@@ -1963,7 +1979,7 @@ charts.classDominance = new Chart(ctx7, {
                     const sortedZombies = getSortedHeroData(zombieHeroes);
                     charts.heroPlayrates.data.labels = sortedZombies.labels;
                     dataset.data = sortedZombies.data;
-                    
+
                     dataset.backgroundColor = 'rgba(137, 87, 229, 0.3)'; // Zombie Purple
                     dataset.borderColor = '#8957e5';
                     dataset.pointBorderColor = '#8957e5';
@@ -2017,557 +2033,557 @@ charts.classDominance = new Chart(ctx7, {
     }
 
 
- // --- AI DECK BUILDER: SMART SEED MANAGEMENT ---
+    // --- AI DECK BUILDER: SMART SEED MANAGEMENT ---
 
-const plantClasses = new Set(["Mega-Grow", "Kabloom", "Smarty", "Guardian", "Solar"]);
-let currentSeeds = []; 
-let heroAnnounced = false;
-let currentFaction = null;
-let activeClasses = new Set(); 
-let currentClipboardText = "";
-let lastAddedCard = null; // Memory for AI context
+    const plantClasses = new Set(["Mega-Grow", "Kabloom", "Smarty", "Guardian", "Solar"]);
+    let currentSeeds = [];
+    let heroAnnounced = false;
+    let currentFaction = null;
+    let activeClasses = new Set();
+    let currentClipboardText = "";
+    let lastAddedCard = null; // Memory for AI context
 
-// UI Elements
-const seedInput = document.getElementById('seedSearchInput');
-const suggestionsBox = document.getElementById('smartSuggestions');
-const generateDeckBtn = document.getElementById('generateDeckBtn');
-const clearSeedsBtn = document.getElementById('clearSeedsBtn');
-const budgetToggle = document.getElementById('budgetToggle');
-const superBudgetToggle = document.getElementById('superBudgetToggle');
+    // UI Elements
+    const seedInput = document.getElementById('seedSearchInput');
+    const suggestionsBox = document.getElementById('smartSuggestions');
+    const generateDeckBtn = document.getElementById('generateDeckBtn');
+    const clearSeedsBtn = document.getElementById('clearSeedsBtn');
+    const budgetToggle = document.getElementById('budgetToggle');
+    const superBudgetToggle = document.getElementById('superBudgetToggle');
 
-// Toggles Logic
-if (budgetToggle && superBudgetToggle) {
-    budgetToggle.addEventListener('change', function() {
-        if (this.checked) superBudgetToggle.checked = false;
-    });
-    superBudgetToggle.addEventListener('change', function() {
-        if (this.checked) budgetToggle.checked = false;
-    });
-}
-
-const getTotalCards = () => currentSeeds.reduce((sum, seed) => sum + seed.count, 0);
-
-
-// --- 1. Smart Autocomplete ---
-seedInput.addEventListener('input', function() {
-    const query = this.value.toLowerCase().trim();
-    suggestionsBox.innerHTML = ''; 
-
-    if (getTotalCards() >= 40) {
-        suggestionsBox.innerHTML = '<li style="color: #ff7b72; justify-content: center;">Deck is full! (40 cards)</li>';
-        suggestionsBox.style.display = 'block';
-        return;
-    }
-
-    if (query.length < 2) {
-        suggestionsBox.style.display = 'none';
-        return;
-    }
-
-    let matches = 0;
-    Object.keys(cardDatabase).forEach(rawName => {
-        if (matches >= 15) return; 
-        
-        const cleanName = rawName.replace(/_/g, ' ');
-        if (cleanName.toLowerCase().includes(query)) {
-            const cardInfo = cardDatabase[rawName];
-            const cardClass = cardInfo.Class;
-            const cardFaction = plantClasses.has(cardClass) ? "Plant" : "Zombie";
-
-            if (currentFaction !== null && currentFaction !== cardFaction) return;
-            if (!activeClasses.has(cardClass) && activeClasses.size >= 2) return;
-            
-            const existing = currentSeeds.find(s => s.name === rawName);
-            if (existing && existing.count >= 4) return;
-
-            const li = document.createElement('li');
-            li.innerHTML = `<span>${cleanName}</span> <span class="suggestion-class">${cardClass}</span>`;
-            // Add via autocomplete defaults to 4 copies
-            li.onclick = () => addSeed(rawName, cardClass, cardFaction, 4);
-            suggestionsBox.appendChild(li);
-            matches++;
-        }
-    });
-
-    suggestionsBox.style.display = matches > 0 ? 'block' : 'none';
-});
-
-document.addEventListener('click', (e) => {
-    if (e.target !== seedInput && e.target !== suggestionsBox) {
-        suggestionsBox.style.display = 'none';
-    }
-});
-
-function addSeed(rawName, cardClass, cardFaction, requestedAmount = 4) {
-    const spaceLeft = 40 - getTotalCards();
-    if (spaceLeft <= 0) return;
-
-    const existing = currentSeeds.find(s => s.name === rawName);
-    const currentCount = existing ? existing.count : 0;
-    const roomForThisCard = 4 - currentCount;
-    
-    // Automatically calculate how many we can actually add
-    let amountToAdd = Math.min(requestedAmount, spaceLeft, roomForThisCard);
-    if (amountToAdd <= 0) return; 
-
-    if (existing) {
-        existing.count += amountToAdd;
-    } else {
-        currentSeeds.push({ 
-            name: rawName, 
-            count: amountToAdd, 
-            class: cardClass, 
-            faction: cardFaction,
-            cost: cardDatabase[rawName].Cost 
+    // Toggles Logic
+    if (budgetToggle && superBudgetToggle) {
+        budgetToggle.addEventListener('change', function () {
+            if (this.checked) superBudgetToggle.checked = false;
+        });
+        superBudgetToggle.addEventListener('change', function () {
+            if (this.checked) budgetToggle.checked = false;
         });
     }
 
-    lastAddedCard = rawName; // Update AI memory
-    currentFaction = cardFaction;
-    activeClasses.add(cardClass);
+    const getTotalCards = () => currentSeeds.reduce((sum, seed) => sum + seed.count, 0);
 
-    seedInput.value = '';
-    suggestionsBox.style.display = 'none';
-    renderSeeds();
-}
 
-// --- 2. Unified Visual Rendering ---
-function renderSeeds() {
-    const resultsContainer = document.getElementById('generatedDeckList'); 
-    const tracker = document.getElementById('cardCountTracker'); 
-    const title = document.getElementById('generatedDeckTitle');
-    const actionContainer = document.getElementById('deckActionContainer'); 
-    const totalCards = getTotalCards();
+    // --- 1. Smart Autocomplete ---
+    seedInput.addEventListener('input', function () {
+        const query = this.value.toLowerCase().trim();
+        suggestionsBox.innerHTML = '';
 
-    // NEW: Always dynamically reconstruct the active classes to prevent de-sync bugs!
-    activeClasses.clear();
-    currentSeeds.forEach(seed => {
-        const cardClass = cardDatabase[seed.name]?.Class;
-        if (cardClass) activeClasses.add(cardClass);
+        if (getTotalCards() >= 40) {
+            suggestionsBox.innerHTML = '<li style="color: #ff7b72; justify-content: center;">Deck is full! (40 cards)</li>';
+            suggestionsBox.style.display = 'block';
+            return;
+        }
+
+        if (query.length < 2) {
+            suggestionsBox.style.display = 'none';
+            return;
+        }
+
+        let matches = 0;
+        Object.keys(cardDatabase).forEach(rawName => {
+            if (matches >= 15) return;
+
+            const cleanName = rawName.replace(/_/g, ' ');
+            if (cleanName.toLowerCase().includes(query)) {
+                const cardInfo = cardDatabase[rawName];
+                const cardClass = cardInfo.Class;
+                const cardFaction = plantClasses.has(cardClass) ? "Plant" : "Zombie";
+
+                if (currentFaction !== null && currentFaction !== cardFaction) return;
+                if (!activeClasses.has(cardClass) && activeClasses.size >= 2) return;
+
+                const existing = currentSeeds.find(s => s.name === rawName);
+                if (existing && existing.count >= 4) return;
+
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${cleanName}</span> <span class="suggestion-class">${cardClass}</span>`;
+                // Add via autocomplete defaults to 4 copies
+                li.onclick = () => addSeed(rawName, cardClass, cardFaction, 4);
+                suggestionsBox.appendChild(li);
+                matches++;
+            }
+        });
+
+        suggestionsBox.style.display = matches > 0 ? 'block' : 'none';
     });
 
-    resultsContainer.innerHTML = '';
-    resultsContainer.className = 'visual-deck-grid';
+    document.addEventListener('click', (e) => {
+        if (e.target !== seedInput && e.target !== suggestionsBox) {
+            suggestionsBox.style.display = 'none';
+        }
+    });
 
-    if (tracker) tracker.innerText = `${totalCards}/40`;
+    function addSeed(rawName, cardClass, cardFaction, requestedAmount = 4) {
+        const spaceLeft = 40 - getTotalCards();
+        if (spaceLeft <= 0) return;
 
-    if (currentSeeds.length === 0) {
-        resultsContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;">No cards added yet. Search above to begin!</div>';
-        generateDeckBtn.disabled = true;
-        if (title) title.classList.add('hidden');
-        if (actionContainer) actionContainer.style.display = 'none'; 
-        currentFaction = null;
-        activeClasses.clear();
-        lastAddedCard = null;
-        triggerAICoPilot(); 
-        return;
+        const existing = currentSeeds.find(s => s.name === rawName);
+        const currentCount = existing ? existing.count : 0;
+        const roomForThisCard = 4 - currentCount;
+
+        // Automatically calculate how many we can actually add
+        let amountToAdd = Math.min(requestedAmount, spaceLeft, roomForThisCard);
+        if (amountToAdd <= 0) return;
+
+        if (existing) {
+            existing.count += amountToAdd;
+        } else {
+            currentSeeds.push({
+                name: rawName,
+                count: amountToAdd,
+                class: cardClass,
+                faction: cardFaction,
+                cost: cardDatabase[rawName].Cost
+            });
+        }
+
+        lastAddedCard = rawName; // Update AI memory
+        currentFaction = cardFaction;
+        activeClasses.add(cardClass);
+
+        seedInput.value = '';
+        suggestionsBox.style.display = 'none';
+        renderSeeds();
     }
 
-    generateDeckBtn.disabled = totalCards >= 40;
+    // --- 2. Unified Visual Rendering ---
+    function renderSeeds() {
+        const resultsContainer = document.getElementById('generatedDeckList');
+        const tracker = document.getElementById('cardCountTracker');
+        const title = document.getElementById('generatedDeckTitle');
+        const actionContainer = document.getElementById('deckActionContainer');
+        const totalCards = getTotalCards();
 
-    if (totalCards >= 40) {
-        const classArray = Array.from(activeClasses).sort();
-        const heroName = heroMap[classArray.join(',')] || `Any ${classArray.join(' / ')} Hero`;
-        const isPlant = currentFaction === "Plant";
-        const aiDeckName = generateDeckName(currentSeeds, isPlant);
-        
-        if (title) {
-    title.classList.remove('hidden');
-    
-    // Split shared heroes safely (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
-    const heroes = heroName ? heroName.split(/\s*\/\s*/) : [];
-    
-    const heroBadgesHtml = heroes.map(name => {
-        // Formats filename to match your image folder structure
-        const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
-        return `
+        // NEW: Always dynamically reconstruct the active classes to prevent de-sync bugs!
+        activeClasses.clear();
+        currentSeeds.forEach(seed => {
+            const cardClass = cardDatabase[seed.name]?.Class;
+            if (cardClass) activeClasses.add(cardClass);
+        });
+
+        resultsContainer.innerHTML = '';
+        resultsContainer.className = 'visual-deck-grid';
+
+        if (tracker) tracker.innerText = `${totalCards}/40`;
+
+        if (currentSeeds.length === 0) {
+            resultsContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;">No cards added yet. Search above to begin!</div>';
+            generateDeckBtn.disabled = true;
+            if (title) title.classList.add('hidden');
+            if (actionContainer) actionContainer.style.display = 'none';
+            currentFaction = null;
+            activeClasses.clear();
+            lastAddedCard = null;
+            triggerAICoPilot();
+            return;
+        }
+
+        generateDeckBtn.disabled = totalCards >= 40;
+
+        if (totalCards >= 40) {
+            const classArray = Array.from(activeClasses).sort();
+            const heroName = heroMap[classArray.join(',')] || `Any ${classArray.join(' / ')} Hero`;
+            const isPlant = currentFaction === "Plant";
+            const aiDeckName = generateDeckName(currentSeeds, isPlant);
+
+            if (title) {
+                title.classList.remove('hidden');
+
+                // Split shared heroes safely (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
+                const heroes = heroName ? heroName.split(/\s*\/\s*/) : [];
+
+                const heroBadgesHtml = heroes.map(name => {
+                    // Formats filename to match your image folder structure
+                    const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
+                    return `
             <div class="title-hero-pill">
                 <img src="hero_images/${imgFilename}" alt="${name}" class="title-hero-avatar">
                 <span class="title-hero-label">${name}</span>
             </div>
         `;
-    }).join('');
+                }).join('');
 
-    title.innerHTML = `
+                title.innerHTML = `
         <div style="font-size: 1.2em; color: var(--accent); font-style: italic; margin-bottom: 8px; text-align: center;">"${aiDeckName}"</div>
         <div class="title-hero-container">
             ${heroBadgesHtml}
         </div>
     `;
-}
-        
-        currentClipboardText = `Deck: ${aiDeckName}\nHero: ${heroName}\n\n`;
-        if (actionContainer) {
-            actionContainer.classList.remove('hidden'); 
-            actionContainer.style.display = 'flex'; 
+            }
+
+            currentClipboardText = `Deck: ${aiDeckName}\nHero: ${heroName}\n\n`;
+            if (actionContainer) {
+                actionContainer.classList.remove('hidden');
+                actionContainer.style.display = 'flex';
+            }
+        } else {
+            if (title) title.classList.add('hidden');
+            if (actionContainer) actionContainer.style.display = 'none';
         }
-    } else {
-        if (title) title.classList.add('hidden');
-        if (actionContainer) actionContainer.style.display = 'none'; 
-    }
 
-    let displaySeeds = [...currentSeeds].sort((a, b) => {
-        const costA = cardDatabase[a.name]?.Cost || 0;
-        const costB = cardDatabase[b.name]?.Cost || 0;
-        if (costA !== costB) return costA - costB;
-        return a.name.localeCompare(b.name);
-    });
+        let displaySeeds = [...currentSeeds].sort((a, b) => {
+            const costA = cardDatabase[a.name]?.Cost || 0;
+            const costB = cardDatabase[b.name]?.Cost || 0;
+            if (costA !== costB) return costA - costB;
+            return a.name.localeCompare(b.name);
+        });
 
-    displaySeeds.forEach((seed, index) => {
-        const displayName = seed.name.replace(/_/g, ' ');
-        const dbName = displayName.replace(/ /g, '_');
-        const disablePlus = seed.count >= 4 || totalCards >= 40;
+        displaySeeds.forEach((seed, index) => {
+            const displayName = seed.name.replace(/_/g, ' ');
+            const dbName = displayName.replace(/ /g, '_');
+            const disablePlus = seed.count >= 4 || totalCards >= 40;
 
-        const cardDiv = document.createElement('div');
-        // 2. ADD THE ANIMATION CLASS AND DYNAMIC DELAY
-        cardDiv.className = 'visual-card pop-animate';
-        cardDiv.style.animationDelay = `${index * 35}ms`;
-        
-        const img = document.createElement('img');
-        img.src = `card_images/${dbName}.png`;
-        img.alt = displayName;
-        img.title = displayName;
-        img.onerror = function() { this.onerror = null; this.src = `card_images/${dbName}.webp`; };
+            const cardDiv = document.createElement('div');
+            // 2. ADD THE ANIMATION CLASS AND DYNAMIC DELAY
+            cardDiv.className = 'visual-card pop-animate';
+            cardDiv.style.animationDelay = `${index * 35}ms`;
 
-        const badge = document.createElement('div');
-        badge.className = 'card-quantity';
-        badge.textContent = `x${seed.count}`;
+            const img = document.createElement('img');
+            img.src = `card_images/${dbName}.png`;
+            img.alt = displayName;
+            img.title = displayName;
+            img.onerror = function () { this.onerror = null; this.src = `card_images/${dbName}.webp`; };
 
-        const controls = document.createElement('div');
-        controls.className = 'visual-card-controls';
-        controls.innerHTML = `
+            const badge = document.createElement('div');
+            badge.className = 'card-quantity';
+            badge.textContent = `x${seed.count}`;
+
+            const controls = document.createElement('div');
+            controls.className = 'visual-card-controls';
+            controls.innerHTML = `
             <button class="seed-btn minus-btn" data-name="${seed.name}">-</button>
             <button class="seed-btn swap-btn" data-name="${seed.name}">↔</button>
             <button class="seed-btn plus-btn" data-name="${seed.name}" ${disablePlus ? 'disabled' : ''}>+</button>
         `;
 
-        cardDiv.appendChild(img);
-        cardDiv.appendChild(badge);
-        cardDiv.appendChild(controls);
-        resultsContainer.appendChild(cardDiv);
+            cardDiv.appendChild(img);
+            cardDiv.appendChild(badge);
+            cardDiv.appendChild(controls);
+            resultsContainer.appendChild(cardDiv);
 
-        cardDiv.addEventListener('click', () => {
-            const isOpen = cardDiv.classList.contains('show-controls');
-            document.querySelectorAll('.visual-card.show-controls').forEach(el => el.classList.remove('show-controls'));
-            if (!isOpen) cardDiv.classList.add('show-controls');
+            cardDiv.addEventListener('click', () => {
+                const isOpen = cardDiv.classList.contains('show-controls');
+                document.querySelectorAll('.visual-card.show-controls').forEach(el => el.classList.remove('show-controls'));
+                if (!isOpen) cardDiv.classList.add('show-controls');
+            });
+
+            controls.addEventListener('click', e => {
+                e.stopPropagation();
+            });
+
+            if (totalCards >= 40) {
+                currentClipboardText += `${seed.count}x ${displayName}\n`;
+            }
         });
 
-        controls.addEventListener('click', e => {
-            e.stopPropagation();
-        });
+        attachQuantityListeners();
+        triggerAICoPilot();
+        updateDeckStats();
+    }
 
-        if (totalCards >= 40) {
-            currentClipboardText += `${seed.count}x ${displayName}\n`;
-        }
-    });
-
-    attachQuantityListeners();
-    triggerAICoPilot();
-    updateDeckStats();
-}
-
-function attachQuantityListeners() {
-    document.querySelectorAll('.minus-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const name = e.target.getAttribute('data-name');
-            const seed = currentSeeds.find(s => s.name === name);
-            if (seed) {
-                seed.count--;
-                if (seed.count <= 0) {
-                    currentSeeds = currentSeeds.filter(s => s.name !== name);
-                    activeClasses.clear();
-                    currentSeeds.forEach(s => activeClasses.add(s.class));
-                    if (lastAddedCard === name) lastAddedCard = null;
-                    if (activeClasses.size < 2) heroAnnounced = false;
+    function attachQuantityListeners() {
+        document.querySelectorAll('.minus-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const name = e.target.getAttribute('data-name');
+                const seed = currentSeeds.find(s => s.name === name);
+                if (seed) {
+                    seed.count--;
+                    if (seed.count <= 0) {
+                        currentSeeds = currentSeeds.filter(s => s.name !== name);
+                        activeClasses.clear();
+                        currentSeeds.forEach(s => activeClasses.add(s.class));
+                        if (lastAddedCard === name) lastAddedCard = null;
+                        if (activeClasses.size < 2) heroAnnounced = false;
+                    }
+                    renderSeeds();
                 }
-                renderSeeds();
+            });
+        });
+
+        document.querySelectorAll('.plus-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const name = e.target.getAttribute('data-name');
+                const seed = currentSeeds.find(s => s.name === name);
+                if (seed && seed.count < 4 && getTotalCards() < 40) {
+                    seed.count++;
+                    lastAddedCard = name; // Update context to the card they modified
+                    renderSeeds();
+                }
+            });
+        });
+        document.querySelectorAll('.swap-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const name = e.target.getAttribute('data-name');
+                showSwapSuggestions(name);
+            });
+        });
+    }
+
+    if (clearSeedsBtn) {
+        clearSeedsBtn.addEventListener('click', () => {
+            currentSeeds = [];
+            currentFaction = null;
+            activeClasses.clear();
+            lastAddedCard = null;
+            heroAnnounced = false;
+            seedInput.value = '';
+            renderSeeds();
+            if (typeof updateDeckStats === 'function') updateDeckStats();
+        });
+    }
+    // --- SPECIFIC COMBO CALLOUTS ---
+    const comboDictionary = [
+        {
+            // Pogo + MUG
+            cards: ["Pogo_Zombie", "Mixed-Up_Gravedigger"],
+            message: "**Pogo Zombie** clears a lane, and **Mixed-Up Gravedigger** resets him into a gravestone to do it all over again. Brutal!"
+        },
+        {
+            // Pineclone + Swarm
+            cards: ["Pineclone", "Shroom_For_Two"],
+            message: "**Shroom for Two** gives you two bodies for 1 sun, perfectly setting up a massive board-wide **Pineclone** transformation."
+        },
+        {
+            // Valkyrie + Mustache Monument
+            cards: ["Valkyrie", "Mustache_Monument"],
+            message: "Grow her massive in your hand, then drop her on the **Mustache Monument** for a devastating bonus attack."
+        },
+        {
+            // Hearty Coach + Sports
+            cards: ["Zombie_Coach", "Team_Mascot"],
+            message: "**Team Mascot** buffs your team, and **Zombie Coach** makes them completely invincible. Unstoppable!"
+        },
+        {
+            // Barrel + Mission
+            cards: ["Barrel_Of_Deadbeards", "Final_Mission"],
+            message: "**Final Mission** destroys your **Barrel of Deadbeards** to deal 4 damage, which triggers the Barrel to wipe out 1-health plants and spawn a 4/3 pirate. Pure value!"
+        },
+        {
+            // Buddy + Pepper
+            cards: ["Li'l_Buddy", "Pepper_M.D."],
+            message: "A 0-cost **Lil Buddy** instantly heals you, immediately triggering **Pepper M.D.**'s ability to give it a massive growth spurt on the exact same turn!"
+        },
+        {
+            // ANB + Jelly
+            cards: ["Admiral_Navy_Bean", "Jelly_Bean"],
+            message: "**Admiral Navy Bean** continuously chips away at the Zombie Hero, and makes the perfect Bean evolution target for **Jelly Bean** to bounce massive threats away!"
+        },
+        {
+            // Photosynthesizer + Tricarrotops
+            cards: ["Photosynthesizer", "Tricarrotops"],
+            message: "**Photosynthesizer** beefs up your **Tricarrotops**'s health, and the card it conjures instantly triggers its Dino-Roar! A massive dino for super cheap."
+        },
+        {
+            // Spinach + Beanstalk
+            cards: ["Savage_Spinach", "Typical_Beanstalk"],
+            message: "Evolving **Savage Spinach** off your Leafy **Typical Beanstalk** gives every Plant in your hand a massive +2/+2 boost."
+        },
+        {
+            // Imp-Throwing + Toxic
+            cards: ["Imp_Throwing_Imp", "Toxic_Waste_Imp"],
+            message: "**Toxic Waste Imp** gives all Imps Deadly, turning the tiny Swabbies thrown by your **Imp-Throwing Imp** into lethal, guaranteed removal tools!"
+        },
+        {
+            // Commander + Imp-Throwing
+            cards: ["Imp_Commander", "Imp_Throwing_Imp"],
+            message: "When **Imp-Throwing Imp** tosses buddies into empty water lanes, **Imp Commander** ensures they draw you cards every time they hit the hero. Incredible draw engine!"
+        },
+        {
+            // Pea Patch + Spinach
+            cards: ["Pea_Patch", "Savage_Spinach"],
+            message: "**Pea Patch** is the perfect Leafy target for **Savage Spinach**. Your hand gets the +2/+2 evolution buff, and the Spinach itself gets the Pea Patch stats!"
+        },
+        {
+            // Flag + Manager
+            cards: ["Flag_Zombie", "Middle_Manager"],
+            message: "**Flag Zombie** makes your swarms cheap, and since he's a Professional, he permanently buffs your **Middle Manager** whenever he takes a hit. Synergistic synergy!"
+        },
+        {
+            // Heartichoke + Flytraplanet
+            cards: ["Heartichoke", "Venus_Flytraplanet"],
+            message: "When **Heartichoke** damages the Zombie Hero on a **Venus Flytraplanet**, it heals you. That heal triggers the Heartichoke to deal damage again, creating an endless cycle of healing and pain!"
+        },
+        {
+            // Snowdrop + Winter Squash
+            cards: ["Snowdrop", "Winter_Squash"],
+            message: "**Winter Squash** instantly shatters any Zombie that gets frozen, while **Snowdrop** simultaneously absorbs that freeze to gain a massive +2/+2. Cold and calculated!"
+        },
+        {
+            // Goat + Hover-Goat
+            cards: ["Goat", "Hover-Goat_3000"],
+            message: "**Hover-Goat_3000** gives your regular **Goat** a beefy +2/+2 stats boost, and whenever a Goat takes damage, it just keeps growing stronger!"
+        },
+        {
+            // Fig (Transfiguration) + Imitater
+            cards: ["Fig", "Imitater"], // Change "Transfiguration" to "Fig" if that's how it is named in your cardDatabase!
+            message: "Playing **Transfiguration** into an **Imitater** gives you TWO massive bodies that will both mutate into more expensive, game-ending threats at the end of the turn!"
+        },
+        {
+            // CycleCap
+            cards: ["Astro_Shroom", "Planet_of_the_Grapes"],
+            message: "**Astro-Shroom** deals damage when you play a plant, triggering **Planet of the Grapes** to draw a card, which lets you play MORE plants!"
+        },
+        {
+            // Con Man + Regifter
+            cards: ["Quickdraw_Con_Man", "Regifting_Zombie"],
+            message: "**Regifting Zombie** forces both players to draw cards, instantly triggering **Quickdraw Con Man**'s ability to burn the Plant Hero's health. Aggressive draw!"
+        },
+        {
+            // Teacher + Going Viral
+            cards: ["Teacher", "Going_Viral"],
+            message: "**Zombology Teacher** reduces the cost of tricks, making **Going Viral** incredibly cheap to play and shuffle, easily swarming the board with Frenzy-fueled zombies."
+        },
+        {
+            // Three-Nut + Garlic
+            cards: ["Three-Nut", "Garlic"],
+            message: "**Three-Nut** instantly sets any plant's attack to 3. Combine this with the massive 5-health of a 1-cost **Garlic** to create an aggressively cheap and beefy front line."
+        },
+        {
+            // Onion Rings + Lil Buddy
+            cards: ["Onion_Rings", "Li'l_Buddy"],
+            message: "**Onion Rings** turns every plant in your hand into a 4/4. Suddenly, your free **Lil Buddy** becomes a 0-cost 4/4 that still heals you. Insane value!"
+        },
+        {
+            // Cob Cannon + Lil Buddy
+            cards: ["Cob_Cannon", "Li'l_Buddy"],
+            message: "Need instant removal? Drop a 0-cost **Lil Buddy**, then immediately evolve your **Cob Cannon** on it to destroy a Zombie and leave behind a 4/6 body."
+        },
+        {
+            // Warlord + MUG
+            cards: ["Intergalactic_Warlord", "Mixed-Up_Gravedigger"],
+            message: "**Intergalactic Warlord** buffs your entire board permanently. Use **Mixed-Up Gravedigger** to hide him, and when he pops back out, he triggers his massive team-buff all over again!"
+        },
+        {
+            // Briar Rose + Poppin' Poppies
+            cards: ["Briar_Rose", "Poppin'_Poppies"],
+            message: "**Poppin' Poppies** floods the board with 1-health Lil' Buddies. With **Briar Rose** on the field, every single one of those tiny flowers becomes a lethal, zombie-destroying trap!"
+        },
+        {
+            // GTI + Fireworks
+            cards: ["Gargantuar-Throwing_Imp", "Fireworks_Zombie"],
+            message: "**Fireworks Zombie** deals 1 damage to everything, which instantly pokes your **Gargantuar-Throwing Imp** and causes him to immediately throw a massive Gargantuar onto the board!"
+        },
+        {
+            // Dr. Spacetime + Buried Treasure
+            cards: ["Dr._Spacetime", "Buried_Treasure"],
+            message: "Play **Buried Treasure** with **Dr. Spacetime** on the board. The Treasure conjures a Legendary, and Spacetime makes it cheaper. You're swimming in discounted, high-tier cards!"
+        },
+        {
+            // Galacta-Cactus + Pear Cub
+            cards: ["Galacta-Cactus", "Pear_Cub"],
+            message: "When **Galacta-Cactus** gets destroyed, its 1-damage explosion is the perfect trigger to crack open your **Pear Cub** and unleash the massive Grizzly Pear inside."
+        }
+    ];
+    function parseCardList(cardList) {
+        const map = {};
+        (cardList || []).forEach(entry => {
+            const firstSpace = entry.indexOf(' ');
+            const countStr = entry.substring(0, firstSpace).replace(/x/i, '');
+            const count = parseInt(countStr) || 1;
+            const cardName = entry.substring(firstSpace + 1).trim();
+            map[cardName] = (map[cardName] || 0) + count;
+        });
+        return map;
+    }
+
+    function getClosestDeckMatch() {
+        if (!fullDatabase) return null;
+
+        const currentMap = {};
+        currentSeeds.forEach(seed => {
+            currentMap[seed.name] = seed.count;
+        });
+
+        let bestDeck = null;
+        let bestScore = -1;
+
+        Object.values(fullDatabase).forEach(deck => {
+            const deckMap = parseCardList(deck.cards);
+
+            let overlap = 0;
+            for (const cardName in currentMap) {
+                overlap += Math.min(currentMap[cardName] || 0, deckMap[cardName] || 0);
+            }
+
+            if (overlap > bestScore) {
+                bestScore = overlap;
+                bestDeck = deck;
             }
         });
-    });
 
-    document.querySelectorAll('.plus-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const name = e.target.getAttribute('data-name');
-            const seed = currentSeeds.find(s => s.name === name);
-            if (seed && seed.count < 4 && getTotalCards() < 40) {
-                seed.count++;
-                lastAddedCard = name; // Update context to the card they modified
-                renderSeeds();
-            }
+        return bestDeck;
+    }
+    function getVerdictGrade(overallPercent, allTopTier, totalCards) {
+        let grade, gradeColor;
+
+        if (totalCards <= 8) {
+            grade = "—";
+            gradeColor = "rgba(255,255,255,0.3)";
+        } else if (overallPercent >= 97.5) {
+            grade = "S";
+            gradeColor = "#00E5FF";
+        } else if (overallPercent >= 87.5) {
+            grade = "A";
+            gradeColor = "#4CAF50";
+        } else if (overallPercent >= 75) {
+            grade = "B";
+            gradeColor = "#8BC34A";
+        } else if (overallPercent >= 65) {
+            grade = "C";
+            gradeColor = "#ffb300";
+        } else if (overallPercent >= 50) {
+            grade = "D";
+            gradeColor = "#ff8800";
+        } else {
+            grade = "F";
+            gradeColor = "#ff4b4b";
+        }
+
+        return { grade, gradeColor };
+    }
+    // --- LIVE DECK ANALYTICS ENGINE ---
+    function updateDeckStats() {
+        const hud = document.getElementById('deckStatsHud');
+        const totalCards = getTotalCards(); // Assuming this helper exists
+
+        if (!hud || totalCards === 0) {
+            if (hud) hud.style.display = 'none';
+            return;
+        }
+
+        hud.style.display = 'block';
+
+        // 1. Format the current seeds into the string array getDeckVerdictFromCards expects
+        const deckCards = currentSeeds.map(s => `${s.count}x ${s.name}`);
+
+        // 2. Delegate all heavy lifting to the verdict function
+        const stats = getDeckVerdictFromCards(deckCards);
+
+        // ==========================================
+        // UI 1: Mana Curve Chart (SVG)
+        // ==========================================
+        const chart = document.getElementById('manaCurveChart');
+        const counts = [stats.curve[1], stats.curve[2], stats.curve[3], stats.curve[4], stats.curve[5], stats.curve["6+"]];
+        const maxCurveVal = Math.max(...counts, 1);
+
+        const width = chart.clientWidth > 0 ? chart.clientWidth : 300;
+        const height = 40;
+        const xStep = width / (counts.length - 1);
+
+        let pathD = `M 0,${height} `;
+        const points = [];
+
+        counts.forEach((count, i) => {
+            const x = i * xStep;
+            const y = height - ((count / maxCurveVal) * (height - 4)) - 2;
+            points.push({ x, y });
+            pathD += `L ${x},${y} `;
         });
-    });
-    document.querySelectorAll('.swap-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const name = e.target.getAttribute('data-name');
-        showSwapSuggestions(name);
-    });
-});
-}
 
-if (clearSeedsBtn) {
-    clearSeedsBtn.addEventListener('click', () => {
-        currentSeeds = [];
-        currentFaction = null;
-        activeClasses.clear();
-        lastAddedCard = null;
-        heroAnnounced = false;
-        seedInput.value = '';
-        renderSeeds();
-        if (typeof updateDeckStats === 'function') updateDeckStats();
-    });
-}
-// --- SPECIFIC COMBO CALLOUTS ---
-const comboDictionary = [
-    {
-        // Pogo + MUG
-        cards: ["Pogo_Zombie", "Mixed-Up_Gravedigger"],
-        message: "**Pogo Zombie** clears a lane, and **Mixed-Up Gravedigger** resets him into a gravestone to do it all over again. Brutal!"
-    },
-    {
-        // Pineclone + Swarm
-        cards: ["Pineclone", "Shroom_For_Two"],
-        message: "**Shroom for Two** gives you two bodies for 1 sun, perfectly setting up a massive board-wide **Pineclone** transformation."
-    },
-    {
-        // Valkyrie + Mustache Monument
-        cards: ["Valkyrie", "Mustache_Monument"],
-        message: "Grow her massive in your hand, then drop her on the **Mustache Monument** for a devastating bonus attack."
-    },
-    {
-        // Hearty Coach + Sports
-        cards: ["Zombie_Coach", "Team_Mascot"],
-        message: "**Team Mascot** buffs your team, and **Zombie Coach** makes them completely invincible. Unstoppable!"
-    },
-    {
-        // Barrel + Mission
-        cards: ["Barrel_Of_Deadbeards", "Final_Mission"],
-        message: "**Final Mission** destroys your **Barrel of Deadbeards** to deal 4 damage, which triggers the Barrel to wipe out 1-health plants and spawn a 4/3 pirate. Pure value!"
-    },
-    {
-        // Buddy + Pepper
-        cards: ["Li'l_Buddy", "Pepper_M.D."],
-        message: "A 0-cost **Lil Buddy** instantly heals you, immediately triggering **Pepper M.D.**'s ability to give it a massive growth spurt on the exact same turn!"
-    },
-    {
-        // ANB + Jelly
-        cards: ["Admiral_Navy_Bean", "Jelly_Bean"],
-        message: "**Admiral Navy Bean** continuously chips away at the Zombie Hero, and makes the perfect Bean evolution target for **Jelly Bean** to bounce massive threats away!"
-    },
-    {
-        // Photosynthesizer + Tricarrotops
-        cards: ["Photosynthesizer", "Tricarrotops"],
-        message: "**Photosynthesizer** beefs up your **Tricarrotops**'s health, and the card it conjures instantly triggers its Dino-Roar! A massive dino for super cheap."
-    },
-    {
-        // Spinach + Beanstalk
-        cards: ["Savage_Spinach", "Typical_Beanstalk"],
-        message: "Evolving **Savage Spinach** off your Leafy **Typical Beanstalk** gives every Plant in your hand a massive +2/+2 boost."
-    },
-    {
-        // Imp-Throwing + Toxic
-        cards: ["Imp_Throwing_Imp", "Toxic_Waste_Imp"],
-        message: "**Toxic Waste Imp** gives all Imps Deadly, turning the tiny Swabbies thrown by your **Imp-Throwing Imp** into lethal, guaranteed removal tools!"
-    },
-    {
-        // Commander + Imp-Throwing
-        cards: ["Imp_Commander", "Imp_Throwing_Imp"],
-        message: "When **Imp-Throwing Imp** tosses buddies into empty water lanes, **Imp Commander** ensures they draw you cards every time they hit the hero. Incredible draw engine!"
-    },
-    {
-        // Pea Patch + Spinach
-        cards: ["Pea_Patch", "Savage_Spinach"],
-        message: "**Pea Patch** is the perfect Leafy target for **Savage Spinach**. Your hand gets the +2/+2 evolution buff, and the Spinach itself gets the Pea Patch stats!"
-    },
-    {
-        // Flag + Manager
-        cards: ["Flag_Zombie", "Middle_Manager"],
-        message: "**Flag Zombie** makes your swarms cheap, and since he's a Professional, he permanently buffs your **Middle Manager** whenever he takes a hit. Synergistic synergy!"
-    },
-    {
-        // Heartichoke + Flytraplanet
-        cards: ["Heartichoke", "Venus_Flytraplanet"],
-        message: "When **Heartichoke** damages the Zombie Hero on a **Venus Flytraplanet**, it heals you. That heal triggers the Heartichoke to deal damage again, creating an endless cycle of healing and pain!"
-    },
-    {
-        // Snowdrop + Winter Squash
-        cards: ["Snowdrop", "Winter_Squash"],
-        message: "**Winter Squash** instantly shatters any Zombie that gets frozen, while **Snowdrop** simultaneously absorbs that freeze to gain a massive +2/+2. Cold and calculated!"
-    },
-    {
-        // Goat + Hover-Goat
-        cards: ["Goat", "Hover-Goat_3000"],
-        message: "**Hover-Goat_3000** gives your regular **Goat** a beefy +2/+2 stats boost, and whenever a Goat takes damage, it just keeps growing stronger!"
-    },
-    {
-        // Fig (Transfiguration) + Imitater
-        cards: ["Fig", "Imitater"], // Change "Transfiguration" to "Fig" if that's how it is named in your cardDatabase!
-        message: "Playing **Transfiguration** into an **Imitater** gives you TWO massive bodies that will both mutate into more expensive, game-ending threats at the end of the turn!"
-    },
-    {
-        // CycleCap
-        cards: ["Astro_Shroom", "Planet_of_the_Grapes"],
-        message: "**Astro-Shroom** deals damage when you play a plant, triggering **Planet of the Grapes** to draw a card, which lets you play MORE plants!"
-    },
-    {
-        // Con Man + Regifter
-        cards: ["Quickdraw_Con_Man", "Regifting_Zombie"],
-        message: "**Regifting Zombie** forces both players to draw cards, instantly triggering **Quickdraw Con Man**'s ability to burn the Plant Hero's health. Aggressive draw!"
-    },
-    {
-        // Teacher + Going Viral
-        cards: ["Teacher", "Going_Viral"],
-        message: "**Zombology Teacher** reduces the cost of tricks, making **Going Viral** incredibly cheap to play and shuffle, easily swarming the board with Frenzy-fueled zombies."
-    },
-    {
-        // Three-Nut + Garlic
-        cards: ["Three-Nut", "Garlic"],
-        message: "**Three-Nut** instantly sets any plant's attack to 3. Combine this with the massive 5-health of a 1-cost **Garlic** to create an aggressively cheap and beefy front line."
-    },
-    {
-        // Onion Rings + Lil Buddy
-        cards: ["Onion_Rings", "Li'l_Buddy"],
-        message: "**Onion Rings** turns every plant in your hand into a 4/4. Suddenly, your free **Lil Buddy** becomes a 0-cost 4/4 that still heals you. Insane value!"
-    },
-    {
-        // Cob Cannon + Lil Buddy
-        cards: ["Cob_Cannon", "Li'l_Buddy"],
-        message: "Need instant removal? Drop a 0-cost **Lil Buddy**, then immediately evolve your **Cob Cannon** on it to destroy a Zombie and leave behind a 4/6 body."
-    },
-    {
-        // Warlord + MUG
-        cards: ["Intergalactic_Warlord", "Mixed-Up_Gravedigger"],
-        message: "**Intergalactic Warlord** buffs your entire board permanently. Use **Mixed-Up Gravedigger** to hide him, and when he pops back out, he triggers his massive team-buff all over again!"
-    },
-    {
-        // Briar Rose + Poppin' Poppies
-        cards: ["Briar_Rose", "Poppin'_Poppies"],
-        message: "**Poppin' Poppies** floods the board with 1-health Lil' Buddies. With **Briar Rose** on the field, every single one of those tiny flowers becomes a lethal, zombie-destroying trap!"
-    },
-    {
-        // GTI + Fireworks
-        cards: ["Gargantuar-Throwing_Imp", "Fireworks_Zombie"],
-        message: "**Fireworks Zombie** deals 1 damage to everything, which instantly pokes your **Gargantuar-Throwing Imp** and causes him to immediately throw a massive Gargantuar onto the board!"
-    },
-    {
-        // Dr. Spacetime + Buried Treasure
-        cards: ["Dr._Spacetime", "Buried_Treasure"],
-        message: "Play **Buried Treasure** with **Dr. Spacetime** on the board. The Treasure conjures a Legendary, and Spacetime makes it cheaper. You're swimming in discounted, high-tier cards!"
-    },
-    {
-        // Galacta-Cactus + Pear Cub
-        cards: ["Galacta-Cactus", "Pear_Cub"],
-        message: "When **Galacta-Cactus** gets destroyed, its 1-damage explosion is the perfect trigger to crack open your **Pear Cub** and unleash the massive Grizzly Pear inside."
-    }
-];
-function parseCardList(cardList) {
-    const map = {};
-    (cardList || []).forEach(entry => {
-        const firstSpace = entry.indexOf(' ');
-        const countStr = entry.substring(0, firstSpace).replace(/x/i, '');
-        const count = parseInt(countStr) || 1;
-        const cardName = entry.substring(firstSpace + 1).trim();
-        map[cardName] = (map[cardName] || 0) + count;
-    });
-    return map;
-}
+        pathD += `L ${width},${height} Z`;
 
-function getClosestDeckMatch() {
-    if (!fullDatabase) return null;
-
-    const currentMap = {};
-    currentSeeds.forEach(seed => {
-        currentMap[seed.name] = seed.count;
-    });
-
-    let bestDeck = null;
-    let bestScore = -1;
-
-    Object.values(fullDatabase).forEach(deck => {
-        const deckMap = parseCardList(deck.cards);
-
-        let overlap = 0;
-        for (const cardName in currentMap) {
-            overlap += Math.min(currentMap[cardName] || 0, deckMap[cardName] || 0);
-        }
-
-        if (overlap > bestScore) {
-            bestScore = overlap;
-            bestDeck = deck;
-        }
-    });
-
-    return bestDeck;
-}
-function getVerdictGrade(overallPercent, allTopTier, totalCards) {
-    let grade, gradeColor;
-
-    if (totalCards <= 8) {
-        grade = "—";
-        gradeColor = "rgba(255,255,255,0.3)";
-    } else if (overallPercent >= 97.5) {
-        grade = "S";
-        gradeColor = "#00E5FF";
-    } else if (overallPercent >= 87.5) {
-        grade = "A";
-        gradeColor = "#4CAF50";
-    } else if (overallPercent >= 75) {
-        grade = "B";
-        gradeColor = "#8BC34A";
-    } else if (overallPercent >= 65) {
-        grade = "C";
-        gradeColor = "#ffb300";
-    } else if (overallPercent >= 50) {
-        grade = "D";
-        gradeColor = "#ff8800";
-    } else {
-        grade = "F";
-        gradeColor = "#ff4b4b";
-    }
-
-    return { grade, gradeColor };
-}
-// --- LIVE DECK ANALYTICS ENGINE ---
-function updateDeckStats() {
-    const hud = document.getElementById('deckStatsHud');
-    const totalCards = getTotalCards(); // Assuming this helper exists
-    
-    if (!hud || totalCards === 0) {
-        if (hud) hud.style.display = 'none';
-        return;
-    }
-    
-    hud.style.display = 'block';
-
-    // 1. Format the current seeds into the string array getDeckVerdictFromCards expects
-    const deckCards = currentSeeds.map(s => `${s.count}x ${s.name}`);
-
-    // 2. Delegate all heavy lifting to the verdict function
-    const stats = getDeckVerdictFromCards(deckCards);
-
-    // ==========================================
-    // UI 1: Mana Curve Chart (SVG)
-    // ==========================================
-    const chart = document.getElementById('manaCurveChart');
-    const counts = [stats.curve[1], stats.curve[2], stats.curve[3], stats.curve[4], stats.curve[5], stats.curve["6+"]];
-    const maxCurveVal = Math.max(...counts, 1); 
-    
-    const width = chart.clientWidth > 0 ? chart.clientWidth : 300; 
-    const height = 40;
-    const xStep = width / (counts.length - 1);
-    
-    let pathD = `M 0,${height} `; 
-    const points = [];
-    
-    counts.forEach((count, i) => {
-        const x = i * xStep;
-        const y = height - ((count / maxCurveVal) * (height - 4)) - 2; 
-        points.push({x, y});
-        pathD += `L ${x},${y} `; 
-    });
-    
-    pathD += `L ${width},${height} Z`; 
-    
-    chart.innerHTML = `
+        chart.innerHTML = `
         <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible; display: block;">
             <defs>
                 <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
@@ -2580,283 +2596,283 @@ function updateDeckStats() {
         </svg>
     `;
 
-    // ==========================================
-    // UI 2: Deck Speed & Cost Sliders
-    // ==========================================
-    let speedLabel = "Midrange";
-    let speedPercent = 50;
+        // ==========================================
+        // UI 2: Deck Speed & Cost Sliders
+        // ==========================================
+        let speedLabel = "Midrange";
+        let speedPercent = 50;
 
-    if (stats.avgCost <= 2.2) { 
-        speedLabel = "Aggro/Rush"; 
-        speedPercent = (stats.avgCost / 2.2) * 33; 
-    } else if (stats.avgCost > 2.2 && stats.avgCost <= 3.5) { 
-        speedLabel = "Midrange"; 
-        speedPercent = 33 + (((stats.avgCost - 2.2) / 1.3) * 33); 
-    } else { 
-        speedLabel = "Control/Late"; 
-        speedPercent = 66 + (Math.min((stats.avgCost - 3.5) / 2.5, 1) * 34); 
-    }
-
-    document.getElementById('deckSpeedLabel').innerText = speedLabel;
-    document.getElementById('speedPointer').style.left = `calc(${speedPercent}% - 2px)`;
-
-    let costColor = "#4CAF50";
-    let costPercent = 0;
-
-    if (stats.avgSparks <= 250) { 
-        costColor = "#4CAF50"; 
-        costPercent = (stats.avgSparks / 250) * 25; 
-    } else if (stats.avgSparks <= 600) { 
-        costColor = "#ffb300"; 
-        costPercent = 25 + ((stats.avgSparks - 250) / 350) * 25; 
-    } else if (stats.avgSparks <= 1400) { 
-        costColor = "orange"; 
-        costPercent = 50 + ((stats.avgSparks - 600) / 800) * 25; 
-    } else { 
-        costColor = "#e91e63"; 
-        costPercent = 75 + (Math.min((stats.avgSparks - 1400) / 2600, 1) * 25); 
-    }
-
-    const costLabelEl = document.getElementById('deckCostLabel');
-    costLabelEl.innerText = stats.costLabel;
-    costLabelEl.style.color = costColor;
-    document.getElementById('costPointer').style.left = `calc(${costPercent}% - 2px)`;
-
-    // ==========================================
-    // UI 3: Progress Bars (Helper Function)
-    // ==========================================
-    const updateBar = (idPrefix, score, isCurve = false) => {
-        let color = "#ff4b4b"; // Red
-        if (score >= 85) color = "#00E5FF"; // Cyan
-        else if (score >= 70) color = "#4CAF50"; // Green
-        else if (score >= 50) color = "#ffb300"; // Yellow
-        
-        const labelEl = document.getElementById(`${idPrefix}Label`) || document.getElementById(`${idPrefix}Percent`);
-        const fillEl = document.getElementById(`${idPrefix}Fill`);
-
-        // Handle the "Unique" edge case for curve health
-        if (isCurve && stats.curveHealthText === "Unique") {
-            labelEl.innerText = "Unique";
-            labelEl.style.color = "#888";
-            fillEl.style.width = "0%";
-            fillEl.style.backgroundColor = "transparent";
-            return;
+        if (stats.avgCost <= 2.2) {
+            speedLabel = "Aggro/Rush";
+            speedPercent = (stats.avgCost / 2.2) * 33;
+        } else if (stats.avgCost > 2.2 && stats.avgCost <= 3.5) {
+            speedLabel = "Midrange";
+            speedPercent = 33 + (((stats.avgCost - 2.2) / 1.3) * 33);
+        } else {
+            speedLabel = "Control/Late";
+            speedPercent = 66 + (Math.min((stats.avgCost - 3.5) / 2.5, 1) * 34);
         }
 
-        if (labelEl) {
-            labelEl.innerText = isCurve ? stats.curveHealthText : `${score}%`;
-            labelEl.style.color = color;
+        document.getElementById('deckSpeedLabel').innerText = speedLabel;
+        document.getElementById('speedPointer').style.left = `calc(${speedPercent}% - 2px)`;
+
+        let costColor = "#4CAF50";
+        let costPercent = 0;
+
+        if (stats.avgSparks <= 250) {
+            costColor = "#4CAF50";
+            costPercent = (stats.avgSparks / 250) * 25;
+        } else if (stats.avgSparks <= 600) {
+            costColor = "#ffb300";
+            costPercent = 25 + ((stats.avgSparks - 250) / 350) * 25;
+        } else if (stats.avgSparks <= 1400) {
+            costColor = "orange";
+            costPercent = 50 + ((stats.avgSparks - 600) / 800) * 25;
+        } else {
+            costColor = "#e91e63";
+            costPercent = 75 + (Math.min((stats.avgSparks - 1400) / 2600, 1) * 25);
         }
-        if (fillEl) {
-            fillEl.style.width = `${score}%`;
-            fillEl.style.backgroundColor = color;
+
+        const costLabelEl = document.getElementById('deckCostLabel');
+        costLabelEl.innerText = stats.costLabel;
+        costLabelEl.style.color = costColor;
+        document.getElementById('costPointer').style.left = `calc(${costPercent}% - 2px)`;
+
+        // ==========================================
+        // UI 3: Progress Bars (Helper Function)
+        // ==========================================
+        const updateBar = (idPrefix, score, isCurve = false) => {
+            let color = "#ff4b4b"; // Red
+            if (score >= 85) color = "#00E5FF"; // Cyan
+            else if (score >= 70) color = "#4CAF50"; // Green
+            else if (score >= 50) color = "#ffb300"; // Yellow
+
+            const labelEl = document.getElementById(`${idPrefix}Label`) || document.getElementById(`${idPrefix}Percent`);
+            const fillEl = document.getElementById(`${idPrefix}Fill`);
+
+            // Handle the "Unique" edge case for curve health
+            if (isCurve && stats.curveHealthText === "Unique") {
+                labelEl.innerText = "Unique";
+                labelEl.style.color = "#888";
+                fillEl.style.width = "0%";
+                fillEl.style.backgroundColor = "transparent";
+                return;
+            }
+
+            if (labelEl) {
+                labelEl.innerText = isCurve ? stats.curveHealthText : `${score}%`;
+                labelEl.style.color = color;
+            }
+            if (fillEl) {
+                fillEl.style.width = `${score}%`;
+                fillEl.style.backgroundColor = color;
+            }
+        };
+
+        updateBar('synergy', stats.synergyScore);
+        updateBar('consistency', stats.consistencyScore);
+        updateBar('power', stats.powerScore);
+        updateBar('curveHealth', stats.curveNumeric, true);
+
+        // ==========================================
+        // UI 4: Verdict Grade & Callouts
+        // ==========================================
+        const gradeEl = document.getElementById('verdictGrade');
+        gradeEl.innerText = stats.grade;
+        gradeEl.style.color = stats.gradeColor;
+
+        const archetype = speedLabel.split('/')[0];
+        document.getElementById('verdictArchetype').innerText = archetype;
+        document.getElementById('verdictSubtitle').innerText = `${totalCards} cards · avg cost ${stats.avgCost.toFixed(1)} · ${stats.costLabel.toLowerCase()}`;
+
+        const callouts = [];
+        if (totalCards >= 6) {
+            if (stats.synergyScore >= 88) callouts.push({ dir: 'up', text: 'Elite synergy', val: stats.synergyScore + '%', pri: 5 });
+            else if (stats.synergyScore >= 75) callouts.push({ dir: 'up', text: 'Strong synergy', val: stats.synergyScore + '%', pri: 3 });
+            else if (stats.synergyScore < 65) callouts.push({ dir: 'down', text: 'Weak synergy', val: stats.synergyScore + '%', pri: 5 });
+            else if (stats.synergyScore < 50) callouts.push({ dir: 'down', text: 'Low synergy', val: stats.synergyScore + '%', pri: 3 });
+
+            if (stats.consistencyScore >= 85) callouts.push({ dir: 'up', text: 'Highly consistent', val: stats.consistencyScore + '%', pri: 4 });
+            else if (stats.consistencyScore < 40) callouts.push({ dir: 'down', text: 'Inconsistent', val: stats.consistencyScore + '%', pri: 5 });
+            else if (stats.consistencyScore < 65) callouts.push({ dir: 'down', text: 'Low consistency', val: stats.consistencyScore + '%', pri: 3 });
+
+            if (stats.powerScore >= 85) callouts.push({ dir: 'up', text: 'Meta powerhouse', val: stats.powerScore + '%', pri: 4 });
+            else if (stats.powerScore < 50) callouts.push({ dir: 'down', text: 'Off-meta', val: stats.powerScore + '%', pri: 2 });
+
+            if (stats.curveHealthText === "Excellent") callouts.push({ dir: 'up', text: 'Excellent curve', val: '', pri: 4 });
+            else if (stats.curveHealthText === "Awkward") callouts.push({ dir: 'down', text: 'Awkward curve', val: '', pri: 5 });
+
+            if (stats.costLabel === "P2W") callouts.push({ dir: 'down', text: 'P2W cost', val: '', pri: 2 });
+            else if (stats.costLabel === "Budget" && stats.powerScore >= 60) callouts.push({ dir: 'up', text: 'Budget powerhouse', val: '', pri: 3 });
         }
-    };
 
-    updateBar('synergy', stats.synergyScore);
-    updateBar('consistency', stats.consistencyScore);
-    updateBar('power', stats.powerScore);
-    updateBar('curveHealth', stats.curveNumeric, true); 
+        callouts.sort((a, b) => b.pri - a.pri);
+        const top = callouts.slice(0, 3);
+        const calloutHost = document.getElementById('verdictCallouts');
 
-    // ==========================================
-    // UI 4: Verdict Grade & Callouts
-    // ==========================================
-    const gradeEl = document.getElementById('verdictGrade');
-    gradeEl.innerText = stats.grade;
-    gradeEl.style.color = stats.gradeColor;
-
-    const archetype = speedLabel.split('/')[0];
-    document.getElementById('verdictArchetype').innerText = archetype;
-    document.getElementById('verdictSubtitle').innerText = `${totalCards} cards · avg cost ${stats.avgCost.toFixed(1)} · ${stats.costLabel.toLowerCase()}`;
-    
-    const callouts = [];
-    if (totalCards >= 6) {
-        if (stats.synergyScore >= 88) callouts.push({dir:'up', text:'Elite synergy', val:stats.synergyScore+'%', pri:5});
-        else if (stats.synergyScore >= 75) callouts.push({dir:'up', text:'Strong synergy', val:stats.synergyScore+'%', pri:3});
-        else if (stats.synergyScore < 65) callouts.push({dir:'down', text:'Weak synergy', val:stats.synergyScore+'%', pri:5});
-        else if (stats.synergyScore < 50) callouts.push({dir:'down', text:'Low synergy', val:stats.synergyScore+'%', pri:3});
-
-        if (stats.consistencyScore >= 85) callouts.push({dir:'up', text:'Highly consistent', val:stats.consistencyScore+'%', pri:4});
-        else if (stats.consistencyScore < 40) callouts.push({dir:'down', text:'Inconsistent', val:stats.consistencyScore+'%', pri:5});
-        else if (stats.consistencyScore < 65) callouts.push({dir:'down', text:'Low consistency', val:stats.consistencyScore+'%', pri:3});
-
-        if (stats.powerScore >= 85) callouts.push({dir:'up', text:'Meta powerhouse', val:stats.powerScore+'%', pri:4});
-        else if (stats.powerScore < 50) callouts.push({dir:'down', text:'Off-meta', val:stats.powerScore+'%', pri:2});
-
-        if (stats.curveHealthText === "Excellent") callouts.push({dir:'up', text:'Excellent curve', val:'', pri:4});
-        else if (stats.curveHealthText === "Awkward") callouts.push({dir:'down', text:'Awkward curve', val:'', pri:5});
-
-        if (stats.costLabel === "P2W") callouts.push({dir:'down', text:'P2W cost', val:'', pri:2});
-        else if (stats.costLabel === "Budget" && stats.powerScore >= 60) callouts.push({dir:'up', text:'Budget powerhouse', val:'', pri:3});
-    }
-
-    callouts.sort((a,b) => b.pri - a.pri);
-    const top = callouts.slice(0, 3);
-    const calloutHost = document.getElementById('verdictCallouts');
-    
-    calloutHost.innerHTML = top.length === 0
-        ? (totalCards >= 6 ? '<div style="font-size:0.7em; color:rgba(255,255,255,0.3); padding:2px 0;">No notable highs or lows.</div>' : '')
-        : top.map(c => `
+        calloutHost.innerHTML = top.length === 0
+            ? (totalCards >= 6 ? '<div style="font-size:0.7em; color:rgba(255,255,255,0.3); padding:2px 0;">No notable highs or lows.</div>' : '')
+            : top.map(c => `
             <div style="display:flex; align-items:center; gap:8px; font-size:0.72em;">
-                <span style="width:12px; color:${c.dir==='up' ? '#4CAF50' : '#ffb300'}; font-weight:600; text-align:center;">${c.dir==='up' ? '↑' : '↓'}</span>
+                <span style="width:12px; color:${c.dir === 'up' ? '#4CAF50' : '#ffb300'}; font-weight:600; text-align:center;">${c.dir === 'up' ? '↑' : '↓'}</span>
                 <span style="color:rgba(255,255,255,0.85);">${c.text}</span>
                 ${c.val ? `<span style="color:rgba(255,255,255,0.35); margin-left:auto;">${c.val}</span>` : ''}
             </div>
         `).join('');
-}
-document.getElementById('shareDeckBtn').addEventListener('click', function() {
-    const cardDictionary = Object.keys(cardDatabase).sort();
+    }
+    document.getElementById('shareDeckBtn').addEventListener('click', function () {
+        const cardDictionary = Object.keys(cardDatabase).sort();
 
-    const minimalDeckString = currentSeeds.map(card => {
-        const cardIndex = cardDictionary.indexOf(card.name).toString(36); 
-        // Use a DOT for counts, and omit it entirely if the count is 4
-        return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
-    }).join('-'); // Use a HYPHEN to separate cards (100% URL safe!)
-    
-    const shareUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}#crafter`;
-    
-    navigator.clipboard.writeText(shareUrl);
-    
-    const originalBg = this.style.background;
-    this.innerText = "Link Copied!";
-    this.style.background = "#4CAF50"; 
-    
-    setTimeout(() => {
-        this.innerText = "Share Link";
-        this.style.background = originalBg; 
-    }, 2000);
-});
-window.addEventListener('DOMContentLoaded', () => {
-    const deckCode = new URLSearchParams(window.location.search).get('deck');
-    const isCrafterHash = window.location.hash === '#crafter';
-    if (!deckCode || !isCrafterHash) return;
+        const minimalDeckString = currentSeeds.map(card => {
+            const cardIndex = cardDictionary.indexOf(card.name).toString(36);
+            // Use a DOT for counts, and omit it entirely if the count is 4
+            return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
+        }).join('-'); // Use a HYPHEN to separate cards (100% URL safe!)
 
-    let attempts = 0;
-    const dataWatcher = setInterval(() => {
-        attempts++;
-        
-        // CHECK ALL REQUIRED DATA, NOT JUST cardDatabase
-        const isDatabaseReady = typeof cardDatabase !== 'undefined' && cardDatabase && Object.keys(cardDatabase).length > 0;
-        const isFullDatabaseReady = typeof fullDatabase !== 'undefined' && fullDatabase && Object.keys(fullDatabase).length > 0;
-        // Add checks for cardAverageCopies or comboDictionary if they load asynchronously too
-        
-        // Only proceed if ALL dependencies are locked and loaded
-        if (isDatabaseReady && isFullDatabaseReady) {
-            clearInterval(dataWatcher);
-            if (typeof initSynergyMatrix === 'function') initSynergyMatrix();
+        const shareUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}#crafter`;
 
-            try {
-                // ... [Rest of your URL parsing logic stays exactly the same]
-                const cardDictionary = Object.keys(cardDatabase).sort();
-                
-                // Set up validation trackers
-                let totalCards = 0;
-                let isDeckValid = true;
-                const parsedSeeds = [];
-                const seenCards = new Set(); // Tracks unique cards
-                
-                const pairs = deckCode.split('-');
-                
-                for (const pair of pairs) {
-                    const [indexStr, countStr] = pair.split('.');
-                    const cardIndex = parseInt(indexStr, 36); 
-                    
-                    // Rule 3: Reject if we have already seen this card
-                    if (seenCards.has(cardIndex)) {
-                        isDeckValid = false;
-                        break; // Stop parsing immediately
-                    }
-                    seenCards.add(cardIndex);
+        navigator.clipboard.writeText(shareUrl);
 
-                    const cardName = cardDictionary[cardIndex];
-                    const fullCardData = cardDatabase[cardName];
-                    
-                    if (fullCardData) {
-                        const count = countStr ? parseInt(countStr, 10) : 4;
-                        
-                        // Rule 1: Reject if any card count is not 1, 2, 3, or 4
-                        if (isNaN(count) || count < 1 || count > 4) {
+        const originalBg = this.style.background;
+        this.innerText = "Link Copied!";
+        this.style.background = "#4CAF50";
+
+        setTimeout(() => {
+            this.innerText = "Share Link";
+            this.style.background = originalBg;
+        }, 2000);
+    });
+    window.addEventListener('DOMContentLoaded', () => {
+        const deckCode = new URLSearchParams(window.location.search).get('deck');
+        const isCrafterHash = window.location.hash === '#crafter';
+        if (!deckCode || !isCrafterHash) return;
+
+        let attempts = 0;
+        const dataWatcher = setInterval(() => {
+            attempts++;
+
+            // CHECK ALL REQUIRED DATA, NOT JUST cardDatabase
+            const isDatabaseReady = typeof cardDatabase !== 'undefined' && cardDatabase && Object.keys(cardDatabase).length > 0;
+            const isFullDatabaseReady = typeof fullDatabase !== 'undefined' && fullDatabase && Object.keys(fullDatabase).length > 0;
+            // Add checks for cardAverageCopies or comboDictionary if they load asynchronously too
+
+            // Only proceed if ALL dependencies are locked and loaded
+            if (isDatabaseReady && isFullDatabaseReady) {
+                clearInterval(dataWatcher);
+                if (typeof initSynergyMatrix === 'function') initSynergyMatrix();
+
+                try {
+                    // ... [Rest of your URL parsing logic stays exactly the same]
+                    const cardDictionary = Object.keys(cardDatabase).sort();
+
+                    // Set up validation trackers
+                    let totalCards = 0;
+                    let isDeckValid = true;
+                    const parsedSeeds = [];
+                    const seenCards = new Set(); // Tracks unique cards
+
+                    const pairs = deckCode.split('-');
+
+                    for (const pair of pairs) {
+                        const [indexStr, countStr] = pair.split('.');
+                        const cardIndex = parseInt(indexStr, 36);
+
+                        // Rule 3: Reject if we have already seen this card
+                        if (seenCards.has(cardIndex)) {
                             isDeckValid = false;
                             break; // Stop parsing immediately
                         }
-                        
-                        totalCards += count;
-                        
-                        // Rule 2: Reject if total deck size exceeds 40
-                        if (totalCards > 40) {
-                            isDeckValid = false;
-                            break; // Stop parsing immediately
+                        seenCards.add(cardIndex);
+
+                        const cardName = cardDictionary[cardIndex];
+                        const fullCardData = cardDatabase[cardName];
+
+                        if (fullCardData) {
+                            const count = countStr ? parseInt(countStr, 10) : 4;
+
+                            // Rule 1: Reject if any card count is not 1, 2, 3, or 4
+                            if (isNaN(count) || count < 1 || count > 4) {
+                                isDeckValid = false;
+                                break; // Stop parsing immediately
+                            }
+
+                            totalCards += count;
+
+                            // Rule 2: Reject if total deck size exceeds 40
+                            if (totalCards > 40) {
+                                isDeckValid = false;
+                                break; // Stop parsing immediately
+                            }
+
+                            if (!currentFaction) {
+                                currentFaction = plantClasses.has(fullCardData.Class) ? "Plant" : "Zombie";
+                            }
+
+                            parsedSeeds.push({
+                                ...fullCardData,
+                                name: cardName,
+                                count: count,
+                                class: fullCardData.Class,
+                                cost: fullCardData.Cost
+                            });
                         }
-                        
-                       if (!currentFaction) {
-    currentFaction = plantClasses.has(fullCardData.Class) ? "Plant" : "Zombie";
-}
-                        
-                        parsedSeeds.push({ 
-                            ...fullCardData, 
-                            name: cardName,
-                            count: count,
-                            class: fullCardData.Class,
-                            cost: fullCardData.Cost
-                        });
                     }
+
+                    // If validation failed, silently exit and do nothing to the UI
+                    if (!isDeckValid) return;
+
+                    // If we get here, the URL is safe and valid. Apply it.
+                    currentSeeds = parsedSeeds;
+
+                    const crafterView = document.getElementById('crafterView');
+                    if (crafterView) crafterView.classList.remove('hidden');
+
+                    if (typeof updateDeckStats === 'function') updateDeckStats();
+                    if (typeof renderSeeds === 'function') renderSeeds();
+
+                } catch (error) {
+                    // Silently catch manual URL tampering
                 }
-                
-                // If validation failed, silently exit and do nothing to the UI
-                if (!isDeckValid) return;
-
-                // If we get here, the URL is safe and valid. Apply it.
-                currentSeeds = parsedSeeds;
-                
-                const crafterView = document.getElementById('crafterView');
-                if (crafterView) crafterView.classList.remove('hidden');
-                
-                if (typeof updateDeckStats === 'function') updateDeckStats();
-                if (typeof renderSeeds === 'function') renderSeeds();
-                
-            } catch (error) {
-                // Silently catch manual URL tampering
+            } else if (attempts > 50) {
+                clearInterval(dataWatcher);
             }
-        } else if (attempts > 50) {
-            clearInterval(dataWatcher);
-        }
-    }, 100);
-});
-// --- 3. CONVERSATIONAL AI CO-PILOT ---
-function triggerAICoPilot() {
-    window.activeSwapTarget = null;
-    const chatFeed = document.getElementById('aiChatFeed');
-    if (!chatFeed) return;
+        }, 100);
+    });
+    // --- 3. CONVERSATIONAL AI CO-PILOT ---
+    function triggerAICoPilot() {
+        window.activeSwapTarget = null;
+        const chatFeed = document.getElementById('aiChatFeed');
+        if (!chatFeed) return;
 
-   if (currentSeeds.length === 0) {
-    // Get an array of all card names from the database
-    const cardNames = Object.keys(cardDatabase);
-    
-    // Pick a random name from that array
-    const randomCard = cardNames[Math.floor(Math.random() * cardNames.length)].replace(/_/g, ' ');
+        if (currentSeeds.length === 0) {
+            // Get an array of all card names from the database
+            const cardNames = Object.keys(cardDatabase);
 
-    chatFeed.innerHTML = `
+            // Pick a random name from that array
+            const randomCard = cardNames[Math.floor(Math.random() * cardNames.length)].replace(/_/g, ' ');
+
+            chatFeed.innerHTML = `
         <div class="ai-message system">
             Heey I'm Craaaazy Dave! I'm the best at creating amazing PvZ Heroes decks! 
             Enter a card to get started. Maybe <strong>${randomCard}</strong>?
         </div>
     `;
-    return;
-}
+            return;
+        }
 
-    if (getTotalCards() >= 40) {
-        const closestDeck = getClosestDeckMatch();
-        let baseHtml = "";
+        if (getTotalCards() >= 40) {
+            const closestDeck = getClosestDeckMatch();
+            let baseHtml = "";
 
-       if (!closestDeck) {
-        baseHtml = `<div class="ai-message system">Your deck is complete! I could not find a close match in the deck database.</div>`;
-    } else {
-        // Check if the youtube_url exists and is not an empty string
-        const deckName = (closestDeck.name || "").trim();
-const uploadDate = closestDeck.upload_date || "Unknown date";
+            if (!closestDeck) {
+                baseHtml = `<div class="ai-message system">Your deck is complete! I could not find a close match in the deck database.</div>`;
+            } else {
+                // Check if the youtube_url exists and is not an empty string
+                const deckName = (closestDeck.name || "").trim();
+                const uploadDate = closestDeck.upload_date || "Unknown date";
 
-if (closestDeck.youtube_url) { 
-    baseHtml = `
+                if (closestDeck.youtube_url) {
+                    baseHtml = `
         <div class="ai-message system">
             Your deck is complete! Your deck is closest to 
             <a href="${closestDeck.youtube_url}" target="_blank" rel="noopener noreferrer" style="font-weight: bold; color: var(--accent, #4CAF50);">
@@ -2868,8 +2884,8 @@ if (closestDeck.youtube_url) {
             </div>
         </div>
     `;
-} else {
-    baseHtml = `
+                } else {
+                    baseHtml = `
         <div class="ai-message system">
             Your deck is complete! Your deck is closest to 
             <span style="font-weight: bold; color: var(--accent, #4CAF50);">
@@ -2878,13 +2894,13 @@ if (closestDeck.youtube_url) {
             (from ${uploadDate}).
         </div>
     `;
-}
-    }
+                }
+            }
 
-        // --- FIXED: Add Loading State Before Evaluating Swaps ---
-        
-        // 1. Inject a loading spinner immediately so the UI doesn't feel frozen
-        chatFeed.innerHTML = baseHtml + `
+            // --- FIXED: Add Loading State Before Evaluating Swaps ---
+
+            // 1. Inject a loading spinner immediately so the UI doesn't feel frozen
+            chatFeed.innerHTML = baseHtml + `
             <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; color: rgba(255,255,255,0.7);">
                 <style>
                     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -2895,52 +2911,52 @@ if (closestDeck.youtube_url) {
             </div>
         `;
 
-        // 2. Use setTimeout to yield the main thread for 50ms so the browser can paint the spinner
-        setTimeout(() => {
-            initSynergyMatrix();
-            
-            const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
-            
-            const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
-            const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
-            const baselineScore = baselineVerdict.score;
+            // 2. Use setTimeout to yield the main thread for 50ms so the browser can paint the spinner
+            setTimeout(() => {
+                initSynergyMatrix();
 
-            let bestSwapIdea = null;
-            let maxImprovement = 0; 
+                const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
 
-            currentSeeds.forEach(seed => {
-                const recommendations = getTopThreeRecommendations(seed.name);
-                
-                recommendations.forEach(rec => {
-                    const simulatedStrings = currentSeeds.map(s => {
-                        if (s.name === seed.name) return `${s.count}x ${rec.name}`; 
-                        return `${s.count}x ${s.name}`;
+                const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
+                const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
+                const baselineScore = baselineVerdict.score;
+
+                let bestSwapIdea = null;
+                let maxImprovement = 0;
+
+                currentSeeds.forEach(seed => {
+                    const recommendations = getTopThreeRecommendations(seed.name);
+
+                    recommendations.forEach(rec => {
+                        const simulatedStrings = currentSeeds.map(s => {
+                            if (s.name === seed.name) return `${s.count}x ${rec.name}`;
+                            return `${s.count}x ${s.name}`;
+                        });
+
+                        const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
+                        const simScore = simVerdict.score;
+                        const improvement = simScore - baselineScore;
+
+                        if (improvement > maxImprovement) {
+                            maxImprovement = improvement;
+                            bestSwapIdea = {
+                                removeCard: seed.name,
+                                addCard: rec.name,
+                                oldScore: baselineScore,
+                                newScore: simScore
+                            };
+                        }
                     });
-
-                    const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
-                    const simScore = simVerdict.score;
-                    const improvement = simScore - baselineScore;
-
-                    if (improvement > maxImprovement) {
-                        maxImprovement = improvement;
-                        bestSwapIdea = {
-                            removeCard: seed.name,
-                            addCard: rec.name,
-                            oldScore: baselineScore,
-                            newScore: simScore
-                        };
-                    }
                 });
-            });
 
-            let swapHtml = "";
+                let swapHtml = "";
 
-            if (bestSwapIdea) {
-                const weakName = bestSwapIdea.removeCard.replace(/_/g, ' ');
-                const topName = bestSwapIdea.addCard.replace(/_/g, ' ');
-                const boostText = `+${Math.round(maxImprovement)}% Overall Rating`;
+                if (bestSwapIdea) {
+                    const weakName = bestSwapIdea.removeCard.replace(/_/g, ' ');
+                    const topName = bestSwapIdea.addCard.replace(/_/g, ' ');
+                    const boostText = `+${Math.round(maxImprovement)}% Overall Rating`;
 
-                swapHtml = `
+                    swapHtml = `
                     <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
                         Swapping out <strong>${weakName}</strong> for <strong>${topName}</strong> will improve your deck's curve and synergy!
                     </div>
@@ -2965,185 +2981,185 @@ if (closestDeck.youtube_url) {
                         </div>
                     </div>
                 `;
-            } else {
-                swapHtml = `
+                } else {
+                    swapHtml = `
                     <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
                         Great job on such a well-optimized and balanced deck!
                     </div>
                 `;
-            }
+                }
 
-            // Overwrite the loading spinner with the final result
-            chatFeed.innerHTML = baseHtml + swapHtml;
-            
-            const swapBtn = chatFeed.querySelector('.add-rec-btn[data-remove]');
-            if (swapBtn) {
-                swapBtn.addEventListener('click', (e) => {
-                    const removeName = e.target.getAttribute('data-remove');
-                    const addName = e.target.getAttribute('data-add');
-                    applyFullSwap(removeName, addName);
-                });
-            }
-        }, 50); // 50ms delay gives the browser time to paint the spinner
+                // Overwrite the loading spinner with the final result
+                chatFeed.innerHTML = baseHtml + swapHtml;
 
-        return; // Return immediately so the outer function finishes, letting setTimeout run on its own
-    }
+                const swapBtn = chatFeed.querySelector('.add-rec-btn[data-remove]');
+                if (swapBtn) {
+                    swapBtn.addEventListener('click', (e) => {
+                        const removeName = e.target.getAttribute('data-remove');
+                        const addName = e.target.getAttribute('data-add');
+                        applyFullSwap(removeName, addName);
+                    });
+                }
+            }, 50); // 50ms delay gives the browser time to paint the spinner
 
-    // --- The rest of your function below for when the deck is NOT complete ---
-    initSynergyMatrix(); 
-    chatFeed.innerHTML = `<div class="ai-message system"><em>Analyzing synergies...</em></div>`;
-
-    setTimeout(() => {
-        const recommendations = getTopThreeRecommendations();
-        
-        if (recommendations.length === 0) {
-            chatFeed.innerHTML = `<div class="ai-message system">I can't find any more valid cards for this combination! Try removing a card.</div>`;
-            return;
+            return; // Return immediately so the outer function finishes, letting setTimeout run on its own
         }
 
-        const spaceLeft = 40 - getTotalCards();
-        const classArray = Array.from(activeClasses).sort();
-        const heroName = heroMap[classArray.join(',')] || `a ${classArray.join(' / ')} Hero`;
-        
-        // Map recommendations with calculated optimal copy counts
-        const recData = recommendations.map(rec => {
-            const displayName = rec.name.replace(/_/g, ' ');
-            const data = cardDatabase[rec.name];
-            let targetCopies = 3; 
-            
-            if (cardAverageCopies && cardAverageCopies[rec.name] && cardAverageCopies[rec.name].appearances > 0) {
-                targetCopies = Math.round(cardAverageCopies[rec.name].total / cardAverageCopies[rec.name].appearances);
-            }
-            // Ensure bounds
-            targetCopies = Math.min(targetCopies, spaceLeft, 4);
-            if (targetCopies < 1) targetCopies = 1;
-            
-            return { name: rec.name, displayName, data, targetCopies };
-        });
+        // --- The rest of your function below for when the deck is NOT complete ---
+        initSynergyMatrix();
+        chatFeed.innerHTML = `<div class="ai-message system"><em>Analyzing synergies...</em></div>`;
 
-        // 1. Calculate Average Play Frequency to generate smart adjectives
-        let avgFreq = 1;
-        if (Object.keys(cardFrequencies).length > 0) {
-            const sumFreq = Object.values(cardFrequencies).reduce((a, b) => a + b, 0);
-            avgFreq = sumFreq / Object.keys(cardFrequencies).length;
-        }
+        setTimeout(() => {
+            const recommendations = getTopThreeRecommendations();
 
-        let aiDialogue = "";
-        
-       // 2. Build the Contextual Greeting based on last action
-        let comboTriggered = false;
-
-        if (lastAddedCard) {
-            // Check if the last card added completes any combo in our dictionary
-            const triggeredCombo = comboDictionary.find(combo => 
-                combo.cards.includes(lastAddedCard) && // The card we just added must be part of the combo
-                combo.cards.every(c => currentSeeds.some(s => s.name === c)) // ALL cards in the combo must now be in the deck
-            );
-
-            if (triggeredCombo) {
-                let formattedMessage = triggeredCombo.message
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-                aiDialogue = formattedMessage + "<br><br>";
-                comboTriggered = true;
+            if (recommendations.length === 0) {
+                chatFeed.innerHTML = `<div class="ai-message system">I can't find any more valid cards for this combination! Try removing a card.</div>`;
+                return;
             }
 
-            if (!comboTriggered) {
-                const lastNameClean = lastAddedCard.replace(/_/g, ' ');
-                const lastCardData = cardDatabase[lastAddedCard];
-                const lastClass = lastCardData ? lastCardData.Class : "Unknown";
-                
-                const myFreq = cardFrequencies[lastAddedCard] || 0;
+            const spaceLeft = 40 - getTotalCards();
+            const classArray = Array.from(activeClasses).sort();
+            const heroName = heroMap[classArray.join(',')] || `a ${classArray.join(' / ')} Hero`;
 
-// Quick helper to pick a random phrase from an array
-const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            // Map recommendations with calculated optimal copy counts
+            const recData = recommendations.map(rec => {
+                const displayName = rec.name.replace(/_/g, ' ');
+                const data = cardDatabase[rec.name];
+                let targetCopies = 3;
 
-let popAdj = "";
+                if (cardAverageCopies && cardAverageCopies[rec.name] && cardAverageCopies[rec.name].appearances > 0) {
+                    targetCopies = Math.round(cardAverageCopies[rec.name].total / cardAverageCopies[rec.name].appearances);
+                }
+                // Ensure bounds
+                targetCopies = Math.min(targetCopies, spaceLeft, 4);
+                if (targetCopies < 1) targetCopies = 1;
 
-// Tier 1: Absolute Meta-Staple (> 3x average)
-if (myFreq > avgFreq * 3.0) {
-    popAdj = pickRandom([
-        "an absolute powerhouse", 
-        "a ridiculously popular", 
-        "an everywhere-all-at-once", 
-        "a top-tier, essential"
-    ]);
-} 
-// Tier 2: Highly Popular (> 1.8x average)
-else if (myFreq > avgFreq * 1.8) {
-    popAdj = pickRandom([
-        "a super reliable", 
-        "a heavy-hitting, competitive", 
-        "a widely-used", 
-        "a trusty, go-to"
-    ]);
-} 
-// Tier 3: The Middle Ground (0.8x to 1.8x average)
-else if (myFreq > avgFreq * 0.8) {
-    popAdj = pickRandom([
-        "a solid, standard", 
-        "a completely reasonable", 
-        "a fair, middle-of-the-road", 
-        "an okay, everyday"
-    ]);
-} 
-// Tier 4: Niche / Questionable (< 0.8x average) - Hinting it's weak
-else if (myFreq > avgFreq * 0.3) {
-    popAdj = pickRandom([
-        "a pretty clunky, situational", 
-        "a definitely off-meta (and maybe a bit weak)", 
-        "a rarely played", 
-        "a somewhat questionable"
-    ]);
-} 
-// Tier 5: Bottom of the Barrel (< 0.3x average) - Calling it out
-else {
-    popAdj = pickRandom([
-        "a bottom-of-the-barrel", 
-        "a straight-up desperate", 
-        "a very, uh... *brave*", 
-        "a highly unpopular (probably for a good reason)"
-    ]);
-}
+                return { name: rec.name, displayName, data, targetCopies };
+            });
 
-                if (currentSeeds.length === 1 && currentSeeds[0].count === getTotalCards()) {
-                    aiDialogue = `<strong>${lastNameClean}</strong> is ${popAdj} ${lastClass} card! <br><br>`;
-                } else if (activeClasses.size === 2 && !heroAnnounced) {
-                    aiDialogue = `This is now officially a <strong>${heroName}</strong> deck! <strong>${lastNameClean}</strong> adds some great synergy. <br><br>`;
-                    heroAnnounced = true;
+            // 1. Calculate Average Play Frequency to generate smart adjectives
+            let avgFreq = 1;
+            if (Object.keys(cardFrequencies).length > 0) {
+                const sumFreq = Object.values(cardFrequencies).reduce((a, b) => a + b, 0);
+                avgFreq = sumFreq / Object.keys(cardFrequencies).length;
+            }
+
+            let aiDialogue = "";
+
+            // 2. Build the Contextual Greeting based on last action
+            let comboTriggered = false;
+
+            if (lastAddedCard) {
+                // Check if the last card added completes any combo in our dictionary
+                const triggeredCombo = comboDictionary.find(combo =>
+                    combo.cards.includes(lastAddedCard) && // The card we just added must be part of the combo
+                    combo.cards.every(c => currentSeeds.some(s => s.name === c)) // ALL cards in the combo must now be in the deck
+                );
+
+                if (triggeredCombo) {
+                    let formattedMessage = triggeredCombo.message
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                    aiDialogue = formattedMessage + "<br><br>";
+                    comboTriggered = true;
+                }
+
+                if (!comboTriggered) {
+                    const lastNameClean = lastAddedCard.replace(/_/g, ' ');
+                    const lastCardData = cardDatabase[lastAddedCard];
+                    const lastClass = lastCardData ? lastCardData.Class : "Unknown";
+
+                    const myFreq = cardFrequencies[lastAddedCard] || 0;
+
+                    // Quick helper to pick a random phrase from an array
+                    const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+                    let popAdj = "";
+
+                    // Tier 1: Absolute Meta-Staple (> 3x average)
+                    if (myFreq > avgFreq * 3.0) {
+                        popAdj = pickRandom([
+                            "an absolute powerhouse",
+                            "a ridiculously popular",
+                            "an everywhere-all-at-once",
+                            "a top-tier, essential"
+                        ]);
+                    }
+                    // Tier 2: Highly Popular (> 1.8x average)
+                    else if (myFreq > avgFreq * 1.8) {
+                        popAdj = pickRandom([
+                            "a super reliable",
+                            "a heavy-hitting, competitive",
+                            "a widely-used",
+                            "a trusty, go-to"
+                        ]);
+                    }
+                    // Tier 3: The Middle Ground (0.8x to 1.8x average)
+                    else if (myFreq > avgFreq * 0.8) {
+                        popAdj = pickRandom([
+                            "a solid, standard",
+                            "a completely reasonable",
+                            "a fair, middle-of-the-road",
+                            "an okay, everyday"
+                        ]);
+                    }
+                    // Tier 4: Niche / Questionable (< 0.8x average) - Hinting it's weak
+                    else if (myFreq > avgFreq * 0.3) {
+                        popAdj = pickRandom([
+                            "a pretty clunky, situational",
+                            "a definitely off-meta (and maybe a bit weak)",
+                            "a rarely played",
+                            "a somewhat questionable"
+                        ]);
+                    }
+                    // Tier 5: Bottom of the Barrel (< 0.3x average) - Calling it out
+                    else {
+                        popAdj = pickRandom([
+                            "a bottom-of-the-barrel",
+                            "a straight-up desperate",
+                            "a very, uh... *brave*",
+                            "a highly unpopular (probably for a good reason)"
+                        ]);
+                    }
+
+                    if (currentSeeds.length === 1 && currentSeeds[0].count === getTotalCards()) {
+                        aiDialogue = `<strong>${lastNameClean}</strong> is ${popAdj} ${lastClass} card! <br><br>`;
+                    } else if (activeClasses.size === 2 && !heroAnnounced) {
+                        aiDialogue = `This is now officially a <strong>${heroName}</strong> deck! <strong>${lastNameClean}</strong> adds some great synergy. <br><br>`;
+                        heroAnnounced = true;
+                    } else {
+                        aiDialogue = `Adding <strong>${lastNameClean}</strong> gives us a great direction! <br><br>`;
+                    }
+                }
+            } else {
+                if (activeClasses.size === 2) {
+                    aiDialogue = `This is a <strong>${heroName}</strong> deck! You have some great options from here.<br><br>`;
                 } else {
-                    aiDialogue = `Adding <strong>${lastNameClean}</strong> gives us a great direction! <br><br>`;
+                    aiDialogue = `You have some great options for this <strong>${currentFaction}</strong> deck! <br><br>`;
                 }
             }
-        } else {
-             if (activeClasses.size === 2) {
-                aiDialogue = `This is a <strong>${heroName}</strong> deck! You have some great options from here.<br><br>`;
-             } else {
-                aiDialogue = `You have some great options for this <strong>${currentFaction}</strong> deck! <br><br>`;
-             }
-        }
 
-        // 3. Build the suggestion sentence smoothly
-        if (recData.length >= 3) {
-            aiDialogue += `<strong>${recData[0].displayName}</strong> would fit really well here! My 2nd choice would be <strong>${recData[1].displayName}</strong>, and my 3rd choice is <strong>${recData[2].displayName}</strong>.`;
-        } else if (recData.length > 0) {
-            aiDialogue += `<strong>${recData[0].displayName}</strong> is my top recommendation to add next!`;
-        }
+            // 3. Build the suggestion sentence smoothly
+            if (recData.length >= 3) {
+                aiDialogue += `<strong>${recData[0].displayName}</strong> would fit really well here! My 2nd choice would be <strong>${recData[1].displayName}</strong>, and my 3rd choice is <strong>${recData[2].displayName}</strong>.`;
+            } else if (recData.length > 0) {
+                aiDialogue += `<strong>${recData[0].displayName}</strong> is my top recommendation to add next!`;
+            }
 
-        // 4. Render HTML without markdown asterisks
-        let htmlString = `<div class="ai-message system" style="margin-bottom: 10px;">${aiDialogue}</div>`;
-        
-        htmlString += `<div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: space-between; width: 100%; margin-bottom: 10px; box-sizing: border-box;">`;
-        
-       recData.forEach((rec, index) => {
-            const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
-            const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
-            
-            // Derive an RGB tuple from the hex so we can build a transparent bg
-const badgeRgb = index === 0 ? '255,179,0' : '76,175,80';
+            // 4. Render HTML without markdown asterisks
+            let htmlString = `<div class="ai-message system" style="margin-bottom: 10px;">${aiDialogue}</div>`;
 
-htmlString += `
+            htmlString += `<div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: space-between; width: 100%; margin-bottom: 10px; box-sizing: border-box;">`;
+
+            recData.forEach((rec, index) => {
+                const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+                const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
+
+                // Derive an RGB tuple from the hex so we can build a transparent bg
+                const badgeRgb = index === 0 ? '255,179,0' : '76,175,80';
+
+                htmlString += `
     <div class="ai-visual-rec" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 10px 5px; position: relative; height: 100%;">
         
         <span style="position: absolute; top: -7px; left: 50%; transform: translateX(-50%); background: rgba(${badgeRgb},0.15); color: ${badgeColor}; font-size: 0.6em; font-weight: 600; padding: 3px 9px; border-radius: 10px; z-index: 2; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid rgba(${badgeRgb},0.3);">
@@ -3160,130 +3176,130 @@ htmlString += `
                     
                 </div>
             `;
-        });
-
-        htmlString += `</div>`; // Close the flex container
-
-        chatFeed.innerHTML = htmlString;
-
-        // Attach listeners to the new AI buttons using the recommended amount
-        chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const amount = parseInt(e.target.getAttribute('data-amount')) || 1;
-                addSeed(e.target.getAttribute('data-name'), e.target.getAttribute('data-class'), currentFaction, amount);
             });
-        });
 
-    }, 50); 
-}
+            htmlString += `</div>`; // Close the flex container
 
-function getTopThreeRecommendations(baseCardName = null) {
-    let candidatePool = Object.keys(cardDatabase);
-    let scoredCandidates = [];
+            chatFeed.innerHTML = htmlString;
 
-    const baseSeed = baseCardName ? currentSeeds.find(c => c.name === baseCardName) : null;
-    const baseCount = baseSeed ? baseSeed.count : 0;
-
-    // Build the class set after removing the clicked card entirely
-    let postSwapClasses = new Set();
-    currentSeeds.forEach(card => {
-        if (baseCardName && card.name === baseCardName) return;
-        postSwapClasses.add(card.class || card.Class); // fallback for safety
-    });
-
-    // Fetch grading context ONCE to prevent massive performance drops in the loop
-    const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
-
-    candidatePool.forEach(candidateName => {
-        if (baseCardName && candidateName === baseCardName) return;
-
-        const candidateData = cardDatabase[candidateName];
-        if (!candidateData) return;
-        
-        const candidateClass = candidateData.Class;
-        const candidateFaction = plantClasses.has(candidateClass) ? "Plant" : "Zombie";
-
-        if (candidateFaction !== currentFaction) return;
-
-        // Enforce 2-class limit AFTER the swap
-        const trialClasses = new Set(postSwapClasses);
-        trialClasses.add(candidateClass);
-        if (trialClasses.size > 2) return;
-
-        const existingCopy = currentSeeds.find(c => c.name === candidateName);
-
-        // Capacity Checks
-        if (baseCardName) {
-            // Swap mode: replacement must fit within the copies being removed
-            const existingCandidateCount = existingCopy ? existingCopy.count : 0;
-            if (existingCandidateCount + baseCount > 4) return;
-        } else {
-            // Normal add mode: can't exceed 4 copies, and respect active class limits
-            if (existingCopy && existingCopy.count >= 4) return;
-            if (!activeClasses.has(candidateClass) && activeClasses.size >= 2) return;
-        }
-
-        // --- NEW: Build the Phantom Deck ---
-        let simulatedStrings = [];
-        
-        currentSeeds.forEach(deckCard => {
-            if (baseCardName && deckCard.name === baseCardName) return; // Skip removed card entirely
-            
-            if (deckCard.name === candidateName) return; // Skip existing copies (we merge them below)
-            
-            simulatedStrings.push(`${deckCard.count}x ${deckCard.name}`);
-        });
-
-        // Add the candidate we are currently testing
-        const countToAdd = baseCardName ? baseCount : 1;
-        const existingCount = existingCopy ? existingCopy.count : 0;
-        simulatedStrings.push(`${countToAdd + existingCount}x ${candidateName}`);
-
-        // --- NEW: Grade it using the True Engine ---
-        const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
-
-        // Store the final score and secondary stats for tie-breakers
-        if (simVerdict.score > 0) {
-            scoredCandidates.push({ 
-                name: candidateName, 
-                score: simVerdict.score,
-                synergy: simVerdict.synergyScore,
-                power: simVerdict.powerScore
+            // Attach listeners to the new AI buttons using the recommended amount
+            chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const amount = parseInt(e.target.getAttribute('data-amount')) || 1;
+                    addSeed(e.target.getAttribute('data-name'), e.target.getAttribute('data-class'), currentFaction, amount);
+                });
             });
-        }
-    });
 
-    // Sort by the true Verdict score first. 
-    // If scores are tied, use Synergy, then Power as tie-breakers.
-    scoredCandidates.sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        if (b.synergy !== a.synergy) return b.synergy - a.synergy;
-        return b.power - a.power;
-    });
-
-    return scoredCandidates.slice(0, 3);
-}
-function showSwapSuggestions(baseCardName) {
-    const chatFeed = document.getElementById('aiChatFeed');
-    if (!chatFeed) return;
-
-    // --- NEW: QoL Toggle Logic ---
-    if (window.activeSwapTarget === baseCardName) {
-        window.activeSwapTarget = null;
-        triggerAICoPilot(); 
-        return;
+        }, 50);
     }
-    window.activeSwapTarget = baseCardName;
-    // -----------------------------
 
-    const baseSeed = currentSeeds.find(c => c.name === baseCardName);
-    if (!baseSeed) return;
-    
-    const displayName = baseCardName.replace(/_/g, ' ');
-    initSynergyMatrix();
+    function getTopThreeRecommendations(baseCardName = null) {
+        let candidatePool = Object.keys(cardDatabase);
+        let scoredCandidates = [];
 
-    // Added the same smooth loading spinner here!
-    chatFeed.innerHTML = `
+        const baseSeed = baseCardName ? currentSeeds.find(c => c.name === baseCardName) : null;
+        const baseCount = baseSeed ? baseSeed.count : 0;
+
+        // Build the class set after removing the clicked card entirely
+        let postSwapClasses = new Set();
+        currentSeeds.forEach(card => {
+            if (baseCardName && card.name === baseCardName) return;
+            postSwapClasses.add(card.class || card.Class); // fallback for safety
+        });
+
+        // Fetch grading context ONCE to prevent massive performance drops in the loop
+        const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
+
+        candidatePool.forEach(candidateName => {
+            if (baseCardName && candidateName === baseCardName) return;
+
+            const candidateData = cardDatabase[candidateName];
+            if (!candidateData) return;
+
+            const candidateClass = candidateData.Class;
+            const candidateFaction = plantClasses.has(candidateClass) ? "Plant" : "Zombie";
+
+            if (candidateFaction !== currentFaction) return;
+
+            // Enforce 2-class limit AFTER the swap
+            const trialClasses = new Set(postSwapClasses);
+            trialClasses.add(candidateClass);
+            if (trialClasses.size > 2) return;
+
+            const existingCopy = currentSeeds.find(c => c.name === candidateName);
+
+            // Capacity Checks
+            if (baseCardName) {
+                // Swap mode: replacement must fit within the copies being removed
+                const existingCandidateCount = existingCopy ? existingCopy.count : 0;
+                if (existingCandidateCount + baseCount > 4) return;
+            } else {
+                // Normal add mode: can't exceed 4 copies, and respect active class limits
+                if (existingCopy && existingCopy.count >= 4) return;
+                if (!activeClasses.has(candidateClass) && activeClasses.size >= 2) return;
+            }
+
+            // --- NEW: Build the Phantom Deck ---
+            let simulatedStrings = [];
+
+            currentSeeds.forEach(deckCard => {
+                if (baseCardName && deckCard.name === baseCardName) return; // Skip removed card entirely
+
+                if (deckCard.name === candidateName) return; // Skip existing copies (we merge them below)
+
+                simulatedStrings.push(`${deckCard.count}x ${deckCard.name}`);
+            });
+
+            // Add the candidate we are currently testing
+            const countToAdd = baseCardName ? baseCount : 1;
+            const existingCount = existingCopy ? existingCopy.count : 0;
+            simulatedStrings.push(`${countToAdd + existingCount}x ${candidateName}`);
+
+            // --- NEW: Grade it using the True Engine ---
+            const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
+
+            // Store the final score and secondary stats for tie-breakers
+            if (simVerdict.score > 0) {
+                scoredCandidates.push({
+                    name: candidateName,
+                    score: simVerdict.score,
+                    synergy: simVerdict.synergyScore,
+                    power: simVerdict.powerScore
+                });
+            }
+        });
+
+        // Sort by the true Verdict score first. 
+        // If scores are tied, use Synergy, then Power as tie-breakers.
+        scoredCandidates.sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            if (b.synergy !== a.synergy) return b.synergy - a.synergy;
+            return b.power - a.power;
+        });
+
+        return scoredCandidates.slice(0, 3);
+    }
+    function showSwapSuggestions(baseCardName) {
+        const chatFeed = document.getElementById('aiChatFeed');
+        if (!chatFeed) return;
+
+        // --- NEW: QoL Toggle Logic ---
+        if (window.activeSwapTarget === baseCardName) {
+            window.activeSwapTarget = null;
+            triggerAICoPilot();
+            return;
+        }
+        window.activeSwapTarget = baseCardName;
+        // -----------------------------
+
+        const baseSeed = currentSeeds.find(c => c.name === baseCardName);
+        if (!baseSeed) return;
+
+        const displayName = baseCardName.replace(/_/g, ' ');
+        initSynergyMatrix();
+
+        // Added the same smooth loading spinner here!
+        chatFeed.innerHTML = `
         <div class="ai-message system" style="display: flex; align-items: center; gap: 8px;">
             <style>
                 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -3294,43 +3310,43 @@ function showSwapSuggestions(baseCardName) {
         </div>
     `;
 
-    setTimeout(() => {
-        const replacements = getTopThreeRecommendations(baseCardName);
-        
-        if (replacements.length === 0) {
-            chatFeed.innerHTML = `<div class="ai-message system">I could not find any good replacements for <strong>${displayName}</strong>.</div>`;
-            return;
-        }
+        setTimeout(() => {
+            const replacements = getTopThreeRecommendations(baseCardName);
 
-        // --- FIXED: Calculate the true baseline score of the current deck ---
-        const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
-        const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
-        const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
-        const baselineScore = baselineVerdict.score;
-
-        let html = `<div class="ai-message system">Here are the top alternatives for <strong>${displayName}</strong>:</div>`;
-        html += `<div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: space-between; width: 100%; margin-bottom: 10px; box-sizing: border-box;">`;
-        
-        replacements.forEach((rec, index) => {
-            const cardName = rec.name.replace(/_/g, ' ');
-            const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
-            const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
-            
-            // --- FIXED: Compare true percentage scores ---
-            const scoreDiff = Math.round(rec.score - baselineScore);
-            
-            let comparisonText = "Equal";
-            let comparisonColor = "#9e9e9e"; // Gray for exact ties
-            
-            if (scoreDiff > 0) {
-                comparisonText = `Better (+${scoreDiff}%)`;
-                comparisonColor = "#4CAF50"; // Green
-            } else if (scoreDiff < 0) {
-                comparisonText = `Worse (${scoreDiff}%)`;
-                comparisonColor = "#f44336"; // Red
+            if (replacements.length === 0) {
+                chatFeed.innerHTML = `<div class="ai-message system">I could not find any good replacements for <strong>${displayName}</strong>.</div>`;
+                return;
             }
 
-            html += `
+            // --- FIXED: Calculate the true baseline score of the current deck ---
+            const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
+            const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
+            const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
+            const baselineScore = baselineVerdict.score;
+
+            let html = `<div class="ai-message system">Here are the top alternatives for <strong>${displayName}</strong>:</div>`;
+            html += `<div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: space-between; width: 100%; margin-bottom: 10px; box-sizing: border-box;">`;
+
+            replacements.forEach((rec, index) => {
+                const cardName = rec.name.replace(/_/g, ' ');
+                const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+                const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
+
+                // --- FIXED: Compare true percentage scores ---
+                const scoreDiff = Math.round(rec.score - baselineScore);
+
+                let comparisonText = "Equal";
+                let comparisonColor = "#9e9e9e"; // Gray for exact ties
+
+                if (scoreDiff > 0) {
+                    comparisonText = `Better (+${scoreDiff}%)`;
+                    comparisonColor = "#4CAF50"; // Green
+                } else if (scoreDiff < 0) {
+                    comparisonText = `Worse (${scoreDiff}%)`;
+                    comparisonColor = "#f44336"; // Red
+                }
+
+                html += `
                 <div class="ai-visual-rec" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 5px; position: relative; height: 100%;">
                     
                     <span style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: ${badgeColor}; color: #fff; font-size: 0.65em; font-weight: bold; padding: 4px 10px; border-radius: 12px; z-index: 2; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.4);">
@@ -3351,668 +3367,674 @@ function showSwapSuggestions(baseCardName) {
                     
                 </div>
             `;
-        });
-        
-        html += `</div>`;
-        chatFeed.innerHTML = html;
-        
-        chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const removeName = e.target.getAttribute('data-remove');
-                const addName = e.target.getAttribute('data-add');
-                applyFullSwap(removeName, addName);
-            });
-        });
-
-    }, 50);
-}
-function applyFullSwap(removeName, addName) {
-    const removeSeed = currentSeeds.find(s => s.name === removeName);
-    const addData = cardDatabase[addName];
-    if (!removeSeed || !addData) return;
-
-    const removeCount = removeSeed.count;
-    const existingAdd = currentSeeds.find(s => s.name === addName);
-
-    // If the replacement would exceed 4 copies, do nothing.
-    if (existingAdd && existingAdd.count + removeCount > 4) return;
-
-    // Remove all copies of the chosen card
-    currentSeeds = currentSeeds.filter(s => s.name !== removeName);
-
-    // Add the same number of copies of the replacement
-    if (existingAdd) {
-        existingAdd.count += removeCount;
-    } else {
-        currentSeeds.push({
-            name: addName,
-            count: removeCount,
-            class: addData.Class,
-            faction: plantClasses.has(addData.Class) ? "Plant" : "Zombie",
-            cost: addData.Cost
-        });
-    }
-
-    activeClasses.clear();
-    currentSeeds.forEach(s => activeClasses.add(s.class));
-    if (activeClasses.size < 2) heroAnnounced = false;
-
-    lastAddedCard = addName;
-    renderSeeds();
-}
-
-// --- 4. SYNERGY ENGINE (Background Math) ---
-let synergyMatrix = null;
-let cardFrequencies = null;
-let cardAverageCopies = null;
-
-function initSynergyMatrix() {
-    if (synergyMatrix) return;
-    synergyMatrix = {};
-    cardFrequencies = {}; 
-    cardAverageCopies = {}; 
-
-    const rawDecks = Object.values(fullDatabase);
-    const seenSignatures = new Set();
-    
-    // ==========================================
-    // PASS 0: Assign Weights to Decks
-    // ==========================================
-    const decks = rawDecks.map(deck => {
-        // Fallback for empty/malformed decks
-        if (!deck.cards || deck.cards.length === 0) {
-            return { ...deck, weight: 1.0 };
-        }
-
-        // Generate the unique signature for the 60-card list
-        const signature = deck.cards.map(c => {
-            const firstSpace = c.indexOf(' ');
-            const countStr = c.substring(0, firstSpace).replace(/x/i, '');
-            const count = parseInt(countStr) || 1; 
-            const cardName = c.substring(firstSpace + 1).trim().toLowerCase();
-            return `${count}x ${cardName}`;
-        }).sort().join('|');
-
-        let weight = 1.0;
-        if (seenSignatures.has(signature)) {
-            weight = 0.5; // It's a duplicate, halve its value
-        } else {
-            seenSignatures.add(signature); // First time seeing it, keep full value
-        }
-        
-        // Return a new deck object that includes our calculated weight
-        return { ...deck, weight: weight };
-    });
-
-    const deckTimestamps = decks.map(d => {
-        const time = d.upload_date ? new Date(d.upload_date).getTime() : 0;
-        return isNaN(time) ? 0 : time;
-    });
-    
-    deckTimestamps.sort((a, b) => a - b);
-    const totalDecks = deckTimestamps.length;
-    
-    // Split point for "Historical" vs "Recent" era 
-    // Set to 94% to isolate the most recent 6% of decks
-    const thresholdIndex = Math.floor(totalDecks * 0.94);
-    const recentThreshold = deckTimestamps[thresholdIndex];
-
-    // ==========================================
-    // PASS 1: Calculate Card Momentum (Trending)
-    // ==========================================
-    const oldFreq = {};
-    const newFreq = {};
-    let oldDeckCount = 0;
-    let newDeckCount = 0;
-
-    decks.forEach(deck => {
-        const time = deck.upload_date ? new Date(deck.upload_date).getTime() : 0;
-        const validTime = isNaN(time) ? 0 : time;
-        const isNewEra = validTime >= recentThreshold;
-
-        // Add the deck's weight instead of just a flat "1"
-        if (isNewEra) newDeckCount += deck.weight;
-        else oldDeckCount += deck.weight;
-
-        // Get unique cards in this deck to track play rate
-        const uniqueCards = new Set();
-        deck.cards.forEach(c => {
-            const firstSpace = c.indexOf(' ');
-            const cardName = c.substring(firstSpace + 1).trim();
-            uniqueCards.add(cardName);
-        });
-
-        uniqueCards.forEach(cardName => {
-            if (isNewEra) {
-                newFreq[cardName] = (newFreq[cardName] || 0) + deck.weight;
-            } else {
-                oldFreq[cardName] = (oldFreq[cardName] || 0) + deck.weight;
-            }
-        });
-    });
-
-    const cardMomentum = {};
-    const allUniqueCards = new Set([...Object.keys(oldFreq), ...Object.keys(newFreq)]);
-
-    allUniqueCards.forEach(card => {
-        // Laplace smoothing (add 5 fake decks) prevents a card played 0 times in old
-        // and 1 time in new from mathematically getting an infinite growth multiplier.
-        const oldRate = ((oldFreq[card] || 0) + 5) / (oldDeckCount + 5);
-        const newRate = ((newFreq[card] || 0) + 5) / (newDeckCount + 5);
-        
-        let momentum = newRate / oldRate;
-        
-        // Clamp the momentum so it doesn't skew the AI too violently.
-        // A dying card is cut in half (0.5x), a surging card is heavily boosted (2.5x).
-        momentum = Math.max(0.5, Math.min(momentum, 2.5));
-        cardMomentum[card] = momentum;
-    });
-
-    // ==========================================
-    // PASS 2: Build Synergy Graph Using Momentum
-    // ==========================================
-    decks.forEach(deck => {
-        const parsedCards = deck.cards.map(c => {
-            const firstSpace = c.indexOf(' ');
-            const countStr = c.substring(0, firstSpace).replace(/x/i, '');
-            const count = parseInt(countStr) || 1; 
-            const cardName = c.substring(firstSpace + 1).trim();
-            return { name: cardName, count: count };
-        });
-
-        const cleanCards = parsedCards.map(pc => pc.name);
-
-        parsedCards.forEach(card => {
-            // Include both the individual card meta momentum AND the deck's uniqueness weight
-            const momentum = cardMomentum[card.name] || 1.0;
-            const finalWeight = momentum * deck.weight;
-            
-            cardFrequencies[card.name] = (cardFrequencies[card.name] || 0) + finalWeight;
-            
-            if (!cardAverageCopies[card.name]) {
-                cardAverageCopies[card.name] = { total: 0, appearances: 0 };
-            }
-            cardAverageCopies[card.name].total += (card.count * finalWeight);
-            cardAverageCopies[card.name].appearances += finalWeight;
-        });
-
-        for (let i = 0; i < cleanCards.length; i++) {
-            const cardA = cleanCards[i];
-            const momentumA = cardMomentum[cardA] || 1.0;
-
-            if (!synergyMatrix[cardA]) synergyMatrix[cardA] = {};
-            
-            for (let j = 0; j < cleanCards.length; j++) {
-                if (i === j) continue;
-                const cardB = cleanCards[j];
-                const momentumB = cardMomentum[cardB] || 1.0;
-                
-                // Synergy is amplified by both cards trending, but dampened if the deck is a clone
-                const synergyWeight = momentumA * momentumB * deck.weight;
-                
-                synergyMatrix[cardA][cardB] = (synergyMatrix[cardA][cardB] || 0) + synergyWeight;
-            }
-        }
-    });
-}
-
-// --- 5. FINISH FOR ME (Auto-Generate Remaining) ---
-generateDeckBtn.addEventListener('click', () => {
-    initSynergyMatrix(); 
-    generateDeckBtn.disabled = true;
-    generateDeckBtn.innerText = "Calculating Synergies...";
-
-    setTimeout(() => {
-        currentSeeds = buildOptimizedDeck(); 
-        lastAddedCard = null; // Clear context so AI summarizes full deck
-        renderSeeds(); 
-        generateDeckBtn.innerText = "Finish For Me ✨";
-    }, 50);
-});
-
-function buildOptimizedDeck() {
-    let workingDeck = currentSeeds.map(s => ({...s}));
-    let workingClasses = new Set(activeClasses);
-    let deckFaction = currentFaction;
-    
-    const rawWeight = 0.2 + (Math.random() * 0.40);
-    const affinityWeight = 1.0 - rawWeight;
-    const isBudget = budgetToggle ? budgetToggle.checked : false;
-    const isSuperBudget = superBudgetToggle ? superBudgetToggle.checked : false;
-
-    while (true) {
-        let totalCards = workingDeck.reduce((sum, c) => sum + c.count, 0);
-        if (totalCards >= 40) break;
-
-        let expensiveCount = workingDeck.reduce((sum, c) => {
-            if (!cardDatabase[c.name]) return sum;
-            const r = cardDatabase[c.name].Rarity;
-            return (r === "Super-Rare" || r === "Event") ? sum + c.count : sum;
-        }, 0);
-
-        let bestCard = null;
-        let bestScore = -1;
-        let candidatePool = Object.keys(cardDatabase);
-        const slotsLeft = 40 - totalCards;
-        const currentOrphans = workingDeck.filter(c => c.count === 1).length;
-
-        if (slotsLeft <= currentOrphans || slotsLeft === 1) {
-            candidatePool = workingDeck.map(c => c.name);
-        }
-
-        candidatePool.forEach(candidateName => {
-            const candidateData = cardDatabase[candidateName];
-            const candidateClass = candidateData.Class;
-            const candidateFaction = plantClasses.has(candidateClass) ? "Plant" : "Zombie";
-
-            if (candidateFaction !== deckFaction) return; 
-            if (!workingClasses.has(candidateClass) && workingClasses.size >= 2) return; 
-
-            const existingCopy = workingDeck.find(c => c.name === candidateName);
-            const currentCopies = existingCopy ? existingCopy.count : 0;
-            if (currentCopies >= 4) return; 
-
-            if (isBudget || isSuperBudget) {
-                const rarity = candidateData.Rarity;
-                if (rarity === "Legendary") return; 
-
-                if (rarity === "Super-Rare" || rarity === "Event") {
-                    if (isSuperBudget) {
-                        if (expensiveCount >= 4) return;
-                        if (currentCopies === 0 && expensiveCount > 0) return;
-                    } else {
-                        if (currentCopies === 0 && expensiveCount > 13) return;
-                    }
-                }
-            }
-
-            let score = 0;
-            workingDeck.forEach(deckCard => {
-                if (synergyMatrix && synergyMatrix[candidateName] && synergyMatrix[candidateName][deckCard.name]) {
-                    const coOccurrences = synergyMatrix[candidateName][deckCard.name];
-                    const candidateTotalPlays = cardFrequencies[candidateName] || 1;
-                    
-                    let rawSynergy = coOccurrences;
-                    let affinitySynergy = (coOccurrences * coOccurrences) / candidateTotalPlays; 
-                    let blendedSynergy = (rawSynergy * rawWeight) + (affinitySynergy * affinityWeight);
-                    
-                    let classModifier = 1.0;
-                    if (cardDatabase[candidateName].Class !== cardDatabase[deckCard.name].Class) {
-                        classModifier = 4.0;  
-                    }
-
-                    const deckCardPlays = cardFrequencies[deckCard.name] || 1;
-                    const volumeEqualizer = 1000 / deckCardPlays; 
-                    const isOriginalSeed = currentSeeds.some(s => s.name === deckCard.name);
-
-                    score += (blendedSynergy * classModifier * volumeEqualizer) * deckCard.count * (isOriginalSeed ? 3 : 1);
-                }
             });
 
-            if (score === 0) score = 0.1;
+            html += `</div>`;
+            chatFeed.innerHTML = html;
 
-            let avgCopies = 3;
-            if (cardAverageCopies && cardAverageCopies[candidateName]) {
-                avgCopies = cardAverageCopies[candidateName].total / cardAverageCopies[candidateName].appearances;
-            }
-
-            let consistencyMultiplier = 1.0;
-            if (currentCopies === 1) {
-                consistencyMultiplier = 75.0;
-            } else if (currentCopies === 2) {
-                consistencyMultiplier = 1.5;
-            }
-
-            if (currentCopies >= Math.round(avgCopies)) {
-                consistencyMultiplier *= 0.5;
-            }
-
-            score *= consistencyMultiplier;
-            if (score > bestScore) {
-                bestScore = score;
-                bestCard = candidateName;
-            }
-        });
-
-        if (bestCard) {
-            const existing = workingDeck.find(c => c.name === bestCard);
-            if (existing) {
-                existing.count++;
-            } else {
-                workingDeck.push({
-                    name: bestCard,
-                    count: 1, 
-                    class: cardDatabase[bestCard].Class,
-                    cost: cardDatabase[bestCard].Cost 
+            chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const removeName = e.target.getAttribute('data-remove');
+                    const addName = e.target.getAttribute('data-add');
+                    applyFullSwap(removeName, addName);
                 });
-                workingClasses.add(cardDatabase[bestCard].Class);
-            }
+            });
+
+        }, 50);
+    }
+    function applyFullSwap(removeName, addName) {
+        const removeSeed = currentSeeds.find(s => s.name === removeName);
+        const addData = cardDatabase[addName];
+        if (!removeSeed || !addData) return;
+
+        const removeCount = removeSeed.count;
+        const existingAdd = currentSeeds.find(s => s.name === addName);
+
+        // If the replacement would exceed 4 copies, do nothing.
+        if (existingAdd && existingAdd.count + removeCount > 4) return;
+
+        // Remove all copies of the chosen card
+        currentSeeds = currentSeeds.filter(s => s.name !== removeName);
+
+        // Add the same number of copies of the replacement
+        if (existingAdd) {
+            existingAdd.count += removeCount;
         } else {
-            break;
+            currentSeeds.push({
+                name: addName,
+                count: removeCount,
+                class: addData.Class,
+                faction: plantClasses.has(addData.Class) ? "Plant" : "Zombie",
+                cost: addData.Cost
+            });
         }
-    }
-    return workingDeck;
-}
 
-// --- 6. NAMING & COPY LOGIC ---
-function generateDeckName(deck, isPlant) {
-    if (!deck || deck.length === 0) return isPlant ? "Plant Deck" : "Zombie Deck";
+        activeClasses.clear();
+        currentSeeds.forEach(s => activeClasses.add(s.class));
+        if (activeClasses.size < 2) heroAnnounced = false;
 
-    // 1. Cleaner, mechanic-focused prefixes instead of cheesy adjectives
-    const plantPrefixes = ["Green", "Bloom", "Thicket", "Solar", "Savage", "Root", "Petal", "Timber"];
-    const zombiePrefixes = ["Grave", "Brain", "Scrap", "Tech", "Doom", "Bolt", "Plague", "Rust"];
-    const neutralPrefixes = ["Turbo", "Heavy", "Classic", "Greedy", "Miracle", "Tempo", "Core", "Value"];
-
-    // 2. Real CCG archetype nouns
-    const aggroNouns = ["Rush", "Swarm", "Burn", "Zoo", "Face", "Blitz", "Beatdown"];
-    const midNouns = ["Midrange", "Tempo", "Stompy", "Goodstuff", "Engine", "Flex", "Company"];
-    const controlNouns = ["Control", "Ramp", "Grinder", "Stall", "Prison", "Endgame", "Attrition"];
-
-    // 3. SMART SIGNATURE CARDS: Find the top 2 highest (cost * count) cards
-    // This allows for "Card A / Card B" formats.
-    const sortedDeck = [...deck].sort((a, b) => (b.count * b.cost) - (a.count * a.cost));
-    
-    const cleanName = (name) => name.replace(/_/g, ' ').replace(/^The /i, '');
-    
-    const sigCard1 = cleanName(sortedDeck[0].name);
-    // Fallback to sigCard1 if the deck only has 1 unique card in it
-    const sigCard2 = sortedDeck.length > 1 ? cleanName(sortedDeck[1].name) : sigCard1;
-
-    // 4. ARCHETYPE DETECTION: Calculate average cost
-    let totalCost = 0;
-    let totalCards = 0;
-    deck.forEach(c => {
-        totalCost += (c.cost * c.count);
-        totalCards += c.count;
-    });
-    const avgCost = totalCost / (totalCards || 1);
-
-    // Pick the noun pool and a baseline archetype name based on deck speed
-    let nounPool = midNouns;
-    let baseArchetype = "Midrange";
-    
-    if (avgCost <= 2.8) { 
-        nounPool = aggroNouns; 
-        baseArchetype = "Aggro"; 
-    } else if (avgCost >= 4.0) { 
-        nounPool = controlNouns; 
-        baseArchetype = "Control"; 
+        lastAddedCard = addName;
+        renderSeeds();
     }
 
-    // 5. GENERATION
-    const factionPrefixes = isPlant ? plantPrefixes : zombiePrefixes;
-    const prefix = factionPrefixes[Math.floor(Math.random() * factionPrefixes.length)];
-    const neutral = neutralPrefixes[Math.floor(Math.random() * neutralPrefixes.length)];
-    const noun = nounPool[Math.floor(Math.random() * nounPool.length)];
+    // --- 4. SYNERGY ENGINE (Background Math) ---
+    let synergyMatrix = null;
+    let cardFrequencies = null;
+    let cardAverageCopies = null;
 
-    // Serious, community-style CCG formats
-    const formats = [
-        `${sigCard1} ${noun}`,                     // e.g., Valkyrie Burn
-        `${prefix} ${sigCard1}`,                   // e.g., Scrap Valkyrie
-        `${neutral} ${sigCard1}`,                  // e.g., Turbo Valkyrie
-        `${sigCard1} ${baseArchetype}`,            // e.g., Valkyrie Midrange
-        `${sigCard1} / ${sigCard2}`,               // e.g., Valkyrie / Trickster
-        `${sigCard1} & ${sigCard2} ${noun}`,       // e.g., Valkyrie & Trickster Control
-        `${prefix} ${noun}`,                       // e.g., Scrap Midrange
-        `${sigCard1} Core`,                        // e.g., Valkyrie Core
-        `${noun} ${sigCard1}`                      // e.g., Burn Valkyrie
-    ];
-    
-    // Optional: Filter out duplicates if sigCard1 and sigCard2 are the same 
-    // (Happens if a deck only has 1 type of card)
-    const validFormats = formats.filter(f => !f.includes(`${sigCard1} / ${sigCard1}`));
-    
-    return validFormats[Math.floor(Math.random() * validFormats.length)];
-}
+    function initSynergyMatrix() {
+        if (synergyMatrix) return;
+        synergyMatrix = {};
+        cardFrequencies = {};
+        cardAverageCopies = {};
 
-const copyDeckBtn = document.getElementById('copyDeckBtn');
-if (copyDeckBtn) {
-    copyDeckBtn.addEventListener('click', (e) => {
-        if (!currentClipboardText) return;
-        navigator.clipboard.writeText(currentClipboardText).then(() => {
-            const btn = e.target;
-            btn.innerText = "Copied!";
-            btn.style.background = "#4CAF50"; 
-            setTimeout(() => {
-                btn.innerText = "Copy Text";
-                btn.style.background = ""; 
-            }, 2000);
-        }).catch(err => console.error("Failed to copy text: ", err));
-    });
-}
-const downloadBtn = document.getElementById('downloadImageBtn');
-if (downloadBtn) {
-    downloadBtn.addEventListener('click', async (e) => {
-    if (currentSeeds.length === 0) return;
+        const rawDecks = Object.values(fullDatabase);
+        const seenSignatures = new Set();
 
-    const btn = e.target;
-    const originalText = btn.innerText;
-    btn.innerText = "Saving...";
-    btn.disabled = true;
+        // ==========================================
+        // PASS 0: Assign Weights to Decks
+        // ==========================================
+        const decks = rawDecks.map(deck => {
+            // Fallback for empty/malformed decks
+            if (!deck.cards || deck.cards.length === 0) {
+                return { ...deck, weight: 1.0 };
+            }
 
-    try {
-        // 1. Setup Canvas Grid Math
-        const padding = 30; // Increased padding slightly for a better frame
-        const cardBoxWidth = 110;
-        const cardBoxHeight = 140; 
-        const gap = 18; // Slightly larger gap to accommodate shadows
-        const columns = 4; 
-        const rows = Math.ceil(currentSeeds.length / columns);
-        
-        const watermarkHeight = 40; // Increased to give the new watermark pill room
-        const canvasWidth = padding * 2 + (columns * cardBoxWidth) + ((columns - 1) * gap); 
-        const rowHeight = cardBoxHeight; 
-        const canvasHeight = padding * 2 + (rows * rowHeight) + ((rows - 1) * gap) + watermarkHeight;
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-        const ctx = canvas.getContext('2d');
+            // Generate the unique signature for the 60-card list
+            const signature = deck.cards.map(c => {
+                const firstSpace = c.indexOf(' ');
+                const countStr = c.substring(0, firstSpace).replace(/x/i, '');
+                const count = parseInt(countStr) || 1;
+                const cardName = c.substring(firstSpace + 1).trim().toLowerCase();
+                return `${count}x ${cardName}`;
+            }).sort().join('|');
 
-        // 2. Draw Premium Background (Radial Gradient)
-        const cx = canvasWidth / 2;
-        const cy = canvasHeight / 2;
-        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvasWidth);
-        bgGradient.addColorStop(0, '#2c333a'); // Lighter center spotlight
-        bgGradient.addColorStop(1, '#111417'); // Darker edges
-        
-        ctx.fillStyle = bgGradient; 
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            let weight = 1.0;
+            if (seenSignatures.has(signature)) {
+                weight = 0.5; // It's a duplicate, halve its value
+            } else {
+                seenSignatures.add(signature); // First time seeing it, keep full value
+            }
 
-        // Optional: subtle border around the entire canvas
-        ctx.strokeStyle = '#3e464f';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(2, 2, canvasWidth - 4, canvasHeight - 4);
-
-        // 3. SORT THE CARDS
-        const sortedSeeds = [...currentSeeds].sort((a, b) => {
-            const costA = cardDatabase[a.name]?.Cost || 0;
-            const costB = cardDatabase[b.name]?.Cost || 0;
-            if (costA !== costB) return costA - costB;
-            return a.name.localeCompare(b.name);
+            // Return a new deck object that includes our calculated weight
+            return { ...deck, weight: weight };
         });
 
-        // 4. Load Images
-        const loadedImages = await Promise.all(sortedSeeds.map(seed => {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.crossOrigin = "anonymous"; 
-                const dbName = seed.name.replace(/ /g, '_');
-                
-                img.onload = () => resolve({ img, seed });
-                img.onerror = () => {
-                    const imgWebp = new Image();
-                    imgWebp.crossOrigin = "anonymous";
-                    imgWebp.onload = () => resolve({ img: imgWebp, seed });
-                    imgWebp.onerror = () => resolve({ img: null, seed }); 
-                    imgWebp.src = `card_images/${dbName}.webp`;
-                };
-                img.src = `card_images/${dbName}.png`;
+        const deckTimestamps = decks.map(d => {
+            const time = d.upload_date ? new Date(d.upload_date).getTime() : 0;
+            return isNaN(time) ? 0 : time;
+        });
+
+        deckTimestamps.sort((a, b) => a - b);
+        const totalDecks = deckTimestamps.length;
+
+        // Split point for "Historical" vs "Recent" era 
+        // Set to 94% to isolate the most recent 6% of decks
+        const thresholdIndex = Math.floor(totalDecks * 0.94);
+        const recentThreshold = deckTimestamps[thresholdIndex];
+
+        // ==========================================
+        // PASS 1: Calculate Card Momentum (Trending)
+        // ==========================================
+        const oldFreq = {};
+        const newFreq = {};
+        let oldDeckCount = 0;
+        let newDeckCount = 0;
+
+        decks.forEach(deck => {
+            const time = deck.upload_date ? new Date(deck.upload_date).getTime() : 0;
+            const validTime = isNaN(time) ? 0 : time;
+            const isNewEra = validTime >= recentThreshold;
+
+            // Add the deck's weight instead of just a flat "1"
+            if (isNewEra) newDeckCount += deck.weight;
+            else oldDeckCount += deck.weight;
+
+            // Get unique cards in this deck to track play rate
+            const uniqueCards = new Set();
+            deck.cards.forEach(c => {
+                const firstSpace = c.indexOf(' ');
+                const cardName = c.substring(firstSpace + 1).trim();
+                uniqueCards.add(cardName);
             });
-        }));
 
-        // 5. Draw the Cards and Badges
-        loadedImages.forEach((item, index) => {
-            const col = index % columns;
-            const row = Math.floor(index / columns);
-            
-            const x = padding + (col * (cardBoxWidth + gap));
-            const y = padding + (row * (rowHeight + gap));
-
-            let drawWidth = cardBoxWidth;
-            let drawHeight = cardBoxHeight;
-            let dx = x;
-            let dy = y;
-
-            if (item.img) {
-                const imgAspect = item.img.width / item.img.height;
-                const boxAspect = cardBoxWidth / cardBoxHeight;
-
-                if (imgAspect > boxAspect) {
-                    drawWidth = cardBoxWidth;
-                    drawHeight = cardBoxWidth / imgAspect;
+            uniqueCards.forEach(cardName => {
+                if (isNewEra) {
+                    newFreq[cardName] = (newFreq[cardName] || 0) + deck.weight;
                 } else {
-                    drawHeight = cardBoxHeight;
-                    drawWidth = cardBoxHeight * imgAspect;
+                    oldFreq[cardName] = (oldFreq[cardName] || 0) + deck.weight;
+                }
+            });
+        });
+
+        const cardMomentum = {};
+        const allUniqueCards = new Set([...Object.keys(oldFreq), ...Object.keys(newFreq)]);
+
+        allUniqueCards.forEach(card => {
+            // Laplace smoothing (add 5 fake decks) prevents a card played 0 times in old
+            // and 1 time in new from mathematically getting an infinite growth multiplier.
+            const oldRate = ((oldFreq[card] || 0) + 5) / (oldDeckCount + 5);
+            const newRate = ((newFreq[card] || 0) + 5) / (newDeckCount + 5);
+
+            let momentum = newRate / oldRate;
+
+            // Clamp the momentum so it doesn't skew the AI too violently.
+            // A dying card is cut in half (0.5x), a surging card is heavily boosted (2.5x).
+            momentum = Math.max(0.5, Math.min(momentum, 2.5));
+            cardMomentum[card] = momentum;
+        });
+
+        // ==========================================
+        // PASS 2: Build Synergy Graph Using Momentum
+        // ==========================================
+        decks.forEach(deck => {
+            const parsedCards = deck.cards.map(c => {
+                const firstSpace = c.indexOf(' ');
+                const countStr = c.substring(0, firstSpace).replace(/x/i, '');
+                const count = parseInt(countStr) || 1;
+                const cardName = c.substring(firstSpace + 1).trim();
+                return { name: cardName, count: count };
+            });
+
+            const cleanCards = parsedCards.map(pc => pc.name);
+
+            parsedCards.forEach(card => {
+                // Include both the individual card meta momentum AND the deck's uniqueness weight
+                const momentum = cardMomentum[card.name] || 1.0;
+                const finalWeight = momentum * deck.weight;
+
+                cardFrequencies[card.name] = (cardFrequencies[card.name] || 0) + finalWeight;
+
+                if (!cardAverageCopies[card.name]) {
+                    cardAverageCopies[card.name] = { total: 0, appearances: 0 };
+                }
+                cardAverageCopies[card.name].total += (card.count * finalWeight);
+                cardAverageCopies[card.name].appearances += finalWeight;
+            });
+
+            for (let i = 0; i < cleanCards.length; i++) {
+                const cardA = cleanCards[i];
+                const momentumA = cardMomentum[cardA] || 1.0;
+
+                if (!synergyMatrix[cardA]) synergyMatrix[cardA] = {};
+
+                for (let j = 0; j < cleanCards.length; j++) {
+                    if (i === j) continue;
+                    const cardB = cleanCards[j];
+                    const momentumB = cardMomentum[cardB] || 1.0;
+
+                    // Synergy is amplified by both cards trending, but dampened if the deck is a clone
+                    const synergyWeight = momentumA * momentumB * deck.weight;
+
+                    synergyMatrix[cardA][cardB] = (synergyMatrix[cardA][cardB] || 0) + synergyWeight;
+                }
+            }
+        });
+    }
+
+    // --- 5. FINISH FOR ME (Auto-Generate Remaining) ---
+    generateDeckBtn.addEventListener('click', () => {
+        initSynergyMatrix();
+        generateDeckBtn.disabled = true;
+        generateDeckBtn.innerText = "Calculating Synergies...";
+
+        setTimeout(() => {
+            currentSeeds = buildOptimizedDeck();
+            lastAddedCard = null; // Clear context so AI summarizes full deck
+            renderSeeds();
+            generateDeckBtn.innerText = "Finish For Me ✨";
+        }, 50);
+    });
+
+    function buildOptimizedDeck() {
+        let workingDeck = currentSeeds.map(s => ({ ...s }));
+        let workingClasses = new Set(activeClasses);
+        let deckFaction = currentFaction;
+
+        const rawWeight = 0.2 + (Math.random() * 0.40);
+        const affinityWeight = 1.0 - rawWeight;
+        const isBudget = budgetToggle ? budgetToggle.checked : false;
+        const isSuperBudget = superBudgetToggle ? superBudgetToggle.checked : false;
+
+        while (true) {
+            let totalCards = workingDeck.reduce((sum, c) => sum + c.count, 0);
+            if (totalCards >= 40) break;
+
+            let expensiveCount = workingDeck.reduce((sum, c) => {
+                if (!cardDatabase[c.name]) return sum;
+                const r = cardDatabase[c.name].Rarity;
+                return (r === "Super-Rare" || r === "Event") ? sum + c.count : sum;
+            }, 0);
+
+            let bestCard = null;
+            let bestScore = -1;
+            let candidatePool = Object.keys(cardDatabase);
+            const slotsLeft = 40 - totalCards;
+            const currentOrphans = workingDeck.filter(c => c.count === 1).length;
+
+            if (slotsLeft <= currentOrphans || slotsLeft === 1) {
+                candidatePool = workingDeck.map(c => c.name);
+            }
+
+            candidatePool.forEach(candidateName => {
+                const candidateData = cardDatabase[candidateName];
+                const candidateClass = candidateData.Class;
+                const candidateFaction = plantClasses.has(candidateClass) ? "Plant" : "Zombie";
+
+                if (candidateFaction !== deckFaction) return;
+                if (!workingClasses.has(candidateClass) && workingClasses.size >= 2) return;
+
+                const existingCopy = workingDeck.find(c => c.name === candidateName);
+                const currentCopies = existingCopy ? existingCopy.count : 0;
+                if (currentCopies >= 4) return;
+
+                if (isBudget || isSuperBudget) {
+                    const rarity = candidateData.Rarity;
+                    if (rarity === "Legendary") return;
+
+                    if (rarity === "Super-Rare" || rarity === "Event") {
+                        if (isSuperBudget) {
+                            if (expensiveCount >= 4) return;
+                            if (currentCopies === 0 && expensiveCount > 0) return;
+                        } else {
+                            if (currentCopies === 0 && expensiveCount > 13) return;
+                        }
+                    }
                 }
 
-                dx = x + (cardBoxWidth - drawWidth) / 2;
-                dy = y + (cardBoxHeight - drawHeight) / 2;
+                let score = 0;
+                workingDeck.forEach(deckCard => {
+                    if (synergyMatrix && synergyMatrix[candidateName] && synergyMatrix[candidateName][deckCard.name]) {
+                        const coOccurrences = synergyMatrix[candidateName][deckCard.name];
+                        const candidateTotalPlays = cardFrequencies[candidateName] || 1;
 
-                // Add Drop Shadow to Cards
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-                ctx.shadowBlur = 12;
-                ctx.shadowOffsetY = 6;
-                ctx.shadowOffsetX = 0;
+                        let rawSynergy = coOccurrences;
+                        let affinitySynergy = (coOccurrences * coOccurrences) / candidateTotalPlays;
+                        let blendedSynergy = (rawSynergy * rawWeight) + (affinitySynergy * affinityWeight);
 
-                ctx.drawImage(item.img, dx, dy, drawWidth, drawHeight);
-                
-                // Reset shadow so it doesn't mess up badges/text
-                ctx.shadowColor = 'transparent';
+                        let classModifier = 1.0;
+                        if (cardDatabase[candidateName].Class !== cardDatabase[deckCard.name].Class) {
+                            classModifier = 4.0;
+                        }
+
+                        const deckCardPlays = cardFrequencies[deckCard.name] || 1;
+                        const volumeEqualizer = 1000 / deckCardPlays;
+                        const isOriginalSeed = currentSeeds.some(s => s.name === deckCard.name);
+
+                        score += (blendedSynergy * classModifier * volumeEqualizer) * deckCard.count * (isOriginalSeed ? 3 : 1);
+                    }
+                });
+
+                if (score === 0) score = 0.1;
+
+                let avgCopies = 3;
+                if (cardAverageCopies && cardAverageCopies[candidateName]) {
+                    avgCopies = cardAverageCopies[candidateName].total / cardAverageCopies[candidateName].appearances;
+                }
+
+                let consistencyMultiplier = 1.0;
+                if (currentCopies === 1) {
+                    consistencyMultiplier = 75.0;
+                } else if (currentCopies === 2) {
+                    consistencyMultiplier = 1.5;
+                }
+
+                if (currentCopies >= Math.round(avgCopies)) {
+                    consistencyMultiplier *= 0.5;
+                }
+
+                score *= consistencyMultiplier;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestCard = candidateName;
+                }
+            });
+
+            if (bestCard) {
+                const existing = workingDeck.find(c => c.name === bestCard);
+                if (existing) {
+                    existing.count++;
+                } else {
+                    workingDeck.push({
+                        name: bestCard,
+                        count: 1,
+                        class: cardDatabase[bestCard].Class,
+                        cost: cardDatabase[bestCard].Cost
+                    });
+                    workingClasses.add(cardDatabase[bestCard].Class);
+                }
             } else {
-                ctx.fillStyle = '#1e2226';
-                ctx.strokeStyle = '#3e464f';
-                ctx.lineWidth = 2;
-                ctx.fillRect(x, y, cardBoxWidth, cardBoxHeight);
-                ctx.strokeRect(x, y, cardBoxWidth, cardBoxHeight);
+                break;
             }
-
-            // Overlay the Premium Quantity Badge
-            const text = `x${item.seed.count}`;
-            ctx.font = 'bold 16px "Segoe UI", sans-serif';
-            const textWidth = ctx.measureText(text).width;
-            
-            const badgeWidth = textWidth + 16; 
-            const badgeHeight = 26;
-            const badgeX = dx - 6; 
-            const badgeY = dy + drawHeight - badgeHeight - 6; 
-
-            // Badge Gradient Background
-            const badgeGradient = ctx.createLinearGradient(badgeX, badgeY, badgeX, badgeY + badgeHeight);
-            badgeGradient.addColorStop(0, '#3a4149');
-            badgeGradient.addColorStop(1, '#1d2126');
-            
-            ctx.fillStyle = badgeGradient;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            ctx.shadowBlur = 6;
-            ctx.shadowOffsetY = 3;
-            
-            ctx.beginPath();
-            ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 6); 
-            ctx.fill();
-
-            // Badge Border
-            ctx.shadowColor = 'transparent'; // Reset shadow for border
-            ctx.strokeStyle = '#5a6470';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-
-            // Badge Text
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            // Added slight text shadow for extra crispness
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            ctx.shadowBlur = 2;
-            ctx.fillText(text, badgeX + (badgeWidth / 2), badgeY + (badgeHeight / 2) + 1); 
-            ctx.shadowColor = 'transparent';
-        });
-
-        // 6. Draw Modern Watermark (Pill Shape)
-        const wmText = 'pvzhvault.com';
-        ctx.font = 'bold 15px "Segoe UI", sans-serif';
-        const wmTextWidth = ctx.measureText(wmText).width;
-        
-        const wmPadX = 14;
-        const wmPadY = 8;
-        const wmWidth = wmTextWidth + (wmPadX * 2);
-        const wmHeight = 15 + (wmPadY * 2);
-        const wmX = canvasWidth - padding - wmWidth + 10;
-        const wmY = canvasHeight - padding - wmHeight + 15;
-
-        // Watermark Pill Background
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.beginPath();
-        ctx.roundRect(wmX, wmY, wmWidth, wmHeight, wmHeight / 2);
-        ctx.fill();
-
-        // Watermark Text with slight gradient
-        const textGrad = ctx.createLinearGradient(wmX, wmY, wmX, wmY + wmHeight);
-        textGrad.addColorStop(0, '#ffffff');
-        textGrad.addColorStop(1, '#b0b5ba');
-        
-        ctx.fillStyle = textGrad;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(wmText, wmX + (wmWidth / 2), wmY + (wmHeight / 2) + 1);
-
-        // 7. Export
-        const link = document.createElement('a');
-        link.download = `deck_export.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-
-        btn.innerText = "Downloaded!";
-        btn.style.background = "#4CAF50"; 
-    } catch (err) {
-        console.error("Canvas generation failed: ", err);
-        btn.innerText = "Error";
-        btn.style.background = "#f44336";
-    } finally {
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.style.background = ""; 
-            btn.disabled = false;
-        }, 2000);
+        }
+        return workingDeck;
     }
-});
-}
 
-// --- ROUTING LOGIC ---
+    // --- 6. NAMING & COPY LOGIC ---
+    function generateDeckName(deck, isPlant) {
+        if (!deck || deck.length === 0) return isPlant ? "Plant Deck" : "Zombie Deck";
 
-window.addEventListener('hashchange', handleRouting);
+        // 1. Cleaner, mechanic-focused prefixes instead of cheesy adjectives
+        const plantPrefixes = ["Green", "Bloom", "Thicket", "Solar", "Savage", "Root", "Petal", "Timber"];
+        const zombiePrefixes = ["Grave", "Brain", "Scrap", "Tech", "Doom", "Bolt", "Plague", "Rust"];
+        const neutralPrefixes = ["Turbo", "Heavy", "Classic", "Greedy", "Miracle", "Tempo", "Core", "Value"];
 
-statsBtn.addEventListener('click', () => {
-    window.location.hash = 'stats';
-});
+        // 2. Real CCG archetype nouns
+        const aggroNouns = ["Rush", "Swarm", "Burn", "Zoo", "Face", "Blitz", "Beatdown"];
+        const midNouns = ["Midrange", "Tempo", "Stompy", "Goodstuff", "Engine", "Flex", "Company"];
+        const controlNouns = ["Control", "Ramp", "Grinder", "Stall", "Prison", "Endgame", "Attrition"];
 
-crafterBtn.addEventListener('click', () => {
-    window.location.hash = 'crafter';
-});
+        // 3. SMART SIGNATURE CARDS: Find the top 2 highest (cost * count) cards
+        // This allows for "Card A / Card B" formats.
+        const sortedDeck = [...deck].sort((a, b) => (b.count * b.cost) - (a.count * a.cost));
 
-gamesBtn.addEventListener('click', () => { // <-- NEW
-    window.location.hash = 'games';
-});
+        const cleanName = (name) => name.replace(/_/g, ' ').replace(/^The /i, '');
 
-synergyBtn.addEventListener('click', () => {
-    window.location.hash = 'synergy';
-});
+        const sigCard1 = cleanName(sortedDeck[0].name);
+        // Fallback to sigCard1 if the deck only has 1 unique card in it
+        const sigCard2 = sortedDeck.length > 1 ? cleanName(sortedDeck[1].name) : sigCard1;
 
-if (typeof backBtn !== 'undefined') {
-    backBtn.addEventListener('click', () => {
-        window.location.hash = ''; // Clearing the hash triggers the default Home UI
+        // 4. ARCHETYPE DETECTION: Calculate average cost
+        let totalCost = 0;
+        let totalCards = 0;
+        deck.forEach(c => {
+            totalCost += (c.cost * c.count);
+            totalCards += c.count;
+        });
+        const avgCost = totalCost / (totalCards || 1);
+
+        // Pick the noun pool and a baseline archetype name based on deck speed
+        let nounPool = midNouns;
+        let baseArchetype = "Midrange";
+
+        if (avgCost <= 2.8) {
+            nounPool = aggroNouns;
+            baseArchetype = "Aggro";
+        } else if (avgCost >= 4.0) {
+            nounPool = controlNouns;
+            baseArchetype = "Control";
+        }
+
+        // 5. GENERATION
+        const factionPrefixes = isPlant ? plantPrefixes : zombiePrefixes;
+        const prefix = factionPrefixes[Math.floor(Math.random() * factionPrefixes.length)];
+        const neutral = neutralPrefixes[Math.floor(Math.random() * neutralPrefixes.length)];
+        const noun = nounPool[Math.floor(Math.random() * nounPool.length)];
+
+        // Serious, community-style CCG formats
+        const formats = [
+            `${sigCard1} ${noun}`,                     // e.g., Valkyrie Burn
+            `${prefix} ${sigCard1}`,                   // e.g., Scrap Valkyrie
+            `${neutral} ${sigCard1}`,                  // e.g., Turbo Valkyrie
+            `${sigCard1} ${baseArchetype}`,            // e.g., Valkyrie Midrange
+            `${sigCard1} / ${sigCard2}`,               // e.g., Valkyrie / Trickster
+            `${sigCard1} & ${sigCard2} ${noun}`,       // e.g., Valkyrie & Trickster Control
+            `${prefix} ${noun}`,                       // e.g., Scrap Midrange
+            `${sigCard1} Core`,                        // e.g., Valkyrie Core
+            `${noun} ${sigCard1}`                      // e.g., Burn Valkyrie
+        ];
+
+        // Optional: Filter out duplicates if sigCard1 and sigCard2 are the same 
+        // (Happens if a deck only has 1 type of card)
+        const validFormats = formats.filter(f => !f.includes(`${sigCard1} / ${sigCard1}`));
+
+        return validFormats[Math.floor(Math.random() * validFormats.length)];
+    }
+
+    const copyDeckBtn = document.getElementById('copyDeckBtn');
+    if (copyDeckBtn) {
+        copyDeckBtn.addEventListener('click', (e) => {
+            if (!currentClipboardText) return;
+            navigator.clipboard.writeText(currentClipboardText).then(() => {
+                const btn = e.target;
+                btn.innerText = "Copied!";
+                btn.style.background = "#4CAF50";
+                setTimeout(() => {
+                    btn.innerText = "Copy Text";
+                    btn.style.background = "";
+                }, 2000);
+            }).catch(err => console.error("Failed to copy text: ", err));
+        });
+    }
+    const downloadBtn = document.getElementById('downloadImageBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', async (e) => {
+            if (currentSeeds.length === 0) return;
+
+            const btn = e.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            try {
+                // 1. Setup Canvas Grid Math
+                const padding = 30; // Increased padding slightly for a better frame
+                const cardBoxWidth = 110;
+                const cardBoxHeight = 140;
+                const gap = 18; // Slightly larger gap to accommodate shadows
+                const columns = 4;
+                const rows = Math.ceil(currentSeeds.length / columns);
+
+                const watermarkHeight = 40; // Increased to give the new watermark pill room
+                const canvasWidth = padding * 2 + (columns * cardBoxWidth) + ((columns - 1) * gap);
+                const rowHeight = cardBoxHeight;
+                const canvasHeight = padding * 2 + (rows * rowHeight) + ((rows - 1) * gap) + watermarkHeight;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+                const ctx = canvas.getContext('2d');
+
+                // 2. Draw Premium Background (Radial Gradient)
+                const cx = canvasWidth / 2;
+                const cy = canvasHeight / 2;
+                const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvasWidth);
+                bgGradient.addColorStop(0, '#2c333a'); // Lighter center spotlight
+                bgGradient.addColorStop(1, '#111417'); // Darker edges
+
+                ctx.fillStyle = bgGradient;
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+                // Optional: subtle border around the entire canvas
+                ctx.strokeStyle = '#3e464f';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(2, 2, canvasWidth - 4, canvasHeight - 4);
+
+                // 3. SORT THE CARDS
+                const sortedSeeds = [...currentSeeds].sort((a, b) => {
+                    const costA = cardDatabase[a.name]?.Cost || 0;
+                    const costB = cardDatabase[b.name]?.Cost || 0;
+                    if (costA !== costB) return costA - costB;
+                    return a.name.localeCompare(b.name);
+                });
+
+                // 4. Load Images
+                const loadedImages = await Promise.all(sortedSeeds.map(seed => {
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        const dbName = seed.name.replace(/ /g, '_');
+
+                        img.onload = () => resolve({ img, seed });
+                        img.onerror = () => {
+                            const imgWebp = new Image();
+                            imgWebp.crossOrigin = "anonymous";
+                            imgWebp.onload = () => resolve({ img: imgWebp, seed });
+                            imgWebp.onerror = () => resolve({ img: null, seed });
+                            imgWebp.src = `card_images/${dbName}.webp`;
+                        };
+                        img.src = `card_images/${dbName}.png`;
+                    });
+                }));
+
+                // 5. Draw the Cards and Badges
+                loadedImages.forEach((item, index) => {
+                    const col = index % columns;
+                    const row = Math.floor(index / columns);
+
+                    const x = padding + (col * (cardBoxWidth + gap));
+                    const y = padding + (row * (rowHeight + gap));
+
+                    let drawWidth = cardBoxWidth;
+                    let drawHeight = cardBoxHeight;
+                    let dx = x;
+                    let dy = y;
+
+                    if (item.img) {
+                        const imgAspect = item.img.width / item.img.height;
+                        const boxAspect = cardBoxWidth / cardBoxHeight;
+
+                        if (imgAspect > boxAspect) {
+                            drawWidth = cardBoxWidth;
+                            drawHeight = cardBoxWidth / imgAspect;
+                        } else {
+                            drawHeight = cardBoxHeight;
+                            drawWidth = cardBoxHeight * imgAspect;
+                        }
+
+                        dx = x + (cardBoxWidth - drawWidth) / 2;
+                        dy = y + (cardBoxHeight - drawHeight) / 2;
+
+                        // Add Drop Shadow to Cards
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                        ctx.shadowBlur = 12;
+                        ctx.shadowOffsetY = 6;
+                        ctx.shadowOffsetX = 0;
+
+                        ctx.drawImage(item.img, dx, dy, drawWidth, drawHeight);
+
+                        // Reset shadow so it doesn't mess up badges/text
+                        ctx.shadowColor = 'transparent';
+                    } else {
+                        ctx.fillStyle = '#1e2226';
+                        ctx.strokeStyle = '#3e464f';
+                        ctx.lineWidth = 2;
+                        ctx.fillRect(x, y, cardBoxWidth, cardBoxHeight);
+                        ctx.strokeRect(x, y, cardBoxWidth, cardBoxHeight);
+                    }
+
+                    // Overlay the Premium Quantity Badge
+                    const text = `x${item.seed.count}`;
+                    ctx.font = 'bold 16px "Segoe UI", sans-serif';
+                    const textWidth = ctx.measureText(text).width;
+
+                    const badgeWidth = textWidth + 16;
+                    const badgeHeight = 26;
+                    const badgeX = dx - 6;
+                    const badgeY = dy + drawHeight - badgeHeight - 6;
+
+                    // Badge Gradient Background
+                    const badgeGradient = ctx.createLinearGradient(badgeX, badgeY, badgeX, badgeY + badgeHeight);
+                    badgeGradient.addColorStop(0, '#3a4149');
+                    badgeGradient.addColorStop(1, '#1d2126');
+
+                    ctx.fillStyle = badgeGradient;
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                    ctx.shadowBlur = 6;
+                    ctx.shadowOffsetY = 3;
+
+                    ctx.beginPath();
+                    ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 6);
+                    ctx.fill();
+
+                    // Badge Border
+                    ctx.shadowColor = 'transparent'; // Reset shadow for border
+                    ctx.strokeStyle = '#5a6470';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    // Badge Text
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    // Added slight text shadow for extra crispness
+                    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                    ctx.shadowBlur = 2;
+                    ctx.fillText(text, badgeX + (badgeWidth / 2), badgeY + (badgeHeight / 2) + 1);
+                    ctx.shadowColor = 'transparent';
+                });
+
+                // 6. Draw Modern Watermark (Pill Shape)
+                const wmText = 'pvzhvault.com';
+                ctx.font = 'bold 15px "Segoe UI", sans-serif';
+                const wmTextWidth = ctx.measureText(wmText).width;
+
+                const wmPadX = 14;
+                const wmPadY = 8;
+                const wmWidth = wmTextWidth + (wmPadX * 2);
+                const wmHeight = 15 + (wmPadY * 2);
+                const wmX = canvasWidth - padding - wmWidth + 10;
+                const wmY = canvasHeight - padding - wmHeight + 15;
+
+                // Watermark Pill Background
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.beginPath();
+                ctx.roundRect(wmX, wmY, wmWidth, wmHeight, wmHeight / 2);
+                ctx.fill();
+
+                // Watermark Text with slight gradient
+                const textGrad = ctx.createLinearGradient(wmX, wmY, wmX, wmY + wmHeight);
+                textGrad.addColorStop(0, '#ffffff');
+                textGrad.addColorStop(1, '#b0b5ba');
+
+                ctx.fillStyle = textGrad;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(wmText, wmX + (wmWidth / 2), wmY + (wmHeight / 2) + 1);
+
+                // 7. Export
+                const link = document.createElement('a');
+                link.download = `deck_export.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                btn.innerText = "Downloaded!";
+                btn.style.background = "#4CAF50";
+            } catch (err) {
+                console.error("Canvas generation failed: ", err);
+                btn.innerText = "Error";
+                btn.style.background = "#f44336";
+            } finally {
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = "";
+                    btn.disabled = false;
+                }, 2000);
+            }
+        });
+    }
+
+    // --- ROUTING LOGIC ---
+
+    window.addEventListener('hashchange', handleRouting);
+
+    statsBtn.addEventListener('click', () => {
+        window.location.hash = 'stats';
     });
-}
+
+    crafterBtn.addEventListener('click', () => {
+        window.location.hash = 'crafter';
+    });
+
+    gamesBtn.addEventListener('click', () => { // <-- NEW
+        window.location.hash = 'games';
+    });
+
+    tiersBtn.addEventListener('click', () => { // <-- NEW
+        window.location.hash = 'tiers';
+    });
+
+    if (synergyEasterEgg) {
+        synergyEasterEgg.addEventListener('click', () => {
+            window.location.hash = 'synergy';
+        });
+    }
+
+    if (typeof backBtn !== 'undefined') {
+        backBtn.addEventListener('click', () => {
+            window.location.hash = ''; // Clearing the hash triggers the default Home UI
+        });
+    }
 });
 
 // --- Modal Elements ---
@@ -4023,12 +4045,12 @@ const closeModalBtn = document.querySelector('.close-modal-btn');
 
 // --- Event Delegation for "View Visual Deck" buttons ---
 // We attach the listener to the whole grid instead of 1700 individual buttons
-document.getElementById('deckGrid').addEventListener('click', function(e) {
+document.getElementById('deckGrid').addEventListener('click', function (e) {
     if (e.target.classList.contains('view-visual-btn')) {
         e.preventDefault();
         const title = e.target.getAttribute('data-title');
         const cardsArray = JSON.parse(decodeURIComponent(e.target.getAttribute('data-cards')));
-        
+
         openVisualModal(title, cardsArray);
     }
 });
@@ -4043,7 +4065,7 @@ function openVisualModal(title, cardsArray) {
     // Loop directly through the strings in your array
     cardsArray.forEach(cardString => {
         const match = cardString.trim().match(/^x(\d+)\s+(.+)$/i);
-        
+
         let count = 1;
         let rawName = cardString;
 
@@ -4066,9 +4088,9 @@ function openVisualModal(title, cardsArray) {
         img.alt = displayName;
         img.title = displayName;
         img.style.objectFit = 'contain';
-        
-        img.onerror = function() {
-            this.onerror = null; 
+
+        img.onerror = function () {
+            this.onerror = null;
             this.src = `card_images/${dbName}.webp`;
         };
 
@@ -4083,31 +4105,31 @@ function openVisualModal(title, cardsArray) {
 
     // --- Attach Analyze Logic to the Button ---
     const analyzeBtn = document.getElementById('modalAnalyzeBtn');
-    
+
     if (analyzeBtn) {
-        analyzeBtn.onclick = function() {
+        analyzeBtn.onclick = function () {
             const cardDictionary = Object.keys(cardDatabase).sort();
 
             const minimalDeckString = deckToAnalyze.map(card => {
                 // Find the index using the underscore name
                 const index = cardDictionary.indexOf(card.name);
-                
+
                 // Debugging logs just in case!
                 if (index === -1) {
                     console.error(`🚨 Could not find card in dictionary: ${card.name}`);
                 }
 
-                const cardIndex = index.toString(36); 
-                
+                const cardIndex = index.toString(36);
+
                 return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
-            }).join('-'); 
-            
+            }).join('-');
+
             const analyzeUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}#crafter`;
-            
+
             console.log("Encoding complete. Target URL:", analyzeUrl);
-            
+
             // Navigate the user to the encoded URL!
-            window.location.href = analyzeUrl; 
+            window.location.href = analyzeUrl;
         };
     }
 
@@ -4131,7 +4153,7 @@ function renderGames() {
     // ==========================================
     let deckCounts = {};
     let validHlCards = [];
-    
+
     Object.keys(cardDatabase).forEach(card => deckCounts[card] = 0);
 
     Object.values(fullDatabase).forEach(deck => {
@@ -4141,7 +4163,7 @@ function renderGames() {
             if (deckCounts[cleanName] !== undefined) {
                 deckCounts[cleanName]++;
             } else {
-                deckCounts[cleanName] = 1; 
+                deckCounts[cleanName] = 1;
             }
         });
     });
@@ -4153,7 +4175,7 @@ function renderGames() {
     // ==========================================
     let hlScore = 0;
     let hlStreak = 0;
-    let peakSessionStreak = 0; 
+    let peakSessionStreak = 0;
     let hlCombo = 1.0;
     let hlBestScore = parseInt(localStorage.getItem('hlBestScoreArcade') || '0');
     let hlTimeLeft = 60;
@@ -4164,7 +4186,7 @@ function renderGames() {
     let hlPerfectRun = true;
     let hlIsFever = false;
     let hlIsAnimating = false;
-    
+
     let currentCardLeft = null;
     let currentCardRight = null;
 
@@ -4174,12 +4196,12 @@ function renderGames() {
     const hlCardRightEl = document.getElementById('hlCardRight');
     const hlTimerBar = document.getElementById('hlTimerBar');
     const hlVsBadge = document.getElementById('hlVsBadge');
-    
+
     const hlScoreVal = document.getElementById('hlScoreVal');
     const hlComboVal = document.getElementById('hlComboVal');
     const hlStreakVal = document.getElementById('hlStreakVal');
     const hlBestVal = document.getElementById('hlBestVal');
-    
+
     const hlSkipBtn = document.getElementById('hlSkipBtn');
     const hlSkipCount = document.getElementById('hlSkipCount');
 
@@ -4194,7 +4216,7 @@ function renderGames() {
     // ==========================================
     function setCardImage(imgElement, cardKey) {
         imgElement.src = `card_images/${cardKey}.png`;
-        imgElement.onerror = function() {
+        imgElement.onerror = function () {
             this.onerror = null;
             this.src = `card_images/${cardKey}.webp`;
         };
@@ -4213,9 +4235,9 @@ function renderGames() {
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            const easeProgress = 1 - Math.pow(1 - progress, 3); 
+            const easeProgress = 1 - Math.pow(1 - progress, 3);
             const currentVal = Math.floor(easeProgress * (end - start) + start);
-            
+
             element.textContent = `${currentVal}${postfix}`;
             if (progress < 1) {
                 window.requestAnimationFrame(step);
@@ -4247,13 +4269,13 @@ function renderGames() {
         document.getElementById('hlNameRight').textContent = currentCardRight.replace(/_/g, ' ');
         document.getElementById('hlCountRight').textContent = `??? Decks`;
         setCardImage(document.getElementById('hlImgRight'), currentCardRight);
-        
+
         hlIsAnimating = false;
     }
 
     function cycleCards(targetEl) {
         setTimeout(() => {
-            if(targetEl) {
+            if (targetEl) {
                 targetEl.classList.remove('hl-correct-flash');
                 targetEl.classList.remove('hl-wrong-flash');
             }
@@ -4263,7 +4285,7 @@ function renderGames() {
             setTimeout(() => {
                 currentCardLeft = targetEl ? currentCardRight : getRandomCard(null); // Full reset if skipped or wrong
                 currentCardRight = getRandomCard(currentCardLeft);
-                
+
                 hlCardLeftEl.classList.remove('hl-slide-out');
                 hlCardRightEl.classList.remove('hl-slide-out');
                 initMatchup();
@@ -4272,105 +4294,105 @@ function renderGames() {
     }
 
     function handleGuess(selectedSide) {
-    if (hlIsAnimating || hlTimeLeft <= 0) return;
-    hlIsAnimating = true;
+        if (hlIsAnimating || hlTimeLeft <= 0) return;
+        hlIsAnimating = true;
 
-    const countLeft = deckCounts[currentCardLeft];
-    const countRight = deckCounts[currentCardRight];
-    animateValue(document.getElementById('hlCountRight'), 0, countRight, 500);
+        const countLeft = deckCounts[currentCardLeft];
+        const countRight = deckCounts[currentCardRight];
+        animateValue(document.getElementById('hlCountRight'), 0, countRight, 500);
 
-    let isCorrect = false;
-    if (selectedSide === 'left' && countLeft >= countRight) isCorrect = true;
-    if (selectedSide === 'right' && countRight >= countLeft) isCorrect = true;
+        let isCorrect = false;
+        if (selectedSide === 'left' && countLeft >= countRight) isCorrect = true;
+        if (selectedSide === 'right' && countRight >= countLeft) isCorrect = true;
 
-    const targetEl = selectedSide === 'left' ? hlCardLeftEl : hlCardRightEl;
+        const targetEl = selectedSide === 'left' ? hlCardLeftEl : hlCardRightEl;
 
-    if (isCorrect) {
-        hlStreak++;
-        peakSessionStreak = Math.max(peakSessionStreak, hlStreak);
-        
-        const pointsEarned = Math.round(100 * hlCombo);
-        hlScore += pointsEarned;
-        
-        hlCombo = parseFloat((hlCombo + 0.2).toFixed(1));
-        
-        // --- UPDATED: Floating point precision adjustment & gain flash ---
-        hlTimeLeft = Math.min(60, parseFloat((hlTimeLeft + 3).toFixed(1)));
-        hlTimerBar.classList.add('timer-gain-flash');
-        setTimeout(() => hlTimerBar.classList.remove('timer-gain-flash'), 400);
-        // -----------------------------------------------------------------
+        if (isCorrect) {
+            hlStreak++;
+            peakSessionStreak = Math.max(peakSessionStreak, hlStreak);
 
-        // Visual Updates
-        hlScoreVal.textContent = hlScore;
-        hlStreakVal.textContent = hlStreak;
-        
-        hlComboVal.textContent = `${hlCombo}x`;
-        hlComboVal.classList.add('hl-combo-pop');
-        setTimeout(() => hlComboVal.classList.remove('hl-combo-pop'), 400);
+            const pointsEarned = Math.round(100 * hlCombo);
+            hlScore += pointsEarned;
 
-        targetEl.classList.add('hl-correct-flash');
-        
-        // Combat Text
-        spawnFloatingText(targetEl, `+${pointsEarned}`, '#00f5d4');
-        spawnFloatingText(hlCardLeftEl === targetEl ? hlCardRightEl : hlCardLeftEl, `+3s`, '#00b4d8');
+            hlCombo = parseFloat((hlCombo + 0.2).toFixed(1));
 
-        // Fever Mode Check
-        if (hlCombo >= 2.0 && !hlIsFever) {
-            hlIsFever = true;
-            hlArcadeContainer.classList.add('fever-active');
-            hlComboVal.style.color = '#ffea00';
-            hlVsBadge.textContent = "FEVER!";
-            hlVsBadge.style.color = "#ffea00";
+            // --- UPDATED: Floating point precision adjustment & gain flash ---
+            hlTimeLeft = Math.min(60, parseFloat((hlTimeLeft + 3).toFixed(1)));
+            hlTimerBar.classList.add('timer-gain-flash');
+            setTimeout(() => hlTimerBar.classList.remove('timer-gain-flash'), 400);
+            // -----------------------------------------------------------------
+
+            // Visual Updates
+            hlScoreVal.textContent = hlScore;
+            hlStreakVal.textContent = hlStreak;
+
+            hlComboVal.textContent = `${hlCombo}x`;
+            hlComboVal.classList.add('hl-combo-pop');
+            setTimeout(() => hlComboVal.classList.remove('hl-combo-pop'), 400);
+
+            targetEl.classList.add('hl-correct-flash');
+
+            // Combat Text
+            spawnFloatingText(targetEl, `+${pointsEarned}`, '#00f5d4');
+            spawnFloatingText(hlCardLeftEl === targetEl ? hlCardRightEl : hlCardLeftEl, `+3s`, '#00b4d8');
+
+            // Fever Mode Check
+            if (hlCombo >= 2.0 && !hlIsFever) {
+                hlIsFever = true;
+                hlArcadeContainer.classList.add('fever-active');
+                hlComboVal.style.color = '#ffea00';
+                hlVsBadge.textContent = "FEVER!";
+                hlVsBadge.style.color = "#ffea00";
+            }
+
+            if (hlScore > hlBestScore) {
+                hlBestScore = hlScore;
+                hlBestVal.textContent = hlBestScore;
+                localStorage.setItem('hlBestScoreArcade', hlBestScore.toString());
+            }
+
+            cycleCards(targetEl);
+
+        } else {
+            hlPerfectRun = false; // Lost the perfect run
+            const penalty = hlIsFever ? 15 : 10;
+
+            // --- UPDATED: Floating point precision adjustment & loss flash ---
+            hlTimeLeft = Math.max(0, parseFloat((hlTimeLeft - penalty).toFixed(1)));
+            hlTimerBar.classList.add('timer-loss-flash');
+            setTimeout(() => hlTimerBar.classList.remove('timer-loss-flash'), 400);
+            // -----------------------------------------------------------------
+
+            // Reset Combo & Fever
+            hlStreak = 0;
+            hlCombo = 1.0;
+            hlIsFever = false;
+            hlArcadeContainer.classList.remove('fever-active');
+            hlComboVal.style.color = '#00b4d8';
+            hlVsBadge.textContent = "VS";
+            hlVsBadge.style.color = "#ff007f";
+
+            hlStreakVal.textContent = hlStreak;
+            hlComboVal.textContent = "1.0x";
+
+            targetEl.classList.add('hl-wrong-flash');
+            spawnFloatingText(targetEl, `-${penalty}s`, '#ff007f');
+
+            cycleCards(targetEl);
         }
-
-        if (hlScore > hlBestScore) {
-            hlBestScore = hlScore;
-            hlBestVal.textContent = hlBestScore;
-            localStorage.setItem('hlBestScoreArcade', hlBestScore.toString());
-        }
-
-        cycleCards(targetEl);
-
-    } else {
-        hlPerfectRun = false; // Lost the perfect run
-        const penalty = hlIsFever ? 15 : 10;
-        
-        // --- UPDATED: Floating point precision adjustment & loss flash ---
-        hlTimeLeft = Math.max(0, parseFloat((hlTimeLeft - penalty).toFixed(1))); 
-        hlTimerBar.classList.add('timer-loss-flash');
-        setTimeout(() => hlTimerBar.classList.remove('timer-loss-flash'), 400);
-        // -----------------------------------------------------------------
-
-        // Reset Combo & Fever
-        hlStreak = 0;
-        hlCombo = 1.0;
-        hlIsFever = false;
-        hlArcadeContainer.classList.remove('fever-active');
-        hlComboVal.style.color = '#00b4d8';
-        hlVsBadge.textContent = "VS";
-        hlVsBadge.style.color = "#ff007f";
-
-        hlStreakVal.textContent = hlStreak;
-        hlComboVal.textContent = "1.0x";
-
-        targetEl.classList.add('hl-wrong-flash');
-        spawnFloatingText(targetEl, `-${penalty}s`, '#ff007f');
-
-        cycleCards(targetEl);
     }
-}
 
     function handleSkip() {
         if (hlIsAnimating || hlTimeLeft <= 0 || hlSkipsLeft <= 0) return;
         hlIsAnimating = true;
-        
+
         hlSkipsLeft--;
         hlSkipCount.textContent = hlSkipsLeft;
         if (hlSkipsLeft === 0) hlSkipBtn.disabled = true;
 
         hlTimeLeft = Math.max(0, hlTimeLeft - 2);
         spawnFloatingText(hlCardRightEl, `SKIPPED (-2s)`, '#ffea00');
-        
+
         cycleCards(null); // Cycle without evaluating a win/loss
     }
 
@@ -4378,43 +4400,43 @@ function renderGames() {
     // CHRONO TIMER CLOCK LOOP MANAGEMENT
     // ==========================================
     function startClock() {
-    if (hlTimerInterval) clearInterval(hlTimerInterval);
-    
-    hlTimerInterval = setInterval(() => {
-        // Drop by 0.1 seconds every 100ms loop execution
-        hlTimeLeft = parseFloat((hlTimeLeft - 0.1).toFixed(1));
-        if (hlTimeLeft < 0) hlTimeLeft = 0;
-        
-        // Update precise digital readout text
-        hlTimerText.textContent = `${hlTimeLeft.toFixed(1)}s`;
-        
-        // Update bar width percentile
-        const percent = (hlTimeLeft / 60) * 100;
-        hlTimerBar.style.width = `${percent}%`;
+        if (hlTimerInterval) clearInterval(hlTimerInterval);
 
-        // Handle Alert Stages
-        if (hlTimeLeft <= 15) {
-            hlTimerBar.classList.add('timer-warning', 'timer-panic');
-            hlTimerText.style.color = '#ff007f';
-            hlTimerText.style.textShadow = '0 0 10px rgba(255,0,127,0.5)';
-            // Make the text slightly pulse size-wise on mobile/desktop
-            hlTimerText.style.transform = 'scale(1.1)';
-        } else {
-            hlTimerBar.classList.remove('timer-warning', 'timer-panic');
-            hlTimerText.style.color = '#00f5d4';
-            hlTimerText.style.textShadow = '0 0 10px rgba(0,245,212,0.4)';
-            hlTimerText.style.transform = 'scale(1)';
-        }
+        hlTimerInterval = setInterval(() => {
+            // Drop by 0.1 seconds every 100ms loop execution
+            hlTimeLeft = parseFloat((hlTimeLeft - 0.1).toFixed(1));
+            if (hlTimeLeft < 0) hlTimeLeft = 0;
 
-        if (hlTimeLeft <= 0) {
-            terminateGameLoop();
-        }
-    }, 100); // 100ms frequency for arcade-grade smoothness
-}
+            // Update precise digital readout text
+            hlTimerText.textContent = `${hlTimeLeft.toFixed(1)}s`;
+
+            // Update bar width percentile
+            const percent = (hlTimeLeft / 60) * 100;
+            hlTimerBar.style.width = `${percent}%`;
+
+            // Handle Alert Stages
+            if (hlTimeLeft <= 15) {
+                hlTimerBar.classList.add('timer-warning', 'timer-panic');
+                hlTimerText.style.color = '#ff007f';
+                hlTimerText.style.textShadow = '0 0 10px rgba(255,0,127,0.5)';
+                // Make the text slightly pulse size-wise on mobile/desktop
+                hlTimerText.style.transform = 'scale(1.1)';
+            } else {
+                hlTimerBar.classList.remove('timer-warning', 'timer-panic');
+                hlTimerText.style.color = '#00f5d4';
+                hlTimerText.style.textShadow = '0 0 10px rgba(0,245,212,0.4)';
+                hlTimerText.style.transform = 'scale(1)';
+            }
+
+            if (hlTimeLeft <= 0) {
+                terminateGameLoop();
+            }
+        }, 100); // 100ms frequency for arcade-grade smoothness
+    }
 
     function terminateGameLoop() {
         clearInterval(hlTimerInterval);
-        
+
         // Perfect Run Calculation
         let perfectRunHTML = "";
         if (hlPerfectRun && hlScore > 0) {
@@ -4428,7 +4450,7 @@ function renderGames() {
         }
 
         // Inside your game over function:
-hlFinalSummary.innerHTML = `
+        hlFinalSummary.innerHTML = `
     <div class="hl-stat-line hl-gameover-animate" style="animation-delay: 0.3s;">
         Final Score: <span style="color: #00f5d4; font-weight: 900;">${hlScore}</span>
     </div>
@@ -4440,29 +4462,29 @@ hlFinalSummary.innerHTML = `
     </div>
 `;
 
-// Show the screen (make sure this happens at the same time so animations sync)
-document.getElementById('hlGameOverScreen').style.display = 'flex';
+        // Show the screen (make sure this happens at the same time so animations sync)
+        document.getElementById('hlGameOverScreen').style.display = 'flex';
     }
 
     function beginGameSession() {
         // Reset Base Stats
         hlScore = 0;
         hlStreak = 0;
-        peakSessionStreak = 0; 
+        peakSessionStreak = 0;
         hlCombo = 1.0;
         hlTimeLeft = 60;
         hlIsAnimating = false;
-        
+
         // Reset Mechanics
         hlPerfectRun = true;
         hlIsFever = false;
         hlSkipsLeft = 3;
-        
+
         hlArcadeContainer.classList.remove('fever-active');
         hlComboVal.style.color = '#00b4d8';
         hlVsBadge.textContent = "VS";
         hlVsBadge.style.color = "#ff007f";
-        
+
         hlSkipCount.textContent = hlSkipsLeft;
         hlSkipBtn.disabled = false;
 
@@ -4488,7 +4510,7 @@ document.getElementById('hlGameOverScreen').style.display = 'flex';
     hlCardLeftEl.onclick = () => handleGuess('left');
     hlCardRightEl.onclick = () => handleGuess('right');
     hlSkipBtn.onclick = handleSkip;
-    
+
     document.getElementById('hlStartBtn').onclick = beginGameSession;
     document.getElementById('hlRestartBtn').onclick = beginGameSession;
 }
@@ -4501,14 +4523,14 @@ async function renderSynergyWeb() {
     const overlay = document.getElementById('synergyLoadingOverlay');
     const progressBar = document.getElementById('synergyProgressBar');
     const progressText = document.getElementById('synergyLoadingText');
-    
+
     if (!container || currentSynergyGraph) return;
 
     overlay.style.opacity = '1';
     overlay.style.pointerEvents = 'all';
 
     // Step 1: Crunch the data (Wait a frame so UI updates)
-    await new Promise(r => setTimeout(r, 50)); 
+    await new Promise(r => setTimeout(r, 50));
     const graphData = buildSynergyData();
 
     // Step 2: Preload all required images for a flawless reveal
@@ -4519,26 +4541,26 @@ async function renderSynergyWeb() {
         return new Promise((resolve) => {
             const img = new Image();
             const formattedName = node.id.replaceAll(' ', '_');
-            
+
             // 1. If it loads successfully (whether PNG or WEBP), attach it and resolve
             img.onload = () => {
                 node.img = img;
                 resolve();
             };
-            
+
             // 2. If it fails, check what failed
             img.onerror = () => {
                 // If the PNG failed, let's try the WEBP!
                 // We overwrite the onerror so if the WEBP *also* fails, it just gives up and resolves (preventing a frozen loading bar)
                 img.onerror = () => {
                     console.warn(`Missing image for: ${node.id}`);
-                    resolve(); 
+                    resolve();
                 };
-                
+
                 // Swap the source to WEBP
                 img.src = `card_images/${formattedName}.webp`;
             };
-            
+
             // 3. Kick off the loading process by assuming it's a PNG first
             img.src = `card_images/${formattedName}.png`;
         });
@@ -4549,7 +4571,7 @@ async function renderSynergyWeb() {
     for (let i = 0; i < graphData.nodes.length; i += batchSize) {
         const batch = graphData.nodes.slice(i, i + batchSize);
         await Promise.all(batch.map(preloadImage));
-        
+
         loadedCount += batch.length;
         const percent = Math.min(100, Math.round((loadedCount / graphData.nodes.length) * 100));
         progressBar.style.width = `${percent}%`;
@@ -4607,7 +4629,7 @@ async function renderSynergyWeb() {
             highlightNodes.clear();
             highlightLinks.clear();
             highlightNodes.add(node);
-            
+
             graphData.links.forEach(link => {
                 if (link.source.id === node.id || link.target.id === node.id) {
                     highlightLinks.add(link);
@@ -4626,31 +4648,31 @@ async function renderSynergyWeb() {
             highlightNodes.clear();
             highlightLinks.clear();
         })
-        
+
         // Physics Setup
-        .d3Force('charge', d3.forceManyBody().strength(-200)) 
-        .d3Force('link', d3.forceLink().distance(80).id(d => d.id)) 
+        .d3Force('charge', d3.forceManyBody().strength(-200))
+        .d3Force('link', d3.forceLink().distance(80).id(d => d.id))
         .d3Force('center', d3.forceCenter())
-        .d3Force('x', d3.forceX(0).strength(0.05)) 
-        .d3Force('y', d3.forceY(0).strength(0.05)) 
+        .d3Force('x', d3.forceX(0).strength(0.05))
+        .d3Force('y', d3.forceY(0).strength(0.05))
         .d3Force('collide', d3.forceCollide(node => {
-            return Math.max(20, Math.min(50, node.popularity / 3)) + 5; 
+            return Math.max(20, Math.min(50, node.popularity / 3)) + 5;
         }).iterations(2))
 
         // 4. Update Node Rendering to Handle Fading
         .nodeCanvasObject((node, ctx, globalScale) => {
             const baseSize = Math.max(20, Math.min(50, node.popularity / 3));
-            
+
             // Check if we should dim this card
             const isFaded = activeNode && !highlightNodes.has(node);
 
             ctx.save();
-            
+
             // Fade out cards that aren't connected to the active node
-            ctx.globalAlpha = isFaded ? 0.15 : 1; 
+            ctx.globalAlpha = isFaded ? 0.15 : 1;
 
             if (node.img && node.img.complete && node.img.naturalHeight !== 0) {
-                
+
                 // Keep the stunning shadows
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
                 ctx.shadowBlur = 12;
@@ -4664,44 +4686,44 @@ async function renderSynergyWeb() {
                 }
 
                 const imgAspect = node.img.naturalWidth / node.img.naturalHeight;
-                let drawWidth = baseSize * 2; 
+                let drawWidth = baseSize * 2;
                 let drawHeight = baseSize * 2;
-                
-                if (imgAspect > 1) { 
+
+                if (imgAspect > 1) {
                     drawHeight = drawWidth / imgAspect;
-                } else { 
+                } else {
                     drawWidth = drawHeight * imgAspect;
                 }
 
                 ctx.drawImage(
-                    node.img, 
-                    node.x - (drawWidth / 2), 
-                    node.y - (drawHeight / 2), 
-                    drawWidth, 
+                    node.img,
+                    node.x - (drawWidth / 2),
+                    node.y - (drawHeight / 2),
+                    drawWidth,
                     drawHeight
                 );
 
             } else {
-                ctx.fillStyle = '#334155'; 
+                ctx.fillStyle = '#334155';
                 ctx.fillRect(node.x - baseSize, node.y - baseSize * 1.4, baseSize * 2, baseSize * 2.8);
             }
-            
+
             ctx.restore();
         })
         .nodePointerAreaPaint((node, color, ctx) => {
             const baseSize = Math.max(20, Math.min(50, node.popularity / 3));
-            
+
             // Create a clickable rectangle that roughly matches the card dimensions
             const hitWidth = baseSize * 2.2;
-            const hitHeight = baseSize * 2.8; 
-            
+            const hitHeight = baseSize * 2.8;
+
             ctx.fillStyle = color; // The engine passes a unique hidden color to track clicks
-            
+
             // Draw the invisible clickable box perfectly over the image
             ctx.fillRect(
-                node.x - (hitWidth / 2), 
-                node.y - (hitHeight / 2), 
-                hitWidth, 
+                node.x - (hitWidth / 2),
+                node.y - (hitHeight / 2),
+                hitWidth,
                 hitHeight
             );
         })
@@ -4740,9 +4762,9 @@ function buildSynergyData() {
         }
     }
 
-    const MIN_SYNERGY_WEIGHT = 10; 
+    const MIN_SYNERGY_WEIGHT = 10;
     const links = Array.from(edgesMap.values()).filter(e => e.weight >= MIN_SYNERGY_WEIGHT);
-    
+
     const connectedNodes = new Set();
     links.forEach(link => {
         connectedNodes.add(link.source);
@@ -4751,4 +4773,218 @@ function buildSynergyData() {
     const nodes = Array.from(nodesMap.values()).filter(n => connectedNodes.has(n.id));
 
     return { nodes, links };
+}
+
+function calculateCardScores(decksData) {
+    const decks = [];
+    let mostRecentDate = 0;
+
+    // A. Parse the decks
+    for (const [deckId, deckInfo] of Object.entries(decksData)) {
+        if (!deckInfo.upload_date) continue;
+
+        const dateObj = new Date(deckInfo.upload_date);
+        if (isNaN(dateObj.getTime())) continue;
+
+        if (dateObj.getTime() > mostRecentDate) {
+            mostRecentDate = dateObj.getTime();
+        }
+
+        const cardsList = [];
+        for (const cardStr of (deckInfo.cards || [])) {
+            // Split "x4" and "Clique Peas"
+            const spaceIndex = cardStr.indexOf(' ');
+            if (spaceIndex !== -1) {
+                const countPart = cardStr.substring(0, spaceIndex);
+                const namePart = cardStr.substring(spaceIndex + 1);
+
+                if (countPart.startsWith('x')) {
+                    const count = parseInt(countPart.substring(1), 10);
+                    if (!isNaN(count)) {
+                        const cardName = namePart.replace(/_/g, " ");
+                        cardsList.push({ name: cardName, count: count });
+                    }
+                }
+            }
+        }
+
+        decks.push({ id: deckId, date: dateObj, cards: cardsList });
+    }
+
+    if (decks.length === 0) return [];
+
+    // B. Calculate Meta-Metrics
+    const totalDecks = decks.length;
+    const cardDeckCounts = {};
+    const cardWeightedCopies = {};
+
+    // C. Calculate Time-Weighted Copies (TF)
+    decks.forEach(deck => {
+        // Time-decay: 1-year (365.25 days) half-life.
+        const daysOld = (mostRecentDate - deck.date.getTime()) / (1000 * 60 * 60 * 24);
+        const timeWeight = Math.pow(0.5, daysOld / 365.25);
+        const deckCardsSeen = new Set();
+
+        deck.cards.forEach(card => {
+            if (!cardDeckCounts[card.name]) cardDeckCounts[card.name] = 0;
+            if (!cardWeightedCopies[card.name]) cardWeightedCopies[card.name] = 0;
+
+            if (!deckCardsSeen.has(card.name)) {
+                cardDeckCounts[card.name]++;
+                deckCardsSeen.add(card.name);
+            }
+
+            cardWeightedCopies[card.name] += (card.count * timeWeight);
+        });
+    });
+
+    const cardScores = [];
+
+    // D. Apply TF-IDF
+    for (const [card, weightedCopies] of Object.entries(cardWeightedCopies)) {
+        const docFrequency = cardDeckCounts[card];
+        const idf = Math.log(totalDecks / docFrequency);
+        const finalScore = weightedCopies * idf;
+
+        cardScores.push({ card, score: finalScore });
+    }
+
+    // E. Sort from best to worst
+    cardScores.sort((a, b) => b.score - a.score);
+    return cardScores;
+}
+
+// Keep your existing calculateCardScores function exactly as it is above!
+
+// State variables for the Tier List Navigation
+let tierListInitialized = false;
+let availableClasses = [];
+let currentClassIndex = 0;
+let cachedScoredCards = [];
+
+function renderTiers() {
+    // 1. One-time initialization when the view is first opened
+    if (!tierListInitialized) {
+        // Calculate all TF-IDF scores globally and cache them
+        cachedScoredCards = calculateCardScores(fullDatabase);
+
+        // Extract a unique, sorted list of all Classes from cardDatabase
+        const classSet = new Set();
+        for (const key in cardDatabase) {
+            if (cardDatabase[key].Class) {
+                classSet.add(cardDatabase[key].Class);
+            }
+        }
+        availableClasses = Array.from(classSet).sort();
+
+        // Start on a random class
+        if (availableClasses.length > 0) {
+            currentClassIndex = Math.floor(Math.random() * availableClasses.length);
+        }
+
+        // Hook up the Previous/Next buttons
+        document.getElementById('prevClassBtn').addEventListener('click', () => {
+            // This math handles negative looping cleanly
+            currentClassIndex = (currentClassIndex - 1 + availableClasses.length) % availableClasses.length;
+            drawCurrentClassTiers();
+        });
+
+        document.getElementById('nextClassBtn').addEventListener('click', () => {
+            currentClassIndex = (currentClassIndex + 1) % availableClasses.length;
+            drawCurrentClassTiers();
+        });
+
+        tierListInitialized = true;
+    }
+
+    // 2. Actually draw the list for the current class
+    drawCurrentClassTiers();
+}
+
+function drawCurrentClassTiers() {
+    const container = document.querySelector('.tier-list-container');
+    container.innerHTML = ''; // Clear out the old tiers before drawing new ones
+
+    const titleEl = document.getElementById('tierClassTitle');
+    const currentClass = availableClasses[currentClassIndex];
+    
+    // Update the title visually
+    titleEl.textContent = `${currentClass} Tier List`;
+
+    // 3. Filter the cached cards to ONLY include cards belonging to this class
+    const classCards = cachedScoredCards.filter(cardData => {
+        // Format name to match cardDatabase keys (e.g., "Party Thyme" -> "Party_Thyme")
+        const formattedKey = cardData.card.replace(/ /g, "_");
+        const dbInfo = cardDatabase[formattedKey];
+        return dbInfo && dbInfo.Class === currentClass;
+    });
+
+    if (classCards.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No ranked cards found for this class.</p>';
+        return;
+    }
+
+    // 4. Determine the highest score IN THIS CLASS so the curve fits the page perfectly
+    const topScore = classCards[0].score;
+
+    const tiers = [
+        { grade: 'S', colorClass: 'tier-s', title: 'Overpowered', cards: [], minScore: topScore * 0.75 },
+        { grade: 'A', colorClass: 'tier-a', title: 'Excellent', cards: [], minScore: topScore * 0.45 },
+        { grade: 'B', colorClass: 'tier-b', title: 'Great', cards: [], minScore: topScore * 0.25 },
+        { grade: 'C', colorClass: 'tier-c', title: 'Average', cards: [], minScore: topScore * 0.10 },
+        { grade: 'D', colorClass: 'tier-d', title: 'Niche', cards: [], minScore: topScore * 0.03 },
+        { grade: 'F', colorClass: 'tier-f', title: 'Terrible', cards: [], minScore: 0 }
+    ];
+
+    // Assign cards to tiers based on the class curve
+    classCards.forEach(cardData => {
+        for (let i = 0; i < tiers.length; i++) {
+            if (cardData.score >= tiers[i].minScore) {
+                tiers[i].cards.push(cardData);
+                break;
+            }
+        }
+    });
+
+    // 5. Build the DOM
+    tiers.forEach(tier => {
+        const row = document.createElement('div');
+        row.className = 'tier-row';
+
+        const label = document.createElement('div');
+        label.className = `tier-label ${tier.colorClass}`;
+        label.textContent = tier.grade;
+        label.title = tier.title;
+
+        const cardsArea = document.createElement('div');
+        cardsArea.className = 'tier-cards';
+
+        tier.cards.forEach(cardData => {
+            const imgWrap = document.createElement('div');
+            imgWrap.className = 'tier-card-wrapper';
+
+            imgWrap.title = `${cardData.card}\nScore: ${cardData.score.toFixed(2)}`;
+
+            const formattedName = cardData.card.replace(/ /g, "_");
+
+            const img = document.createElement('img');
+            img.className = 'tier-actual-card';
+            
+            // Default to PNG
+            img.src = `card_images/${formattedName}.png`;
+
+            // Fallback to WebP if the PNG is missing
+            img.onerror = function () {
+                this.onerror = null; // Prevent infinite loop
+                this.src = `card_images/${formattedName}.webp`;
+            };
+
+            imgWrap.appendChild(img);
+            cardsArea.appendChild(imgWrap);
+        });
+
+        row.appendChild(label);
+        row.appendChild(cardsArea);
+        container.appendChild(row);
+    });
 }
