@@ -41,6 +41,70 @@
         "upload_date": "Jun 09, 2026",
         "credit": "Pillowy"
     }, 
+    "deck_134": {
+        "name": "radiotherapy (comp)",
+        "cards": [
+            "x4 Galacta-Cactus",
+            "x4 Reincarnation",
+            "x4 Berry_Blast",
+            "x3 Fireweed",
+            "x2 Pear_Cub",
+            "x2 Shamrocket",
+            "x4 Sizzle",
+            "x2 Veloci-Radish_Packmate",
+            "x2 Blockbuster",
+            "x4 Starch_Lord",
+            "x3 Gravitree",
+            "x3 Poppin'_Poppies",
+            "x3 Wall-Nut_Bowling"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Jun 07, 2026",
+        "credit": "Xera, CGP23, Div, Salt"
+    },
+    "deck_81": {
+        "name": "Kendrick Limear",
+        "cards": [
+            "x4 Forget-Me-Nuts",
+            "x3 Galacta-Cactus",
+            "x4 Lima_Pleurodon",
+            "x4 Bog_of_Enlightenment",
+            "x2 Corn_Dog",
+            "x2 Grave_Buster",
+            "x4 Rotobaga",
+            "x2 Pear_Cub",
+            "x4 Pumpkin_Shell",
+            "x3 Leaf_Blower",
+            "x4 Shooting_Starfruit",
+            "x4 Brainana"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Jun 04, 2026",
+        "credit": "Xera"
+    },
+     "deck_132": {
+        "name": "autorun",
+        "cards": [
+            "x4 Primal_Peashooter",
+            "x4 Reincarnation",
+            "x4 Berry_Blast",
+            "x3 Fireweed",
+            "x4 Wild_Berry",
+            "x2 Sizzle",
+            "x3 Sportacus",
+            "x3 Molekale",
+            "x2 Shrinking_Violet",
+            "x4 Fig",
+            "x4 Brainana",
+            "x3 Winter_Melon"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Jun 04, 2026",
+        "credit": "Mono, Xera"
+    },
     "deck_-122": {
         "name": "Treat or Tricksterazzi",
         "cards": [
@@ -80,6 +144,28 @@
         "youtube_url": "https://www.youtube.com/watch?v=cFeGWIOrjpw",
         "upload_date": "May 31, 2026",
         "credit": "FryEmUp"
+    },
+    "deck_177": {
+        "name": "Dino Counter",
+        "cards": [
+            "x4 Admiral_Navy_Bean",
+            "x4 Forget-Me-Nuts",
+            "x4 Lima_Pleurodon",
+            "x4 Mars_Flytrap",  
+            "x4 Photosynthesizer",
+            "x2 Grave_Mistake",
+            "x3 Tricarrotops",
+            "x2 Spring_Bean",
+            "x4 Bean_Counter",
+            "x4 Jelly_Bean",
+            "x2 Jumping_Bean",
+            "x3 Brainana"
+            
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "May 26, 2026",
+        "credit": "Lolatopia"
     },
     "deck_-271": {
         "name": "Heal Midrose",
@@ -123,6 +209,27 @@
         "upload_date": "May 24, 2026",
         "credit": "FryEmUp"
     },
+    "deck_-1200": {
+        "name": "Tight Grimps",
+        "cards": [
+            "x2 Arm_Wrestler",
+            "x4 Black_Hole",
+            "x4 Imposter",
+            "x3 Imp_Throwing_Imp",
+            "x3 Toxic_Waste_Imp",
+            "x3 Going_Viral",
+            "x4 Line_Dancing_Zombie",
+            "x4 Pogo_Zombie",
+            "x4 Cryo-Yeti",
+            "x4 Intergalactic_Warlord",
+            "x3 Mixed-Up_Gravedigger",
+            "x2 Cursed_Gargolith"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "May 24, 2026",
+        "credit": "King Fish Commander"
+    },
     "deck_-270": {
         "name": "Log Bait",
         "cards": [
@@ -143,6 +250,27 @@
         "youtube_url": "",
         "upload_date": "May 24, 2026",
         "credit": "Xera, Salt, The_Cute_Chick(TCC)"
+    },
+    "deck_-60": {
+        "name": "Coffee Crusher",
+        "cards": [
+            "x4 Mustache_Waxer",
+            "x4 Rolling_Stone",
+            "x3 Teleport",
+            "x3 Teleportation_Zombie",
+            "x4 Duckstache",
+            "x3 Gentleman_Zombie",
+            "x4 Going_Viral",
+            "x3 Rocket_Science",
+            "x4 Turquiose_Skull_Zombie",
+            "x3 Intergalactic_Warlord",
+            "x3 Viking",
+            "x2 Coffee_Zombie"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "May 22, 2026",
+        "credit": "King Fish Commander"
     },
     "deck_-6": {
         "name": "Muscle Lily",
@@ -350,6 +478,27 @@
         "upload_date": "Apr 28, 2026",
         "credit": "FryEmUp"
     },
+    "deck_-321": {
+        "name": "Ecology",
+        "cards": [
+            "x3 Graveyard",
+            "x3 Interdimensional_Zombie",
+            "x4 Neutron_Imp",
+            "x3 Teleport",
+            "x4 Dr. Spacetime",
+            "x4 Teleportation_Zombie",
+            "x4 Zombot_Drone_Engineer",
+            "x3 Laser_Base_Alpha",
+            "x3 Moonwalker",
+            "x4 Gadget_Scientist",
+            "x3 Gargantuar_Mime",
+            "x2 Zombot_Sharktronic_Sub"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Apr 27, 2026",
+        "credit": "Durga"
+    },
     "deck_0": {
         "name": "RampPhibious",
         "cards": [
@@ -516,6 +665,27 @@
         "youtube_url": "",
         "upload_date": "Apr 13, 2026",
         "credit": "MakeMeACoffee"
+    },
+    "deck_255": {
+        "name": "chemo",
+        "cards": [
+            "x4 Li'l_Buddy",
+            "x3 Forget-Me-Nuts",
+            "x3 Galacta-Cactus",
+            "x4 Sun_Shroom",
+            "x4 Pepper_M.D.",
+            "x4 Cross-Pollination",
+            "x2 Ketchup_Mechanic",
+            "x3 Whack-a-Zombie",
+            "x4 Aloesaurus",
+            "x3 Cob_Cannon",
+            "x3 Gravitree",
+            "x3 Wall-Nut_Bowling"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Apr 13, 2026",
+        "credit": "Salt, The_Cute_Chick(TCC)"
     },
     "deck_7": {
         "name": "Peappardelle",
@@ -1996,27 +2166,7 @@
         "upload_date": "Jan 20, 2026",
         "credit": "Slewer, MakeMeACoffee"
     },
-    "deck_81": {
-        "name": "Kendrick Limear",
-        "cards": [
-            "x4 Forget-Me-Nuts",
-            "x3 Galacta-Cactus",
-            "x4 Lima_Pleurodon",
-            "x4 Bog_of_Enlightenment",
-            "x3 Hot_Date",
-            "x4 Rotobaga",
-            "x2 Pear_Cub",
-            "x4 Pumpkin_Shell",
-            "x1 Blockbuster",
-            "x3 Leaf_Blower",
-            "x4 Shooting_Starfruit",
-            "x4 Brainana"
-        ],
-        "youtube_title": "",
-        "youtube_url": "",
-        "upload_date": "Jan 20, 2026",
-        "credit": "Xera"
-    },
+    
     "deck_82": {
         "name": "BoSS",
         "cards": [
@@ -3137,27 +3287,7 @@
         "upload_date": "Oct 22, 2025",
         "credit": "FryEmUp"
     },
-    "deck_132": {
-        "name": "Turles",
-        "cards": [
-            "x4 Lima_Pleurodon",
-            "x3 Primal_Peashooter",
-            "x2 Reincarnation",
-            "x4 Berry_Blast",
-            "x3 Fireweed",
-            "x4 Sizzle",
-            "x4 Veloci-Radish_Packmate",
-            "x3 Molekale",
-            "x2 Shrinking_Violet",
-            "x4 Fig",
-            "x4 Brainana",
-            "x3 Winter_Melon"
-        ],
-        "youtube_title": "",
-        "youtube_url": "",
-        "upload_date": "Oct 22, 2025",
-        "credit": "Mono, Xera"
-    },
+   
     "deck_133": {
         "name": "Nut-Lord",
         "cards": [
@@ -3178,28 +3308,7 @@
         "upload_date": "Oct 17, 2025",
         "credit": "FryEmUp"
     },
-    "deck_134": {
-        "name": "radiotherapy (comp)",
-        "cards": [
-            "x4 Galacta-Cactus",
-            "x4 Reincarnation",
-            "x4 Berry_Blast",
-            "x3 Fireweed",
-            "x3 Pear_Cub",
-            "x2 Primal_Wall-Nut",
-            "x3 Shamrocket",
-            "x3 Sizzle",
-            "x2 Blockbuster",
-            "x4 Fig",
-            "x3 Gravitree",
-            "x2 Poppin'_Poppies",
-            "x3 Wall-Nut_Bowling"
-        ],
-        "youtube_title": "",
-        "youtube_url": "",
-        "upload_date": "Oct 15, 2025",
-        "credit": "Xera, CGP23, Div, Salt"
-    },
+    
     "deck_135": {
         "name": "--yhard's Sun Bandits",
         "cards": [
@@ -4111,26 +4220,7 @@
         "upload_date": "Jul 30, 2025",
         "credit": "Franinja"
     },
-    "deck_177": {
-        "name": "Dino Counter",
-        "cards": [
-            "x4 Admiral_Navy_Bean",
-            "x4 Forget-Me-Nuts",
-            "x4 Lima_Pleurodon",
-            "x4 Mars_Flytrap",
-            "x4 Photosynthesizer",
-            "x4 Tricarrotops",
-            "x2 Spring_Bean",
-            "x4 Bean_Counter",
-            "x4 Jelly_Bean",
-            "x4 Brainana",
-            "x2 Grave_Mistake"
-        ],
-        "youtube_title": "",
-        "youtube_url": "",
-        "upload_date": "Jul 30, 2025",
-        "credit": "Lolatopia"
-    },
+    
     "deck_178": {
         "name": "Budget Aggro",
         "cards": [
@@ -5906,27 +5996,7 @@
         "upload_date": "Feb 16, 2025",
         "credit": "Natz"
     },
-    "deck_255": {
-        "name": "chemo",
-        "cards": [
-            "x4 Li'l_Buddy",
-            "x3 Forget-Me-Nuts",
-            "x3 Galacta-Cactus",
-            "x4 Sun_Shroom",
-            "x4 Pepper_M.D.",
-            "x4 Cross-Pollination",
-            "x2 Ketchup_Mechanic",
-            "x3 Whack-a-Zombie",
-            "x4 Aloesaurus",
-            "x3 Cob_Cannon",
-            "x3 Gravitree",
-            "x3 Wall-Nut_Bowling"
-        ],
-        "youtube_title": "",
-        "youtube_url": "",
-        "upload_date": "Feb 16, 2025",
-        "credit": "Salt, Flowerman"
-    },
+    
     "deck_256": {
         "name": "Garg Control",
         "cards": [
