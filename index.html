@@ -14,10 +14,10 @@
 <body>
     <header>
         <div class="header-content">
-            <h1>PvZH Deck Vault</h1>
+            <h1>PvZH Deck Builder & Database</h1>
             <p>Browsing <span id="deckCount" class="highlight">...</span> <span id="randomAdjective">glorious</span> PvZ
                 Heroes decks <button id="infoBtn" class="info-btn">?</button></p>
-            <p class="last-updated">Last updated: June 9, 2026</p>
+            <p class="last-updated">Last updated: June 11, 2026</p>
 
             <div id="controls" class="controls-container">
                 <div id="topControls">
@@ -35,11 +35,64 @@
                     <button class="grade-chip" data-grade="F">F</button>
                 </div>
                 </div>
-                <button id="crafterBtn">Deck Builder</button>
-                <button id="tiersBtn">Tier List</button>
-                <button id="statsBtn">View Stats</button>
-                <button id="gamesBtn">Mini-Game</button>
-                <button id="backBtn" class="hidden">Back to Decks</button>
+                <button id="crafterBtn">
+  <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Card 1 (Back) -->
+    <path d="M11 8V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
+    <!-- Card 2 (Middle) -->
+    <path d="M14 11v-1a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
+    <!-- Card 3 (Front) -->
+    <rect x="11" y="11" width="8" height="10" rx="1.5" />
+    <!-- Action Plus Sign (Top Right) -->
+    <path d="M16 5h6M19 2v6" />
+  </svg>
+  Deck Builder
+</button>
+
+<button id="tiersBtn">
+   <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 7h14" />
+    <path d="M5 12h10" />
+    <path d="M5 17h6" />
+    <path d="M5 7h1.5" />
+    <path d="M5 12h1.5" />
+    <path d="M5 17h1.5" />
+  </svg>
+  Tier List
+</button>
+
+<button id="statsBtn">
+  <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 19V5" />
+    <path d="M4 19h16" />
+    <path d="M7 15v-4M12 15V8M17 15v-6" />
+  </svg>
+  View Stats
+</button>
+
+<button id="gamesBtn">
+  <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 8h12a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4v-2a4 4 0 0 1 4-4Z" />
+    <path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" />
+  </svg>
+  Mini Game
+</button>
+
+<button id="guidesBtn">
+  <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 0-2 2V4Z" />
+    <path d="M6 6a2 2 0 0 1 2-2h10" />
+    <path d="M9 8h6M9 11h6M9 14h4" />
+  </svg>
+  Deck Guides
+</button>
+
+<button id="backBtn" class="hidden">
+  <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M15 18l-6-6 6-6" />
+  </svg>
+  Back to Decks
+</button>
             </div>
         </div>
     </header>
@@ -73,6 +126,21 @@
     <div class="tier-list-container">
         </div>
 
+</section>
+<section id="guidesView" class="hidden guides-view">
+  <div class="guides-header">
+    <div>
+      <p class="section-eyebrow">Guides</p>
+      <h2 class="version-effect">PvZH Guides Collection</h2>
+      <p class="section-subtitle">
+        Fast, useful guides built around the meta, strategy, and the most searched topics.
+      </p>
+    </div>
+  </div>
+
+  <div class="guides-grid" id="guidesGrid">
+    <!-- JS injects cards here -->
+  </div>
 </section>
 
         <section id="statsView" class="hidden">

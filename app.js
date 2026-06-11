@@ -86,9 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // View/Tab Elements
     const deckView = document.getElementById('deckView');
     const statsView = document.getElementById('statsView');
+    const guidesView = document.getElementById('guidesView');
     const tiersView = document.getElementById('tiersView');
     const searchWrapper = document.getElementById('searchWrapper');
     const statsBtn = document.getElementById('statsBtn');
+    const guidesBtn = document.getElementById('guidesBtn');
     const tiersBtn = document.getElementById('tiersBtn');
     const backBtn = document.getElementById('backBtn');
     const crafterBtn = document.getElementById('crafterBtn');
@@ -149,10 +151,12 @@ document.addEventListener('DOMContentLoaded', () => {
         deckView.classList.add('hidden');
         statsView.classList.add('hidden');
         tiersView.classList.add('hidden');
+        guidesView.classList.add('hidden');
         crafterView.classList.add('hidden');
         gamesView.classList.add('hidden');
         searchWrapper.classList.add('hidden');
         statsBtn.classList.add('hidden');
+        guidesBtn.classList.add('hidden');
         crafterBtn.classList.add('hidden');
         gamesBtn.classList.add('hidden');
         tiersBtn.classList.add('hidden');
@@ -191,11 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
             if (typeof renderTiers === 'function') renderTiers();
         }
+        else if (hash === '#guides') {
+            guidesView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+        }
         else {
             // Default Home UI
             deckView.classList.remove('hidden');
             searchWrapper.classList.remove('hidden');
             statsBtn.classList.remove('hidden');
+            guidesBtn.classList.remove('hidden');
             tiersBtn.classList.remove('hidden');
             crafterBtn.classList.remove('hidden');
             gamesBtn.classList.remove('hidden');
@@ -503,6 +512,230 @@ document.addEventListener('DOMContentLoaded', () => {
         const { grade, gradeColor } = getVerdictGrade(overallPercent, allTopTier, totalCards);
         return { grade, gradeColor, score: overallPercent, costLabel, synergyScore, consistencyScore, powerScore, avgCost, curveHealthText, curve, avgSparks, curveNumeric };
     }
+    window.getTopDecksByMonth = function(monthNumber, customCtx) {
+    // Fallback to find fullDatabase in global scope if not explicitly passed
+    const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
+    
+    if (!db) {
+        console.error("Error: 'fullDatabase' could not be found in the global scope. Please make sure it is defined.");
+        return;
+    }
+
+    // Maps for dynamic logging and flexible regex generation
+    const monthNames = {
+        1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
+        7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
+    };
+
+    const monthPatterns = {
+        1: "jan(uary)?", 2: "feb(ruary)?", 3: "mar(ch)?", 4: "apr(il)?",
+        5: "may",        6: "jun(e)?",     7: "jul(y)?",     8: "aug(ust)?",
+        9: "sep(t(ember)?)?", 10: "oct(ober)?", 11: "nov(ember)?", 12: "dec(ember)?"
+    };
+
+    const targetMonthName = monthNames[monthNumber];
+    const patternStr = monthPatterns[monthNumber];
+
+    if (!targetMonthName) {
+        console.error("Error: Invalid month number. Please provide a number between 1 (January) and 12 (December).");
+        return;
+    }
+
+    // Dynamically construct the regex for the given month in 2026
+    const dateRegex = new RegExp(`^${patternStr}\\s+\\d+,\\s+2026$`, "i");
+    const compiledDecks = [];
+
+    for (const deckKey in db) {
+        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
+        
+        const deck = db[deckKey];
+        if (!deck.upload_date || !deck.cards) continue;
+
+        // Filter strictly for the chosen month in 2026
+        if (dateRegex.test(deck.upload_date.trim())) {
+            try {
+                const activeCtx = customCtx || window.ctx || undefined;
+                
+                // Run your scoring function
+                const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+                
+                compiledDecks.push({
+                    id: deckKey,
+                    name: deck.name,
+                    score: parseFloat(verdict.score.toFixed(2)),
+                    grade: verdict.grade,
+                    cost: verdict.costLabel,
+                    synergy: verdict.synergyScore,
+                    power: verdict.powerScore,
+                    consistency: verdict.consistencyScore,
+                    date: deck.upload_date,
+                    author: deck.credit || "Unknown"
+                });
+            } catch (error) {
+                console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+            }
+        }
+    }
+
+    // Sort descending by score
+    compiledDecks.sort((a, b) => b.score - a.score);
+
+    // Slice top 10
+    const top10 = compiledDecks.slice(0, 10);
+
+    // Display Results dynamically in console
+    if (top10.length === 0) {
+        console.log(`%c No decks found for ${targetMonthName} 2026.`, "color: #ff9900; font-weight: bold;");
+    } else {
+        console.log(`%c--- TOP 10 HIGHEST SCORING DECKS (${targetMonthName.toUpperCase()} 2026) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+        console.table(top10);
+    }
+
+    return top10;
+};
+window.getTopDeckForEachHero2026 = function(customCtx) {
+    // Fallback lookups for databases in global scope
+    const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
+    const cardDb = window.cardDatabase || (typeof cardDatabase !== 'undefined' ? cardDatabase : null);
+    
+    if (!db) {
+        console.error("Error: 'fullDatabase' could not be found in the global scope.");
+        return [];
+    }
+    if (!cardDb) {
+        console.error("Error: 'cardDatabase' could not be found in the global scope.");
+        return [];
+    }
+
+    const heroMap = {
+        // Plants
+        "Mega-Grow,Smarty": "Green Shadow",
+        "Kabloom,Solar": "Solar Flare",
+        "Guardian,Solar": "Wall-Knight",
+        "Mega-Grow,Solar": "Chompzilla",
+        "Guardian,Kabloom": "Spudow",
+        "Guardian,Smarty": "Citron / Beta-Carrotina",
+        "Guardian,Mega-Grow": "Grass Knuckles",
+        "Kabloom,Smarty": "Nightcap",
+        "Kabloom,Mega-Grow": "Captain Combustible",
+        "Smarty,Solar": "Rose",
+
+        // Zombies
+        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
+        "Beastly,Hearty": "The Smash",
+        "Crazy,Sneaky": "Impfinity",
+        "Brainy,Hearty": "Rustbolt",
+        "Beastly,Crazy": "Electric Boogaloo",
+        "Beastly,Sneaky": "Brain Freeze",
+        "Brainy,Crazy": "Professor Brainstorm",
+        "Beastly,Brainy": "Immorticia",
+        "Crazy,Hearty": "Z-Mech",
+        "Hearty,Sneaky": "Neptuna"
+    };
+
+    const yearRegex = /\s+2026$/i;
+    const topDecksByHero = {};
+
+    for (const deckKey in db) {
+        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
+        
+        const deck = db[deckKey];
+        if (!deck.upload_date || !deck.cards) continue;
+
+        // Filter strictly for 2026 uploads
+        if (yearRegex.test(deck.upload_date.trim())) {
+            try {
+                const activeCtx = customCtx || window.ctx || undefined;
+                
+                // Run your existing scoring function
+                const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+                
+                // Track unique classes found within this specific deck
+                const uniqueClasses = new Set();
+                
+                for (const cardRaw of deck.cards) {
+                    let parsedCardName = cardRaw.trim();
+                    
+                    // Strip quantity prefix (e.g., "4x " or "x4 ")
+                    const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+                    if (match) {
+                        parsedCardName = match[2].trim();
+                    }
+                    
+                    // Create space and underscore variants to guarantee database hits
+                    const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+                    const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
+                    
+                    const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
+                    if (cardData && cardData.Class) {
+                        uniqueClasses.add(cardData.Class.trim());
+                    }
+                }
+
+                // Alphabetize the unique classes found to flawlessly align with heroMap keys
+                const classesArray = Array.from(uniqueClasses).sort();
+                const classesKey = classesArray.join(',');
+                
+                const heroName = heroMap[classesKey] || "Unknown Hero";
+                const currentScore = verdict.score;
+
+                // Retain only the highest scoring deck configuration per hero
+                if (!topDecksByHero[heroName] || currentScore > topDecksByHero[heroName].score) {
+                    topDecksByHero[heroName] = {
+                        hero: heroName,
+                        id: deckKey,
+                        name: deck.name,
+                        score: parseFloat(currentScore.toFixed(2)),
+                        grade: verdict.grade,
+                        cost: verdict.costLabel,
+                        synergy: verdict.synergyScore,
+                        power: verdict.powerScore,
+                        consistency: verdict.consistencyScore,
+                        date: deck.upload_date,
+                        author: deck.credit || "Unknown",
+                        cards: deck.cards // Save the raw array for detailed logging
+                    };
+                }
+            } catch (error) {
+                console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+            }
+        }
+    }
+
+    // Flatten our map results back into an array
+    const topHeroDecks = Object.values(topDecksByHero);
+
+    // Sort descending by overall performance score
+    topHeroDecks.sort((a, b) => b.score - a.score);
+
+    if (topHeroDecks.length === 0) {
+        console.log("%c No valid decks found for the year 2026.", "color: #ff9900; font-weight: bold;");
+    } else {
+        console.log(`%c--- TOP DECK FOR EACH HERO (FULL YEAR 2026) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+        
+        // Map elements for console.table so the raw cards array doesn't clutter the table view
+        console.table(topHeroDecks.map(d => ({
+            Hero: d.hero,
+            "Deck Name": d.name,
+            Score: d.score,
+            Grade: d.grade,
+            Synergy: d.synergy,
+            Power: d.power,
+            Consistency: d.consistency,
+            Author: d.author
+        })));
+
+        // Log out the full decklists with clean text separation
+        console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
+        
+        topHeroDecks.forEach(d => {
+            console.log(`%c[${d.hero}] ${d.name} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
+            console.log(d.cards.join("\n"));
+        });
+    }
+
+    return topHeroDecks;
+};
     // --- Render Decks Function ---
     function renderDecks(data) {
         const searchInput = document.getElementById('searchInput');
@@ -513,6 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingIndicator) loadingIndicator.classList.remove('hidden');
         deckGrid.classList.add('hidden');
         if (statsBtn) statsBtn.disabled = true;
+        if (guidesBtn) guidesBtn.disabled = true;
         if (crafterBtn) crafterBtn.disabled = true;
         if (gamesBtn) gamesBtn.disabled = true;
         if (tiersBtn) tiersBtn.disabled = true;
@@ -723,6 +957,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (loadingIndicator) loadingIndicator.classList.add('hidden');
             deckGrid.classList.remove('hidden');
             if (statsBtn) statsBtn.disabled = false;
+            if (guidesBtn) guidesBtn.disabled = false;
             if (tiersBtn) tiersBtn.disabled = false;
             if (crafterBtn) crafterBtn.disabled = false;
             if (gamesBtn) gamesBtn.disabled = false;
@@ -851,6 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide BOTH secondary views and the back button
         statsView.classList.add('hidden');
         tiersView.classList.add('hidden');
+        guidesView.classList.add('hidden');
         crafterView.classList.add('hidden'); // Hide the new view
         backBtn.classList.add('hidden');
 
@@ -858,6 +1094,7 @@ document.addEventListener('DOMContentLoaded', () => {
         deckView.classList.remove('hidden');
         searchWrapper.classList.remove('hidden');
         statsBtn.classList.remove('hidden');
+        guidesBtn.classList.remove('hidden');
         tiersBtn.classList.remove('hidden');
         crafterBtn.classList.remove('hidden'); // Restore the new button
         gamesBtn.classList.remove('hidden'); // Restore the games button
@@ -4016,6 +4253,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.hash = 'crafter';
     });
 
+    guidesBtn.addEventListener('click', () => {
+        window.location.hash = 'guides';
+    });
+
     gamesBtn.addEventListener('click', () => { // <-- NEW
         window.location.hash = 'games';
     });
@@ -4907,7 +5148,7 @@ function drawCurrentClassTiers() {
 
     const titleEl = document.getElementById('tierClassTitle');
     const currentClass = availableClasses[currentClassIndex];
-    
+
     // Update the title visually
     titleEl.textContent = `${currentClass} Tier List`;
 
@@ -4969,7 +5210,7 @@ function drawCurrentClassTiers() {
 
             const img = document.createElement('img');
             img.className = 'tier-actual-card';
-            
+
             // Default to PNG
             img.src = `card_images/${formattedName}.png`;
 
@@ -4988,3 +5229,61 @@ function drawCurrentClassTiers() {
         container.appendChild(row);
     });
 }
+
+const guidesData = [
+  {
+    title: "Top 10 Best Decks in PvZH",
+    description: "A data-backed ranking of the strongest decks in the current meta.",
+    href: "/best-decks-pvzh-june-2026",
+    badge: "Most searched",
+    time: "6 min read",
+    date: "June 11, 2026",
+    icon: "stack"
+  }
+];
+
+function guideIconSvg(type) {
+  // All icons standardized to a crisp 24x24 outline grid
+  const baseAttrs = 'class="guide-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+  
+  const icons = {
+    stack: `<svg ${baseAttrs}><path d="M7 3h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M3 7H2v10a2 2 0 0 0 2 2h10v-1"/></svg>`,
+    hero: `<svg ${baseAttrs}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    budget: `<svg ${baseAttrs}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
+    tiers: `<svg ${baseAttrs}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+    book: `<svg ${baseAttrs}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+    arrow: `<svg ${baseAttrs}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`
+  };
+
+  return icons[type] || icons.stack;
+}
+
+function renderGuides() {
+  const grid = document.getElementById("guidesGrid");
+  if (!grid) return;
+
+  grid.innerHTML = guidesData.map(guide => `
+    <a class="guide-card" href="${guide.href}">
+      <div class="guide-top">
+        <div class="guide-icon-wrap">
+          ${guideIconSvg(guide.icon)}
+        </div>
+        <div class="guide-badge">${guide.badge}</div>
+      </div>
+
+      <h3>${guide.title}</h3>
+      <p>${guide.description}</p>
+
+      <div class="guide-meta">
+        <div class="guide-meta-left">
+          <span class="guide-date">${guide.date}</span>
+          <span class="guide-separator">•</span>
+          <span class="guide-time">${guide.time}</span>
+        </div>
+        <div class="guide-arrow" aria-hidden="true">→</div>
+      </div>
+    </a>
+  `).join("");
+}
+
+document.addEventListener("DOMContentLoaded", renderGuides);
