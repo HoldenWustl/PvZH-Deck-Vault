@@ -263,9 +263,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return ctx;
         }
 
+        const now = Date.now();
+        // Set your half-life here (in days). 
+        // 365 means a deck from 1 year ago is worth half as much "Power" as a deck uploaded today.
+        const HALF_LIFE_DAYS = 365; 
+
         for (const deckKey in fullDatabase) {
             const dbDeck = fullDatabase[deckKey];
             if (!dbDeck || !Array.isArray(dbDeck.cards)) continue;
+
+            // --- Time Decay Calculation ---
+            let timeWeight = 1;
+            if (dbDeck.upload_date) {
+                const deckDate = new Date(dbDeck.upload_date).getTime();
+                if (!isNaN(deckDate)) {
+                    // Calculate days elapsed (Math.max caps it at 0 to avoid future-date timezone bugs)
+                    const daysAgo = Math.max(0, (now - deckDate) / (1000 * 60 * 60 * 24));
+                    timeWeight = Math.pow(0.5, daysAgo / HALF_LIFE_DAYS);
+                }
+            }
 
             const seedCounts = new Map(); // spaced name -> count (used for overlap)
             let dbTotalCards = 0;
@@ -276,14 +292,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const parts = (cardString || "").split(" ");
                 if (parts.length < 2) continue;
 
-                const count = parseInt(parts[0].replace('x', '')) || 0; // live: curve uses || 0
-                const copiesPower = parseInt(parts[0].replace('x', '')) || 1; // live: power uses || 1
+                const count = parseInt(parts[0].replace('x', '')) || 0; 
+                const copiesPower = parseInt(parts[0].replace('x', '')) || 1; 
                 const rawName = parts.slice(1).join(" ");
                 const cleanName = rawName.replace(/_/g, ' ');
 
                 seedCounts.set(cleanName, (seedCounts.get(cleanName) || 0) + count);
                 dbTotalCards += count;
-                ctx.cardPopularity[cleanName] = (ctx.cardPopularity[cleanName] || 0) + copiesPower;
+                
+                // Multiply the raw copies by the timeWeight so old decks have less impact on the meta
+                ctx.cardPopularity[cleanName] = (ctx.cardPopularity[cleanName] || 0) + (copiesPower * timeWeight);
 
                 // Mirror the live builder's cost lookup EXACTLY, including the
                 // "NaN cost falls to 6+" quirk. Do NOT normalize NaN to 1 here.
