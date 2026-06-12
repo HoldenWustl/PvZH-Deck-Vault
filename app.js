@@ -895,12 +895,16 @@ window.getTop10DecksForHero2025 = function(targetHero, customCtx) {
                 }
                 // -----------------------------------
 
-                let cardsHtml = '<ul class="card-list">';
-                deckInfo.cards.forEach(card => {
-                    const cleanCardName = card.replace(/_/g, ' ');
-                    cardsHtml += `<li>${cleanCardName}</li>`;
-                });
-                cardsHtml += '</ul>';
+                const isMobileView = window.matchMedia('(max-width: 600px)').matches;
+let cardsHtml = `
+    <details class="deck-cards-details"${isMobileView ? '' : ' open'}>
+        <summary class="deck-cards-summary">View Card List</summary>
+        <ul class="card-list">`;
+deckInfo.cards.forEach(card => {
+    const cleanCardName = card.replace(/_/g, ' ');
+    cardsHtml += `<li>${cleanCardName}</li>`;
+});
+cardsHtml += '</ul></details>';
 
                 const dateStr = deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
                     ? deckInfo.upload_date

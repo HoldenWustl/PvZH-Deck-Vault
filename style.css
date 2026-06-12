@@ -2760,3 +2760,158 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
         font-size: 0.8rem !important;
     }
 }
+/* ============================================================
+   MOBILE BREATHING ROOM — append after the v2 header block
+============================================================ */
+
+/* ---------- Collapsible card list ---------- */
+
+/* Desktop: details is rendered open and the summary is hidden,
+   so nothing changes visually on laptop. */
+.deck-cards-details > .deck-cards-summary {
+    display: none;
+}
+
+.deck-cards-details > summary {
+    list-style: none;
+}
+
+.deck-cards-details > summary::-webkit-details-marker {
+    display: none;
+}
+
+@media (max-width: 600px) {
+
+    /* Mobile: summary becomes a tap target */
+    .deck-cards-details > .deck-cards-summary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 12px;
+        margin-top: 10px;
+        margin-bottom: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #c9d1d9;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .deck-cards-details > .deck-cards-summary::after {
+        content: "▾";
+        font-size: 0.7em;
+        opacity: 0.6;
+    }
+
+    .deck-cards-details[open] > .deck-cards-summary::after {
+        content: "▴";
+    }
+
+    .deck-cards-details[open] > .deck-cards-summary {
+        border-color: rgba(76, 175, 80, 0.4);
+        color: #7ee787;
+    }
+
+    /* ---------- Compress the header ---------- */
+
+    header .header-content h1 {
+        font-size: 1.25rem;
+        margin: 10px 0 4px;
+    }
+
+    /* Deck count line: smaller, single quiet line */
+    header .header-content > p {
+        font-size: 0.78rem;
+        margin: 2px 0;
+        opacity: 0.85;
+    }
+
+    /* Date adds nothing on a phone — drop it */
+    header .header-content .last-updated {
+        display: none;
+    }
+
+    /* Featured link: shrink to a small pill */
+    .featured-decks-link {
+        display: inline-block;
+        font-size: 0.78rem;
+        padding: 5px 12px;
+        margin: 6px 0 0;
+    }
+
+    /* Tighten hero spacing (overrides the v2 mobile values) */
+    #searchWrapper.hero-search {
+        margin-top: 14px !important;
+        gap: 10px !important;
+    }
+
+    .hero-search-field #searchInput {
+        padding: 11px 14px 11px 42px !important;
+        font-size: 0.95rem !important;
+        border-radius: 11px !important;
+    }
+
+    .hero-search-icon {
+        left: 15px;
+        width: 17px;
+        height: 17px;
+    }
+
+    /* Slightly smaller chips so all 7 fit one row */
+    .hero-search #gradeFilter.grade-filter {
+        gap: 6px !important;
+    }
+
+    .hero-search .grade-chip {
+        padding: 5px 11px;
+        font-size: 0.78rem;
+    }
+
+    #controls .tools-row {
+        margin-top: 12px !important;
+    }
+
+    /* ---------- Lighter deck cards ---------- */
+
+    #deckGrid.deck-grid {
+        gap: 12px;
+        padding: 12px 10px;
+    }
+
+    .deck-card .deck-card-inner {
+        padding: 13px 14px;
+    }
+
+    .deck-card .deck-title {
+        font-size: 1rem;
+        line-height: 1.25;
+    }
+
+    .deck-card .deck-date {
+        font-size: 0.7rem;
+    }
+
+    .deck-card .deck-badges {
+        gap: 5px;
+    }
+
+    /* Card list itself: tighter rows, two columns to halve the height
+       when expanded */
+    .deck-card .card-list {
+        column-count: 2;
+        column-gap: 14px;
+        font-size: 0.78rem;
+        line-height: 1.55;
+        margin: 10px 0 0;
+        padding-left: 16px;
+    }
+
+    .deck-card .card-list li {
+        break-inside: avoid;
+    }
+}
