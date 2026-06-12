@@ -3027,13 +3027,14 @@ cardsHtml += '</ul></details>';
 
 // Grade cutoffs — the gauge (zones, letters, marker mapping) is built
 // entirely from this constant, so editing it here is all you need to do.
+// `label` is the plain-language meaning shown instead of a raw /100 score.
 const GRADE_CUTOFFS = [
-    { letter: 'S', min: 97.5 },
-    { letter: 'A', min: 87.5 },
-    { letter: 'B', min: 75 },
-    { letter: 'C', min: 65 },
-    { letter: 'D', min: 50 },
-    { letter: 'F', min: 0 },
+    { letter: 'S', min: 97.5, label: 'Excellent' },
+    { letter: 'A', min: 87.5, label: 'Good' },
+    { letter: 'B', min: 75,   label: 'Average' },
+    { letter: 'C', min: 65,   label: 'Bad' },
+    { letter: 'D', min: 50,   label: 'Weak' },
+    { letter: 'F', min: 0,    label: 'Awful' },
 ];
 
 const GRADE_COLORS = {
@@ -3046,6 +3047,7 @@ const GRADE_BANDS = [...GRADE_CUTOFFS]
     .sort((a, b) => a.min - b.min)
     .map((g, i, arr) => ({
         letter: g.letter,
+        label: g.label,
         min: g.min,
         max: i < arr.length - 1 ? arr[i + 1].min : 100,
     }));
@@ -3102,26 +3104,25 @@ function daveThinking(text) {
         </span>`);
 }
 
-// Smoothly counts the score number up/down to the new value
-let _pmScoreRaf = null;
-function tweenScoreNumber(target) {
-    const el = document.getElementById('pmScoreNum');
+// Smoothly counts the "pts to next grade" number toward its new value
+let _pmTweenRaf = null;
+function tweenNumber(el, target, suffix = '') {
     if (!el) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        el.innerText = Math.round(target);
+        el.innerText = Math.round(target * 10) / 10 + suffix;
         return;
     }
-    cancelAnimationFrame(_pmScoreRaf);
+    cancelAnimationFrame(_pmTweenRaf);
     const start = parseFloat(el.innerText) || 0;
     const t0 = performance.now();
     const dur = 700;
     const step = (now) => {
         const p = Math.min((now - t0) / dur, 1);
         const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
-        el.innerText = Math.round(start + (target - start) * eased);
-        if (p < 1) _pmScoreRaf = requestAnimationFrame(step);
+        el.innerText = Math.round((start + (target - start) * eased) * 10) / 10 + suffix;
+        if (p < 1) _pmTweenRaf = requestAnimationFrame(step);
     };
-    _pmScoreRaf = requestAnimationFrame(step);
+    _pmTweenRaf = requestAnimationFrame(step);
 }
 
 // ------------------------------------------------------------
@@ -3154,12 +3155,33 @@ function updateDeckStats() {
     const marker = document.getElementById('pmMarker');
     if (marker) marker.style.left = `${scoreToGaugePercent(score)}%`;
 
-    tweenScoreNumber(score);
-
     // Light up the active grade zone + letter
     const activeBand = GRADE_BANDS.find(b => score >= b.min && score < b.max)
         || GRADE_BANDS[GRADE_BANDS.length - 1];
     const activeLetter = activeBand.letter;
+
+    // Plain-language verdict ("Average") instead of a misleading /100 number,
+    // plus a "pts to next grade" countdown for live feedback
+    const qualityEl = document.getElementById('pmQualityWord');
+    const nextEl = document.getElementById('pmNextGrade');
+    if (qualityEl) {
+        qualityEl.innerText = activeBand.label;
+        qualityEl.style.color = stats.gradeColor;
+    }
+    if (nextEl) {
+        const bandIdx = GRADE_BANDS.indexOf(activeBand);
+        const nextBand = GRADE_BANDS[bandIdx + 1];
+        if (nextBand) {
+            const ptsToNext = Math.max(nextBand.min - score, 0);
+            nextEl.style.display = '';
+            // tween the number, keep the static text outside the tween target
+            nextEl.innerHTML = `<span id="pmNextPts">${nextEl.querySelector('#pmNextPts')?.innerText || 0}</span> pts to ${nextBand.letter}`;
+            tweenNumber(document.getElementById('pmNextPts'), Math.round(ptsToNext * 10) / 10);
+        } else {
+            nextEl.style.display = '';
+            nextEl.innerText = 'Top grade!';
+        }
+    }
     document.querySelectorAll('.pm-zone').forEach(z =>
         z.classList.toggle('active', z.dataset.g === activeLetter));
     document.querySelectorAll('.pm-letter').forEach(l =>

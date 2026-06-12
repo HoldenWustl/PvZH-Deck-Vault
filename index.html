@@ -475,6 +475,14 @@
                 </div>
             </div>
 
+<!-- ============================================================
+     REPLACE the contents of <div class="ai-pane"> with this.
+     The deck-pane (left side) stays exactly as it was.
+     IDs deckStatsHud / verdictGrade / verdictArchetype /
+     verdictSubtitle / manaCurveChart / verdictCallouts are kept
+     so nothing else in your code breaks.
+     ============================================================ -->
+
 <div class="ai-pane">
 
     <!-- Crazy Dave header (now with idle bob animation via CSS) -->
@@ -482,7 +490,6 @@
         <img src="crazydave.webp" alt="Crazy Dave">
         <div>
             <h3>Crazy Dave</h3>
-            
         </div>
     </div>
 
@@ -496,7 +503,10 @@
                 <div class="pm-archetype" id="verdictArchetype">—</div>
                 <div class="pm-subtitle" id="verdictSubtitle">add cards to begin</div>
             </div>
-            <span class="pm-score-num"><span id="pmScoreNum">0</span><small>/100</small></span>
+            <div class="pm-quality">
+                <span class="pm-quality-word" id="pmQualityWord">—</span>
+                <span class="pm-next-grade" id="pmNextGrade"></span>
+            </div>
         </div>
 
         <!-- 0–100 gauge. Zones + letters are built in JS from GRADE_CUTOFFS,
