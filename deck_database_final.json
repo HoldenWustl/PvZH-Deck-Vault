@@ -1,4 +1,24 @@
 { 
+    "deck_-125": {
+        "name": "100% Guardian",
+        "cards": [
+            "x4 Forget-Me-Nuts",
+            "x4 Galacta-Cactus",
+            "x4 Garlic",
+            "x3 Potato_Mine",
+            "x3 Grave_Buster",
+            "x4 Pear_Cub",
+            "x3 Shamrocket",
+            "x4 Steel_Magnolia",
+            "x4 Starch_Lord",
+            "x4 Gravitree",
+            "x3 Wall-Nut_Bowling"
+        ],
+        "youtube_title": "The Ultimate Guardian-Only Deck Played With Every Guardian Hero",
+        "youtube_url": "https://www.youtube.com/watch?v=BS7Xjt9DCW4",
+        "upload_date": "Jun 11, 2026",
+        "credit": "FryEmUp"
+    }, 
     "deck_-124": {
         "name": "Secret Swimmer Blob",
         "cards": [
