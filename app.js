@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rawRatio = metaCopies / ctx.maxMetaCopies;
                 totalPowerPoints += Math.pow(rawRatio, curveFactor) * 100 * seed.count;
             });
-            powerScore = Math.min(100, Math.round((totalPowerPoints * 3) / totalCards));
+            powerScore = Math.min(100, Math.round((totalPowerPoints * 2.75) / totalCards));
         }
 
         // --- Curve health (full archetype envelope, like the live builder) ---
@@ -2801,7 +2801,7 @@ cardsHtml += '</ul></details>';
         if (totalCards <= 8) {
             grade = "—";
             gradeColor = "rgba(255,255,255,0.3)";
-        } else if (overallPercent >= 97.5) {
+        } else if (overallPercent >= 95) {
             grade = "S";
             gradeColor = "#00E5FF";
         } else if (overallPercent >= 87.5) {
@@ -3047,7 +3047,7 @@ cardsHtml += '</ul></details>';
 // entirely from this constant, so editing it here is all you need to do.
 // `label` is the plain-language meaning shown instead of a raw /100 score.
 const GRADE_CUTOFFS = [
-    { letter: 'S', min: 97.5, label: 'Excellent' },
+    { letter: 'S', min: 95, label: 'Excellent' },
     { letter: 'A', min: 87.5, label: 'Good' },
     { letter: 'B', min: 75,   label: 'Average' },
     { letter: 'C', min: 65,   label: 'Bad' },
