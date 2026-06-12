@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statsView = document.getElementById('statsView');
     const guidesView = document.getElementById('guidesView');
     const tiersView = document.getElementById('tiersView');
+    const moreMenu = document.querySelector('.more-menu');
     const searchWrapper = document.getElementById('searchWrapper');
     const statsBtn = document.getElementById('statsBtn');
     const guidesBtn = document.getElementById('guidesBtn');
@@ -147,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const hash = window.location.hash;
 
         // 1. Hide absolutely everything first
+        if (moreMenu) moreMenu.classList.add('hidden');
         gradeFilter.classList.add('hidden');
         deckView.classList.add('hidden');
         statsView.classList.add('hidden');
@@ -209,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             crafterBtn.classList.remove('hidden');
             gamesBtn.classList.remove('hidden');
             gradeFilter.classList.remove('hidden');
+            if (moreMenu) moreMenu.classList.remove('hidden');
 
             // REMOVED: synergyBtn.classList.remove('hidden');
         }
@@ -5315,3 +5318,51 @@ function renderGuides() {
 }
 
 document.addEventListener("DOMContentLoaded", renderGuides);
+
+// ============================================================
+// "More" dropdown behavior — paste at the BOTTOM of app.js
+// (or anywhere after the DOM is loaded)
+//
+// Your existing click handlers for #statsBtn, #guidesBtn, and
+// #gamesBtn keep working untouched — this only opens/closes
+// the menu around them.
+// ============================================================
+
+(function () {
+    const moreBtn = document.getElementById('moreBtn');
+    const dropdown = document.getElementById('moreDropdown');
+    if (!moreBtn || !dropdown) return;
+
+    function openMenu() {
+        dropdown.hidden = false;
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu() {
+        dropdown.hidden = true;
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    moreBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        dropdown.hidden ? openMenu() : closeMenu();
+    });
+
+    // Picking any item (Stats / Guides / Mini Game) closes the menu.
+    // The item's own existing handler still fires normally.
+    dropdown.addEventListener('click', function () {
+        closeMenu();
+    });
+
+    // Click anywhere else closes it
+    document.addEventListener('click', function (e) {
+        if (!dropdown.hidden && !dropdown.contains(e.target) && e.target !== moreBtn) {
+            closeMenu();
+        }
+    });
+
+    // Escape closes it
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeMenu();
+    });
+})();
