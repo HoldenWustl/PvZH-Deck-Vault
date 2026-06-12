@@ -2806,183 +2806,7 @@ cardsHtml += '</ul></details>';
         return { grade, gradeColor };
     }
     // --- LIVE DECK ANALYTICS ENGINE ---
-    function updateDeckStats() {
-        const hud = document.getElementById('deckStatsHud');
-        const totalCards = getTotalCards(); // Assuming this helper exists
-
-        if (!hud || totalCards === 0) {
-            if (hud) hud.style.display = 'none';
-            return;
-        }
-
-        hud.style.display = 'block';
-
-        // 1. Format the current seeds into the string array getDeckVerdictFromCards expects
-        const deckCards = currentSeeds.map(s => `${s.count}x ${s.name}`);
-
-        // 2. Delegate all heavy lifting to the verdict function
-        const stats = getDeckVerdictFromCards(deckCards);
-
-        // ==========================================
-        // UI 1: Mana Curve Chart (SVG)
-        // ==========================================
-        const chart = document.getElementById('manaCurveChart');
-        const counts = [stats.curve[1], stats.curve[2], stats.curve[3], stats.curve[4], stats.curve[5], stats.curve["6+"]];
-        const maxCurveVal = Math.max(...counts, 1);
-
-        const width = chart.clientWidth > 0 ? chart.clientWidth : 300;
-        const height = 40;
-        const xStep = width / (counts.length - 1);
-
-        let pathD = `M 0,${height} `;
-        const points = [];
-
-        counts.forEach((count, i) => {
-            const x = i * xStep;
-            const y = height - ((count / maxCurveVal) * (height - 4)) - 2;
-            points.push({ x, y });
-            pathD += `L ${x},${y} `;
-        });
-
-        pathD += `L ${width},${height} Z`;
-
-        chart.innerHTML = `
-        <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible; display: block;">
-            <defs>
-                <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#4CAF50" stop-opacity="0.5"/>
-                    <stop offset="100%" stop-color="#4CAF50" stop-opacity="0.0"/>
-                </linearGradient>
-            </defs>
-            <path d="${pathD}" fill="url(#curveGradient)" stroke="#4CAF50" stroke-width="2" stroke-linejoin="round" />
-            ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#1e1e24" stroke="#4CAF50" stroke-width="1.5" />`).join('')}
-        </svg>
-    `;
-
-        // ==========================================
-        // UI 2: Deck Speed & Cost Sliders
-        // ==========================================
-        let speedLabel = "Midrange";
-        let speedPercent = 50;
-
-        if (stats.avgCost <= 2.2) {
-            speedLabel = "Aggro/Rush";
-            speedPercent = (stats.avgCost / 2.2) * 33;
-        } else if (stats.avgCost > 2.2 && stats.avgCost <= 3.5) {
-            speedLabel = "Midrange";
-            speedPercent = 33 + (((stats.avgCost - 2.2) / 1.3) * 33);
-        } else {
-            speedLabel = "Control/Late";
-            speedPercent = 66 + (Math.min((stats.avgCost - 3.5) / 2.5, 1) * 34);
-        }
-
-        document.getElementById('deckSpeedLabel').innerText = speedLabel;
-        document.getElementById('speedPointer').style.left = `calc(${speedPercent}% - 2px)`;
-
-        let costColor = "#4CAF50";
-        let costPercent = 0;
-
-        if (stats.avgSparks <= 250) {
-            costColor = "#4CAF50";
-            costPercent = (stats.avgSparks / 250) * 25;
-        } else if (stats.avgSparks <= 600) {
-            costColor = "#ffb300";
-            costPercent = 25 + ((stats.avgSparks - 250) / 350) * 25;
-        } else if (stats.avgSparks <= 1400) {
-            costColor = "orange";
-            costPercent = 50 + ((stats.avgSparks - 600) / 800) * 25;
-        } else {
-            costColor = "#e91e63";
-            costPercent = 75 + (Math.min((stats.avgSparks - 1400) / 2600, 1) * 25);
-        }
-
-        const costLabelEl = document.getElementById('deckCostLabel');
-        costLabelEl.innerText = stats.costLabel;
-        costLabelEl.style.color = costColor;
-        document.getElementById('costPointer').style.left = `calc(${costPercent}% - 2px)`;
-
-        // ==========================================
-        // UI 3: Progress Bars (Helper Function)
-        // ==========================================
-        const updateBar = (idPrefix, score, isCurve = false) => {
-            let color = "#ff4b4b"; // Red
-            if (score >= 85) color = "#00E5FF"; // Cyan
-            else if (score >= 70) color = "#4CAF50"; // Green
-            else if (score >= 50) color = "#ffb300"; // Yellow
-
-            const labelEl = document.getElementById(`${idPrefix}Label`) || document.getElementById(`${idPrefix}Percent`);
-            const fillEl = document.getElementById(`${idPrefix}Fill`);
-
-            // Handle the "Unique" edge case for curve health
-            if (isCurve && stats.curveHealthText === "Unique") {
-                labelEl.innerText = "Unique";
-                labelEl.style.color = "#888";
-                fillEl.style.width = "0%";
-                fillEl.style.backgroundColor = "transparent";
-                return;
-            }
-
-            if (labelEl) {
-                labelEl.innerText = isCurve ? stats.curveHealthText : `${score}%`;
-                labelEl.style.color = color;
-            }
-            if (fillEl) {
-                fillEl.style.width = `${score}%`;
-                fillEl.style.backgroundColor = color;
-            }
-        };
-
-        updateBar('synergy', stats.synergyScore);
-        updateBar('consistency', stats.consistencyScore);
-        updateBar('power', stats.powerScore);
-        updateBar('curveHealth', stats.curveNumeric, true);
-
-        // ==========================================
-        // UI 4: Verdict Grade & Callouts
-        // ==========================================
-        const gradeEl = document.getElementById('verdictGrade');
-        gradeEl.innerText = stats.grade;
-        gradeEl.style.color = stats.gradeColor;
-
-        const archetype = speedLabel.split('/')[0];
-        document.getElementById('verdictArchetype').innerText = archetype;
-        document.getElementById('verdictSubtitle').innerText = `${totalCards} cards · avg cost ${stats.avgCost.toFixed(1)} · ${stats.costLabel.toLowerCase()}`;
-
-        const callouts = [];
-        if (totalCards >= 6) {
-            if (stats.synergyScore >= 88) callouts.push({ dir: 'up', text: 'Elite synergy', val: stats.synergyScore + '%', pri: 5 });
-            else if (stats.synergyScore >= 75) callouts.push({ dir: 'up', text: 'Strong synergy', val: stats.synergyScore + '%', pri: 3 });
-            else if (stats.synergyScore < 65) callouts.push({ dir: 'down', text: 'Weak synergy', val: stats.synergyScore + '%', pri: 5 });
-            else if (stats.synergyScore < 50) callouts.push({ dir: 'down', text: 'Low synergy', val: stats.synergyScore + '%', pri: 3 });
-
-            if (stats.consistencyScore >= 85) callouts.push({ dir: 'up', text: 'Highly consistent', val: stats.consistencyScore + '%', pri: 4 });
-            else if (stats.consistencyScore < 40) callouts.push({ dir: 'down', text: 'Inconsistent', val: stats.consistencyScore + '%', pri: 5 });
-            else if (stats.consistencyScore < 65) callouts.push({ dir: 'down', text: 'Low consistency', val: stats.consistencyScore + '%', pri: 3 });
-
-            if (stats.powerScore >= 85) callouts.push({ dir: 'up', text: 'Meta powerhouse', val: stats.powerScore + '%', pri: 4 });
-            else if (stats.powerScore < 50) callouts.push({ dir: 'down', text: 'Off-meta', val: stats.powerScore + '%', pri: 2 });
-
-            if (stats.curveHealthText === "Excellent") callouts.push({ dir: 'up', text: 'Excellent curve', val: '', pri: 4 });
-            else if (stats.curveHealthText === "Awkward") callouts.push({ dir: 'down', text: 'Awkward curve', val: '', pri: 5 });
-
-            if (stats.costLabel === "P2W") callouts.push({ dir: 'down', text: 'P2W cost', val: '', pri: 2 });
-            else if (stats.costLabel === "Budget" && stats.powerScore >= 60) callouts.push({ dir: 'up', text: 'Budget powerhouse', val: '', pri: 3 });
-        }
-
-        callouts.sort((a, b) => b.pri - a.pri);
-        const top = callouts.slice(0, 3);
-        const calloutHost = document.getElementById('verdictCallouts');
-
-        calloutHost.innerHTML = top.length === 0
-            ? (totalCards >= 6 ? '<div style="font-size:0.7em; color:rgba(255,255,255,0.3); padding:2px 0;">No notable highs or lows.</div>' : '')
-            : top.map(c => `
-            <div style="display:flex; align-items:center; gap:8px; font-size:0.72em;">
-                <span style="width:12px; color:${c.dir === 'up' ? '#4CAF50' : '#ffb300'}; font-weight:600; text-align:center;">${c.dir === 'up' ? '↑' : '↓'}</span>
-                <span style="color:rgba(255,255,255,0.85);">${c.text}</span>
-                ${c.val ? `<span style="color:rgba(255,255,255,0.35); margin-left:auto;">${c.val}</span>` : ''}
-            </div>
-        `).join('');
-    }
+    
     document.getElementById('shareDeckBtn').addEventListener('click', function () {
         const cardDictionary = Object.keys(cardDatabase).sort();
 
@@ -3101,360 +2925,7 @@ cardsHtml += '</ul></details>';
             }
         }, 100);
     });
-    // --- 3. CONVERSATIONAL AI CO-PILOT ---
-    function triggerAICoPilot() {
-        window.activeSwapTarget = null;
-        const chatFeed = document.getElementById('aiChatFeed');
-        if (!chatFeed) return;
-
-        if (currentSeeds.length === 0) {
-            // Get an array of all card names from the database
-            const cardNames = Object.keys(cardDatabase);
-
-            // Pick a random name from that array
-            const randomCard = cardNames[Math.floor(Math.random() * cardNames.length)].replace(/_/g, ' ');
-
-            chatFeed.innerHTML = `
-        <div class="ai-message system">
-            Heey I'm Craaaazy Dave! I'm the best at creating amazing PvZ Heroes decks! 
-            Enter a card to get started. Maybe <strong>${randomCard}</strong>?
-        </div>
-    `;
-            return;
-        }
-
-        if (getTotalCards() >= 40) {
-            const closestDeck = getClosestDeckMatch();
-            let baseHtml = "";
-
-            if (!closestDeck) {
-                baseHtml = `<div class="ai-message system">Your deck is complete! I could not find a close match in the deck database.</div>`;
-            } else {
-                // Check if the youtube_url exists and is not an empty string
-                const deckName = (closestDeck.name || "").trim();
-                const uploadDate = closestDeck.upload_date || "Unknown date";
-
-                if (closestDeck.youtube_url) {
-                    baseHtml = `
-        <div class="ai-message system">
-            Your deck is complete! Your deck is closest to 
-            <a href="${closestDeck.youtube_url}" target="_blank" rel="noopener noreferrer" style="font-weight: bold; color: var(--accent, #4CAF50);">
-                ${deckName}
-            </a>
-            (from ${uploadDate}).
-            <div style="margin-top: 6px; font-size: 0.9em; opacity: 0.85;">
-                Video: ${closestDeck.youtube_title || "YouTube deck video"}
-            </div>
-        </div>
-    `;
-                } else {
-                    baseHtml = `
-        <div class="ai-message system">
-            Your deck is complete! Your deck is closest to 
-            <span style="font-weight: bold; color: var(--accent, #4CAF50);">
-                ${deckName}
-            </span>
-            (from ${uploadDate}).
-        </div>
-    `;
-                }
-            }
-
-            // --- FIXED: Add Loading State Before Evaluating Swaps ---
-
-            // 1. Inject a loading spinner immediately so the UI doesn't feel frozen
-            chatFeed.innerHTML = baseHtml + `
-            <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; color: rgba(255,255,255,0.7);">
-                <style>
-                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                    .ai-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,179,0,0.3); border-top: 2px solid #ffb300; border-radius: 50%; animation: spin 1s linear infinite; }
-                </style>
-                <div class="ai-spinner"></div>
-                <span>Thinking...</span>
-            </div>
-        `;
-
-            // 2. Use setTimeout to yield the main thread for 50ms so the browser can paint the spinner
-            setTimeout(() => {
-                initSynergyMatrix();
-
-                const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
-
-                const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
-                const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
-                const baselineScore = baselineVerdict.score;
-
-                let bestSwapIdea = null;
-                let maxImprovement = 0;
-
-                currentSeeds.forEach(seed => {
-                    const recommendations = getTopThreeRecommendations(seed.name);
-
-                    recommendations.forEach(rec => {
-                        const simulatedStrings = currentSeeds.map(s => {
-                            if (s.name === seed.name) return `${s.count}x ${rec.name}`;
-                            return `${s.count}x ${s.name}`;
-                        });
-
-                        const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
-                        const simScore = simVerdict.score;
-                        const improvement = simScore - baselineScore;
-
-                        if (improvement > maxImprovement) {
-                            maxImprovement = improvement;
-                            bestSwapIdea = {
-                                removeCard: seed.name,
-                                addCard: rec.name,
-                                oldScore: baselineScore,
-                                newScore: simScore
-                            };
-                        }
-                    });
-                });
-
-                let swapHtml = "";
-
-                if (bestSwapIdea) {
-                    const weakName = bestSwapIdea.removeCard.replace(/_/g, ' ');
-                    const topName = bestSwapIdea.addCard.replace(/_/g, ' ');
-                    const boostText = `+${Math.round(maxImprovement)}% Overall Rating`;
-
-                    swapHtml = `
-                    <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
-                        Swapping out <strong>${weakName}</strong> for <strong>${topName}</strong> will improve your deck's curve and synergy!
-                    </div>
-                    
-                    <div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: center; width: 100%; margin-top: 10px;">
-                        <div class="ai-visual-rec" style="flex: 0 1 240px; display: flex; flex-direction: column; align-items: center; padding: 10px; position: relative;">
-                            <span style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: rgba(255,179,0,0.15); color: #ffb300; font-size: 0.6em; font-weight: 600; padding: 3px 9px; border-radius: 10px; z-index: 2; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid rgba(255,179,0,0.3);">
-                                Top Swap Idea (${boostText})
-                            </span>
-                            
-                            <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; margin: 15px 0 10px 0; gap: 8px;">
-                                <img src="card_images/${bestSwapIdea.removeCard}.png" alt="${weakName}" title="${weakName}" onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.removeCard}.webp';" style="flex: 1; max-width: 40%; max-height: 80px; object-fit: contain; filter: grayscale(60%) drop-shadow(0 2px 4px rgba(0,0,0,0.3)); opacity: 0.7;">
-                                
-                                <span style="font-size: 1.4em; color: #ffb300; font-weight: bold;">➔</span>
-                                
-                                <img src="card_images/${bestSwapIdea.addCard}.png" alt="${topName}" title="${topName}" onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.addCard}.webp';" style="flex: 1; max-width: 45%; max-height: 90px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
-                            </div>
-                            
-                            <button class="add-rec-btn generate-btn" data-remove="${bestSwapIdea.removeCard}" data-add="${bestSwapIdea.addCard}" style="width: 100%; padding: 6px 0; font-size: 0.9em; font-weight: bold; margin: 0; margin-top: auto; border-radius: 6px; white-space: nowrap;">
-                                Swap
-                            </button>
-                        </div>
-                    </div>
-                `;
-                } else {
-                    swapHtml = `
-                    <div class="ai-message system" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
-                        Great job on such a well-optimized and balanced deck!
-                    </div>
-                `;
-                }
-
-                // Overwrite the loading spinner with the final result
-                chatFeed.innerHTML = baseHtml + swapHtml;
-
-                const swapBtn = chatFeed.querySelector('.add-rec-btn[data-remove]');
-                if (swapBtn) {
-                    swapBtn.addEventListener('click', (e) => {
-                        const removeName = e.target.getAttribute('data-remove');
-                        const addName = e.target.getAttribute('data-add');
-                        applyFullSwap(removeName, addName);
-                    });
-                }
-            }, 50); // 50ms delay gives the browser time to paint the spinner
-
-            return; // Return immediately so the outer function finishes, letting setTimeout run on its own
-        }
-
-        // --- The rest of your function below for when the deck is NOT complete ---
-        initSynergyMatrix();
-        chatFeed.innerHTML = `<div class="ai-message system"><em>Analyzing synergies...</em></div>`;
-
-        setTimeout(() => {
-            const recommendations = getTopThreeRecommendations();
-
-            if (recommendations.length === 0) {
-                chatFeed.innerHTML = `<div class="ai-message system">I can't find any more valid cards for this combination! Try removing a card.</div>`;
-                return;
-            }
-
-            const spaceLeft = 40 - getTotalCards();
-            const classArray = Array.from(activeClasses).sort();
-            const heroName = heroMap[classArray.join(',')] || `a ${classArray.join(' / ')} Hero`;
-
-            // Map recommendations with calculated optimal copy counts
-            const recData = recommendations.map(rec => {
-                const displayName = rec.name.replace(/_/g, ' ');
-                const data = cardDatabase[rec.name];
-                let targetCopies = 3;
-
-                if (cardAverageCopies && cardAverageCopies[rec.name] && cardAverageCopies[rec.name].appearances > 0) {
-                    targetCopies = Math.round(cardAverageCopies[rec.name].total / cardAverageCopies[rec.name].appearances);
-                }
-                // Ensure bounds
-                targetCopies = Math.min(targetCopies, spaceLeft, 4);
-                if (targetCopies < 1) targetCopies = 1;
-
-                return { name: rec.name, displayName, data, targetCopies };
-            });
-
-            // 1. Calculate Average Play Frequency to generate smart adjectives
-            let avgFreq = 1;
-            if (Object.keys(cardFrequencies).length > 0) {
-                const sumFreq = Object.values(cardFrequencies).reduce((a, b) => a + b, 0);
-                avgFreq = sumFreq / Object.keys(cardFrequencies).length;
-            }
-
-            let aiDialogue = "";
-
-            // 2. Build the Contextual Greeting based on last action
-            let comboTriggered = false;
-
-            if (lastAddedCard) {
-                // Check if the last card added completes any combo in our dictionary
-                const triggeredCombo = comboDictionary.find(combo =>
-                    combo.cards.includes(lastAddedCard) && // The card we just added must be part of the combo
-                    combo.cards.every(c => currentSeeds.some(s => s.name === c)) // ALL cards in the combo must now be in the deck
-                );
-
-                if (triggeredCombo) {
-                    let formattedMessage = triggeredCombo.message
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-                    aiDialogue = formattedMessage + "<br><br>";
-                    comboTriggered = true;
-                }
-
-                if (!comboTriggered) {
-                    const lastNameClean = lastAddedCard.replace(/_/g, ' ');
-                    const lastCardData = cardDatabase[lastAddedCard];
-                    const lastClass = lastCardData ? lastCardData.Class : "Unknown";
-
-                    const myFreq = cardFrequencies[lastAddedCard] || 0;
-
-                    // Quick helper to pick a random phrase from an array
-                    const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-                    let popAdj = "";
-
-                    // Tier 1: Absolute Meta-Staple (> 3x average)
-                    if (myFreq > avgFreq * 3.0) {
-                        popAdj = pickRandom([
-                            "an absolute powerhouse",
-                            "a ridiculously popular",
-                            "an everywhere-all-at-once",
-                            "a top-tier, essential"
-                        ]);
-                    }
-                    // Tier 2: Highly Popular (> 1.8x average)
-                    else if (myFreq > avgFreq * 1.8) {
-                        popAdj = pickRandom([
-                            "a super reliable",
-                            "a heavy-hitting, competitive",
-                            "a widely-used",
-                            "a trusty, go-to"
-                        ]);
-                    }
-                    // Tier 3: The Middle Ground (0.8x to 1.8x average)
-                    else if (myFreq > avgFreq * 0.8) {
-                        popAdj = pickRandom([
-                            "a solid, standard",
-                            "a completely reasonable",
-                            "a fair, middle-of-the-road",
-                            "an okay, everyday"
-                        ]);
-                    }
-                    // Tier 4: Niche / Questionable (< 0.8x average) - Hinting it's weak
-                    else if (myFreq > avgFreq * 0.3) {
-                        popAdj = pickRandom([
-                            "a pretty clunky, situational",
-                            "a definitely off-meta (and maybe a bit weak)",
-                            "a rarely played",
-                            "a somewhat questionable"
-                        ]);
-                    }
-                    // Tier 5: Bottom of the Barrel (< 0.3x average) - Calling it out
-                    else {
-                        popAdj = pickRandom([
-                            "a bottom-of-the-barrel",
-                            "a straight-up desperate",
-                            "a very, uh... *brave*",
-                            "a highly unpopular (probably for a good reason)"
-                        ]);
-                    }
-
-                    if (currentSeeds.length === 1 && currentSeeds[0].count === getTotalCards()) {
-                        aiDialogue = `<strong>${lastNameClean}</strong> is ${popAdj} ${lastClass} card! <br><br>`;
-                    } else if (activeClasses.size === 2 && !heroAnnounced) {
-                        aiDialogue = `This is now officially a <strong>${heroName}</strong> deck! <strong>${lastNameClean}</strong> adds some great synergy. <br><br>`;
-                        heroAnnounced = true;
-                    } else {
-                        aiDialogue = `Adding <strong>${lastNameClean}</strong> gives us a great direction! <br><br>`;
-                    }
-                }
-            } else {
-                if (activeClasses.size === 2) {
-                    aiDialogue = `This is a <strong>${heroName}</strong> deck! You have some great options from here.<br><br>`;
-                } else {
-                    aiDialogue = `You have some great options for this <strong>${currentFaction}</strong> deck! <br><br>`;
-                }
-            }
-
-            // 3. Build the suggestion sentence smoothly
-            if (recData.length >= 3) {
-                aiDialogue += `<strong>${recData[0].displayName}</strong> would fit really well here! My 2nd choice would be <strong>${recData[1].displayName}</strong>, and my 3rd choice is <strong>${recData[2].displayName}</strong>.`;
-            } else if (recData.length > 0) {
-                aiDialogue += `<strong>${recData[0].displayName}</strong> is my top recommendation to add next!`;
-            }
-
-            // 4. Render HTML without markdown asterisks
-            let htmlString = `<div class="ai-message system" style="margin-bottom: 10px;">${aiDialogue}</div>`;
-
-            htmlString += `<div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: space-between; width: 100%; margin-bottom: 10px; box-sizing: border-box;">`;
-
-            recData.forEach((rec, index) => {
-                const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
-                const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
-
-                // Derive an RGB tuple from the hex so we can build a transparent bg
-                const badgeRgb = index === 0 ? '255,179,0' : '76,175,80';
-
-                htmlString += `
-    <div class="ai-visual-rec" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 10px 5px; position: relative; height: 100%;">
-        
-        <span style="position: absolute; top: -7px; left: 50%; transform: translateX(-50%); background: rgba(${badgeRgb},0.15); color: ${badgeColor}; font-size: 0.6em; font-weight: 600; padding: 3px 9px; border-radius: 10px; z-index: 2; white-space: nowrap; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid rgba(${badgeRgb},0.3);">
-            ${badgeText}
-        </span>
-                    
-                    <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; margin: 12px 0 8px 0;">
-                        <img src="card_images/${rec.name}.png" alt="${rec.displayName}" title="${rec.displayName}" onerror="this.onerror=null; this.src='card_images/${rec.name}.webp';" style="max-width: 100%; max-height: 100px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
-                    </div>
-                    
-                    <button class="add-rec-btn generate-btn" data-name="${rec.name}" data-class="${rec.data.Class}" data-amount="${rec.targetCopies}" style="width: 100%; padding: 6px 0; font-size: 0.8em; font-weight: bold; margin: 0; margin-top: auto; border-radius: 6px; white-space: nowrap;">
-                        Add x${rec.targetCopies}
-                    </button>
-                    
-                </div>
-            `;
-            });
-
-            htmlString += `</div>`; // Close the flex container
-
-            chatFeed.innerHTML = htmlString;
-
-            // Attach listeners to the new AI buttons using the recommended amount
-            chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const amount = parseInt(e.target.getAttribute('data-amount')) || 1;
-                    addSeed(e.target.getAttribute('data-name'), e.target.getAttribute('data-class'), currentFaction, amount);
-                });
-            });
-
-        }, 50);
-    }
+    
 
     function getTopThreeRecommendations(baseCardName = null) {
         let candidatePool = Object.keys(cardDatabase);
@@ -3542,109 +3013,632 @@ cardsHtml += '</ul></details>';
 
         return scoredCandidates.slice(0, 3);
     }
-    function showSwapSuggestions(baseCardName) {
-        const chatFeed = document.getElementById('aiChatFeed');
-        if (!chatFeed) return;
+    // ============================================================
+// PvZ HEROES DECK BUILDER — VISUAL UPGRADE (JS)
+// Replaces: updateDeckStats(), triggerAICoPilot(), showSwapSuggestions()
+// All scoring / recommendation / simulation logic is untouched —
+// only the rendering changed. Requires deck-builder-visuals.css
+// and the new ai-pane HTML.
+// ============================================================
 
-        // --- NEW: QoL Toggle Logic ---
-        if (window.activeSwapTarget === baseCardName) {
-            window.activeSwapTarget = null;
-            triggerAICoPilot();
-            return;
-        }
-        window.activeSwapTarget = baseCardName;
-        // -----------------------------
+// ------------------------------------------------------------
+// Shared helpers (new — rendering only)
+// ------------------------------------------------------------
 
-        const baseSeed = currentSeeds.find(c => c.name === baseCardName);
-        if (!baseSeed) return;
+// Grade cutoffs — the gauge (zones, letters, marker mapping) is built
+// entirely from this constant, so editing it here is all you need to do.
+const GRADE_CUTOFFS = [
+    { letter: 'S', min: 97.5 },
+    { letter: 'A', min: 87.5 },
+    { letter: 'B', min: 75 },
+    { letter: 'C', min: 65 },
+    { letter: 'D', min: 50 },
+    { letter: 'F', min: 0 },
+];
 
-        const displayName = baseCardName.replace(/_/g, ' ');
-        initSynergyMatrix();
+const GRADE_COLORS = {
+    F: 'var(--grade-f)', D: 'var(--grade-d)', C: 'var(--grade-c)',
+    B: 'var(--grade-b)', A: 'var(--grade-a)', S: 'var(--grade-s)',
+};
 
-        // Added the same smooth loading spinner here!
-        chatFeed.innerHTML = `
-        <div class="ai-message system" style="display: flex; align-items: center; gap: 8px;">
-            <style>
-                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                .ai-spinner-small { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-            </style>
-            <div class="ai-spinner-small"></div>
-            <em>Finding the best replacements for ${displayName}...</em>
-        </div>
-    `;
+// Ascending bands with explicit [min, max) ranges, derived once
+const GRADE_BANDS = [...GRADE_CUTOFFS]
+    .sort((a, b) => a.min - b.min)
+    .map((g, i, arr) => ({
+        letter: g.letter,
+        min: g.min,
+        max: i < arr.length - 1 ? arr[i + 1].min : 100,
+    }));
 
-        setTimeout(() => {
-            const replacements = getTopThreeRecommendations(baseCardName);
+// Maps a raw 0–100 score to a visual % on the gauge.
+// Each grade occupies an equal-width zone; the score is interpolated
+// within its own band. So mid-B (81 of 75–87.5) sits mid-way through
+// the B segment — F no longer hogs half the bar, S isn't a sliver.
+function scoreToGaugePercent(score) {
+    const s = Math.max(0, Math.min(100, score));
+    const bandWidth = 100 / GRADE_BANDS.length;
+    const i = GRADE_BANDS.findIndex(b => s >= b.min && s < b.max);
+    const idx = i === -1 ? GRADE_BANDS.length - 1 : i;   // score === 100
+    const band = GRADE_BANDS[idx];
+    const frac = band.max > band.min ? (s - band.min) / (band.max - band.min) : 1;
+    return idx * bandWidth + frac * bandWidth;
+}
 
-            if (replacements.length === 0) {
-                chatFeed.innerHTML = `<div class="ai-message system">I could not find any good replacements for <strong>${displayName}</strong>.</div>`;
-                return;
+// Builds the gauge zones + letters from GRADE_CUTOFFS (runs once, lazily)
+let _gaugeBuilt = false;
+function buildPowerGauge() {
+    const zonesHost = document.getElementById('pmZones');
+    const lettersHost = document.getElementById('pmLetters');
+    if (!zonesHost || !lettersHost || _gaugeBuilt) return;
+
+    const bandWidth = 100 / GRADE_BANDS.length;
+
+    zonesHost.innerHTML = GRADE_BANDS.map(b =>
+        `<div class="pm-zone" data-g="${b.letter}" title="${b.letter} · ${b.min}–${b.max}"></div>`
+    ).join('');
+
+    lettersHost.innerHTML = GRADE_BANDS.map((b, i) =>
+        `<span class="pm-letter" data-g="${b.letter}" style="left: ${(i + 0.5) * bandWidth}%; --g: ${GRADE_COLORS[b.letter] || '#fff'};">${b.letter}</span>`
+    ).join('');
+
+    _gaugeBuilt = true;
+}
+
+// Wraps a message in Dave's speech bubble (mini avatar + tail + pop animation)
+function daveSay(innerHtml) {
+    return `
+    <div class="dave-msg">
+        <img src="crazydave.webp" alt="" class="dave-msg-avatar">
+        <div class="speech-bubble">${innerHtml}</div>
+    </div>`;
+}
+
+// Dave "thinking" bubble with bouncing dots
+function daveThinking(text) {
+    return daveSay(`
+        <span style="display:inline-flex; align-items:center; gap:8px;">
+            <span class="typing-dots"><span></span><span></span><span></span></span>
+            <em style="opacity:0.8;">${text}</em>
+        </span>`);
+}
+
+// Smoothly counts the score number up/down to the new value
+let _pmScoreRaf = null;
+function tweenScoreNumber(target) {
+    const el = document.getElementById('pmScoreNum');
+    if (!el) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        el.innerText = Math.round(target);
+        return;
+    }
+    cancelAnimationFrame(_pmScoreRaf);
+    const start = parseFloat(el.innerText) || 0;
+    const t0 = performance.now();
+    const dur = 700;
+    const step = (now) => {
+        const p = Math.min((now - t0) / dur, 1);
+        const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+        el.innerText = Math.round(start + (target - start) * eased);
+        if (p < 1) _pmScoreRaf = requestAnimationFrame(step);
+    };
+    _pmScoreRaf = requestAnimationFrame(step);
+}
+
+// ------------------------------------------------------------
+// LIVE DECK ANALYTICS — Power Meter edition
+// ------------------------------------------------------------
+function updateDeckStats() {
+    const hud = document.getElementById('deckStatsHud');
+    const totalCards = getTotalCards();
+
+    if (!hud || totalCards === 0) {
+        if (hud) hud.style.display = 'none';
+        return;
+    }
+
+    hud.style.display = 'block';
+
+    // 1. Format the current seeds into the string array getDeckVerdictFromCards expects
+    const deckCards = currentSeeds.map(s => `${s.count}x ${s.name}`);
+
+    // 2. Delegate all heavy lifting to the verdict function (unchanged)
+    const stats = getDeckVerdictFromCards(deckCards);
+
+    // ==========================================
+    // UI 1: Score gauge — marker mapped piecewise through grade zones
+    // ==========================================
+    buildPowerGauge();
+
+    const score = Math.max(0, Math.min(100, stats.score || 0));
+
+    const marker = document.getElementById('pmMarker');
+    if (marker) marker.style.left = `${scoreToGaugePercent(score)}%`;
+
+    tweenScoreNumber(score);
+
+    // Light up the active grade zone + letter
+    const activeBand = GRADE_BANDS.find(b => score >= b.min && score < b.max)
+        || GRADE_BANDS[GRADE_BANDS.length - 1];
+    const activeLetter = activeBand.letter;
+    document.querySelectorAll('.pm-zone').forEach(z =>
+        z.classList.toggle('active', z.dataset.g === activeLetter));
+    document.querySelectorAll('.pm-letter').forEach(l =>
+        l.classList.toggle('active', l.dataset.g === activeLetter));
+
+    // Big grade letter (uses the verdict's own grade + color)
+    const gradeEl = document.getElementById('verdictGrade');
+    gradeEl.innerText = stats.grade;
+    gradeEl.style.color = stats.gradeColor;
+
+    // ==========================================
+    // UI 2: Mana Curve Chart (SVG — unchanged renderer)
+    // ==========================================
+    const chart = document.getElementById('manaCurveChart');
+    const counts = [stats.curve[1], stats.curve[2], stats.curve[3], stats.curve[4], stats.curve[5], stats.curve["6+"]];
+    const maxCurveVal = Math.max(...counts, 1);
+
+    const width = chart.clientWidth > 0 ? chart.clientWidth : 300;
+    const height = 40;
+    const xStep = width / (counts.length - 1);
+
+    let pathD = `M 0,${height} `;
+    const points = [];
+
+    counts.forEach((count, i) => {
+        const x = i * xStep;
+        const y = height - ((count / maxCurveVal) * (height - 4)) - 2;
+        points.push({ x, y });
+        pathD += `L ${x},${y} `;
+    });
+
+    pathD += `L ${width},${height} Z`;
+
+    chart.innerHTML = `
+    <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible; display: block;">
+        <defs>
+            <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4CAF50" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#4CAF50" stop-opacity="0.0"/>
+            </linearGradient>
+        </defs>
+        <path d="${pathD}" fill="url(#curveGradient)" stroke="#4CAF50" stroke-width="2" stroke-linejoin="round" />
+        ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#1e1e24" stroke="#4CAF50" stroke-width="1.5" />`).join('')}
+    </svg>
+`;
+
+    // ==========================================
+    // UI 3: Speed / cost computations (unchanged math — feeds subtitle)
+    // ==========================================
+    let speedLabel = "Midrange";
+
+    if (stats.avgCost <= 2.2) {
+        speedLabel = "Aggro/Rush";
+    } else if (stats.avgCost > 2.2 && stats.avgCost <= 3.5) {
+        speedLabel = "Midrange";
+    } else {
+        speedLabel = "Control/Late";
+    }
+
+    const archetype = speedLabel.split('/')[0];
+    document.getElementById('verdictArchetype').innerText = archetype;
+    document.getElementById('verdictSubtitle').innerText =
+        `${totalCards} cards · avg cost ${stats.avgCost.toFixed(1)} · ${stats.costLabel.toLowerCase()}`;
+
+    // ==========================================
+    // UI 4: Callouts (same logic, rendered as pill chips)
+    // ==========================================
+    const callouts = [];
+    if (totalCards >= 6) {
+        if (stats.synergyScore >= 88) callouts.push({ dir: 'up', text: 'Elite synergy', val: stats.synergyScore + '%', pri: 5 });
+        else if (stats.synergyScore >= 75) callouts.push({ dir: 'up', text: 'Strong synergy', val: stats.synergyScore + '%', pri: 3 });
+        else if (stats.synergyScore < 65) callouts.push({ dir: 'down', text: 'Weak synergy', val: stats.synergyScore + '%', pri: 5 });
+        else if (stats.synergyScore < 50) callouts.push({ dir: 'down', text: 'Low synergy', val: stats.synergyScore + '%', pri: 3 });
+
+        if (stats.consistencyScore >= 85) callouts.push({ dir: 'up', text: 'Highly consistent', val: stats.consistencyScore + '%', pri: 4 });
+        else if (stats.consistencyScore < 40) callouts.push({ dir: 'down', text: 'Inconsistent', val: stats.consistencyScore + '%', pri: 5 });
+        else if (stats.consistencyScore < 65) callouts.push({ dir: 'down', text: 'Low consistency', val: stats.consistencyScore + '%', pri: 3 });
+
+        if (stats.powerScore >= 85) callouts.push({ dir: 'up', text: 'Meta powerhouse', val: stats.powerScore + '%', pri: 4 });
+        else if (stats.powerScore < 50) callouts.push({ dir: 'down', text: 'Off-meta', val: stats.powerScore + '%', pri: 2 });
+
+        if (stats.curveHealthText === "Excellent") callouts.push({ dir: 'up', text: 'Excellent curve', val: '', pri: 4 });
+        else if (stats.curveHealthText === "Awkward") callouts.push({ dir: 'down', text: 'Awkward curve', val: '', pri: 5 });
+
+        if (stats.costLabel === "P2W") callouts.push({ dir: 'down', text: 'P2W cost', val: '', pri: 2 });
+        else if (stats.costLabel === "Budget" && stats.powerScore >= 60) callouts.push({ dir: 'up', text: 'Budget powerhouse', val: '', pri: 3 });
+    }
+
+    callouts.sort((a, b) => b.pri - a.pri);
+    const top = callouts.slice(0, 3);
+    const calloutHost = document.getElementById('verdictCallouts');
+
+    calloutHost.innerHTML = top.map((c, i) => `
+        <span class="pm-chip ${c.dir}" style="animation-delay:${i * 70}ms;">
+            ${c.dir === 'up' ? '↑' : '↓'} ${c.text}
+            ${c.val ? `<span class="pm-chip-val">${c.val}</span>` : ''}
+        </span>
+    `).join('');
+}
+
+// ------------------------------------------------------------
+// CONVERSATIONAL AI CO-PILOT — speech bubble edition
+// ------------------------------------------------------------
+function triggerAICoPilot() {
+    window.activeSwapTarget = null;
+    const chatFeed = document.getElementById('aiChatFeed');
+    if (!chatFeed) return;
+
+    if (currentSeeds.length === 0) {
+        const cardNames = Object.keys(cardDatabase);
+        const randomCard = cardNames[Math.floor(Math.random() * cardNames.length)].replace(/_/g, ' ');
+
+        chatFeed.innerHTML = daveSay(`
+            Heey I'm Craaaazy Dave! I'm the best at creating amazing PvZ Heroes decks!
+            Enter a card to get started. Maybe <strong>${randomCard}</strong>?
+        `);
+        return;
+    }
+
+    if (getTotalCards() >= 40) {
+        const closestDeck = getClosestDeckMatch();
+        let baseHtml = "";
+
+        if (!closestDeck) {
+            baseHtml = daveSay(`Your deck is complete! I could not find a close match in the deck database.`);
+        } else {
+            const deckName = (closestDeck.name || "").trim();
+            const uploadDate = closestDeck.upload_date || "Unknown date";
+
+            if (closestDeck.youtube_url) {
+                baseHtml = daveSay(`
+                    Your deck is complete! Your deck is closest to
+                    <a href="${closestDeck.youtube_url}" target="_blank" rel="noopener noreferrer">${deckName}</a>
+                    (from ${uploadDate}).
+                    <span class="bubble-sub">Video: ${closestDeck.youtube_title || "YouTube deck video"}</span>
+                `);
+            } else {
+                baseHtml = daveSay(`
+                    Your deck is complete! Your deck is closest to
+                    <strong style="color: var(--accent, #4CAF50);">${deckName}</strong>
+                    (from ${uploadDate}).
+                `);
             }
+        }
 
-            // --- FIXED: Calculate the true baseline score of the current deck ---
+        // Show thinking bubble immediately so the UI doesn't feel frozen
+        chatFeed.innerHTML = baseHtml + daveThinking("Hmm, let me study this deck...");
+
+        // Yield the main thread so the browser paints the thinking bubble
+        setTimeout(() => {
+            initSynergyMatrix();
+
             const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
+
             const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
             const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
             const baselineScore = baselineVerdict.score;
 
-            let html = `<div class="ai-message system">Here are the top alternatives for <strong>${displayName}</strong>:</div>`;
-            html += `<div class="ai-recommendations-grid" style="display: flex; gap: 8px; justify-content: space-between; width: 100%; margin-bottom: 10px; box-sizing: border-box;">`;
+            let bestSwapIdea = null;
+            let maxImprovement = 0;
 
-            replacements.forEach((rec, index) => {
-                const cardName = rec.name.replace(/_/g, ' ');
-                const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
-                const badgeColor = index === 0 ? "#ffb300" : "var(--accent, #4CAF50)";
+            currentSeeds.forEach(seed => {
+                const recommendations = getTopThreeRecommendations(seed.name);
 
-                // --- FIXED: Compare true percentage scores ---
-                const scoreDiff = Math.round(rec.score - baselineScore);
+                recommendations.forEach(rec => {
+                    const simulatedStrings = currentSeeds.map(s => {
+                        if (s.name === seed.name) return `${s.count}x ${rec.name}`;
+                        return `${s.count}x ${s.name}`;
+                    });
 
-                let comparisonText = "Equal";
-                let comparisonColor = "#9e9e9e"; // Gray for exact ties
+                    const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
+                    const simScore = simVerdict.score;
+                    const improvement = simScore - baselineScore;
 
-                if (scoreDiff > 0) {
-                    comparisonText = `Better (+${scoreDiff}%)`;
-                    comparisonColor = "#4CAF50"; // Green
-                } else if (scoreDiff < 0) {
-                    comparisonText = `Worse (${scoreDiff}%)`;
-                    comparisonColor = "#f44336"; // Red
-                }
-
-                html += `
-                <div class="ai-visual-rec" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 5px; position: relative; height: 100%;">
-                    
-                    <span style="position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: ${badgeColor}; color: #fff; font-size: 0.65em; font-weight: bold; padding: 4px 10px; border-radius: 12px; z-index: 2; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.4);">
-                        ${badgeText}
-                    </span>
-                    
-                    <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; margin: 12px 0 8px 0;">
-                        <img src="card_images/${rec.name}.png" alt="${cardName}" title="${cardName}" onerror="this.onerror=null; this.src='card_images/${rec.name}.webp';" style="max-width: 100%; max-height: 100px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
-                    </div>
-                    
-                    <button class="add-rec-btn generate-btn" data-remove="${baseCardName}" data-add="${rec.name}" style="width: 100%; padding: 6px 0; font-size: 0.8em; font-weight: bold; margin: 0; margin-top: auto; border-radius: 6px; white-space: nowrap;">
-                        Swap
-                    </button>
-
-                    <div style="text-align: center; font-size: 0.85em; font-weight: bold; color: ${comparisonColor}; margin-top: 6px; letter-spacing: 0.5px; white-space: nowrap;">
-                        ${comparisonText}
-                    </div>
-                    
-                </div>
-            `;
+                    if (improvement > maxImprovement) {
+                        maxImprovement = improvement;
+                        bestSwapIdea = {
+                            removeCard: seed.name,
+                            addCard: rec.name,
+                            oldScore: baselineScore,
+                            newScore: simScore
+                        };
+                    }
+                });
             });
 
-            html += `</div>`;
-            chatFeed.innerHTML = html;
+            let swapHtml = "";
 
-            chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+            if (bestSwapIdea) {
+                const weakName = bestSwapIdea.removeCard.replace(/_/g, ' ');
+                const topName = bestSwapIdea.addCard.replace(/_/g, ' ');
+                const boostText = `+${Math.round(maxImprovement)}% rating`;
+
+                swapHtml = daveSay(`
+                    I found something! Swapping out <strong>${weakName}</strong> for
+                    <strong>${topName}</strong> will improve your deck's curve and synergy!
+                `) + `
+                <div class="swap-duel">
+                    <div class="swap-duel-label">Top swap idea · ${boostText}</div>
+                    <div class="swap-duel-cards">
+                        <div class="swap-card out">
+                            <img src="card_images/${bestSwapIdea.removeCard}.png" alt="${weakName}" title="${weakName}"
+                                onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.removeCard}.webp';">
+                            <span class="swap-tag">Out</span>
+                        </div>
+                        <span class="swap-arrow">➜</span>
+                        <div class="swap-card in">
+                            <img src="card_images/${bestSwapIdea.addCard}.png" alt="${topName}" title="${topName}"
+                                onerror="this.onerror=null; this.src='card_images/${bestSwapIdea.addCard}.webp';">
+                            <span class="swap-tag">In</span>
+                        </div>
+                    </div>
+                    <button class="add-rec-btn generate-btn" data-remove="${bestSwapIdea.removeCard}" data-add="${bestSwapIdea.addCard}">
+                        Make the swap
+                    </button>
+                </div>`;
+            } else {
+                swapHtml = daveSay(`Great job on such a well-optimized and balanced deck!`);
+            }
+
+            chatFeed.innerHTML = baseHtml + swapHtml;
+
+            const swapBtn = chatFeed.querySelector('.add-rec-btn[data-remove]');
+            if (swapBtn) {
+                swapBtn.addEventListener('click', (e) => {
                     const removeName = e.target.getAttribute('data-remove');
                     const addName = e.target.getAttribute('data-add');
                     applyFullSwap(removeName, addName);
                 });
-            });
-
+            }
         }, 50);
+
+        return;
     }
+
+    // --- Deck NOT complete: greeting + 3 recommendations ---
+    initSynergyMatrix();
+    chatFeed.innerHTML = daveThinking("Analyzing synergies...");
+
+    setTimeout(() => {
+        const recommendations = getTopThreeRecommendations();
+
+        if (recommendations.length === 0) {
+            chatFeed.innerHTML = daveSay(`I can't find any more valid cards for this combination! Try removing a card.`);
+            return;
+        }
+
+        const spaceLeft = 40 - getTotalCards();
+        const classArray = Array.from(activeClasses).sort();
+        const heroName = heroMap[classArray.join(',')] || `a ${classArray.join(' / ')} Hero`;
+
+        const recData = recommendations.map(rec => {
+            const displayName = rec.name.replace(/_/g, ' ');
+            const data = cardDatabase[rec.name];
+            let targetCopies = 3;
+
+            if (cardAverageCopies && cardAverageCopies[rec.name] && cardAverageCopies[rec.name].appearances > 0) {
+                targetCopies = Math.round(cardAverageCopies[rec.name].total / cardAverageCopies[rec.name].appearances);
+            }
+            targetCopies = Math.min(targetCopies, spaceLeft, 4);
+            if (targetCopies < 1) targetCopies = 1;
+
+            return { name: rec.name, displayName, data, targetCopies };
+        });
+
+        // 1. Average play frequency → smart adjectives (unchanged)
+        let avgFreq = 1;
+        if (Object.keys(cardFrequencies).length > 0) {
+            const sumFreq = Object.values(cardFrequencies).reduce((a, b) => a + b, 0);
+            avgFreq = sumFreq / Object.keys(cardFrequencies).length;
+        }
+
+        let aiDialogue = "";
+
+        // 2. Contextual greeting based on last action (unchanged)
+        let comboTriggered = false;
+
+        if (lastAddedCard) {
+            const triggeredCombo = comboDictionary.find(combo =>
+                combo.cards.includes(lastAddedCard) &&
+                combo.cards.every(c => currentSeeds.some(s => s.name === c))
+            );
+
+            if (triggeredCombo) {
+                let formattedMessage = triggeredCombo.message
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                aiDialogue = formattedMessage + "<br><br>";
+                comboTriggered = true;
+            }
+
+            if (!comboTriggered) {
+                const lastNameClean = lastAddedCard.replace(/_/g, ' ');
+                const lastCardData = cardDatabase[lastAddedCard];
+                const lastClass = lastCardData ? lastCardData.Class : "Unknown";
+
+                const myFreq = cardFrequencies[lastAddedCard] || 0;
+                const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+                let popAdj = "";
+
+                if (myFreq > avgFreq * 3.0) {
+                    popAdj = pickRandom([
+                        "an absolute powerhouse",
+                        "a ridiculously popular",
+                        "an everywhere-all-at-once",
+                        "a top-tier, essential"
+                    ]);
+                } else if (myFreq > avgFreq * 1.8) {
+                    popAdj = pickRandom([
+                        "a super reliable",
+                        "a heavy-hitting, competitive",
+                        "a widely-used",
+                        "a trusty, go-to"
+                    ]);
+                } else if (myFreq > avgFreq * 0.8) {
+                    popAdj = pickRandom([
+                        "a solid, standard",
+                        "a completely reasonable",
+                        "a fair, middle-of-the-road",
+                        "an okay, everyday"
+                    ]);
+                } else if (myFreq > avgFreq * 0.3) {
+                    popAdj = pickRandom([
+                        "a pretty clunky, situational",
+                        "a definitely off-meta (and maybe a bit weak)",
+                        "a rarely played",
+                        "a somewhat questionable"
+                    ]);
+                } else {
+                    popAdj = pickRandom([
+                        "a bottom-of-the-barrel",
+                        "a straight-up desperate",
+                        "a very, uh... *brave*",
+                        "a highly unpopular (probably for a good reason)"
+                    ]);
+                }
+
+                if (currentSeeds.length === 1 && currentSeeds[0].count === getTotalCards()) {
+                    aiDialogue = `<strong>${lastNameClean}</strong> is ${popAdj} ${lastClass} card! <br><br>`;
+                } else if (activeClasses.size === 2 && !heroAnnounced) {
+                    aiDialogue = `This is now officially a <strong>${heroName}</strong> deck! <strong>${lastNameClean}</strong> adds some great synergy. <br><br>`;
+                    heroAnnounced = true;
+                } else {
+                    aiDialogue = `Adding <strong>${lastNameClean}</strong> gives us a great direction! <br><br>`;
+                }
+            }
+        } else {
+            if (activeClasses.size === 2) {
+                aiDialogue = `This is a <strong>${heroName}</strong> deck! You have some great options from here.<br><br>`;
+            } else {
+                aiDialogue = `You have some great options for this <strong>${currentFaction}</strong> deck! <br><br>`;
+            }
+        }
+
+        // 3. Suggestion sentence (unchanged)
+        if (recData.length >= 3) {
+            aiDialogue += `<strong>${recData[0].displayName}</strong> would fit really well here! My 2nd choice would be <strong>${recData[1].displayName}</strong>, and my 3rd choice is <strong>${recData[2].displayName}</strong>.`;
+        } else if (recData.length > 0) {
+            aiDialogue += `<strong>${recData[0].displayName}</strong> is my top recommendation to add next!`;
+        }
+
+        // 4. Render: speech bubble + staggered recommendation cards
+        let htmlString = daveSay(aiDialogue);
+
+        htmlString += `<div class="rec-row">`;
+
+        recData.forEach((rec, index) => {
+            const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+
+            htmlString += `
+            <div class="rec-card" style="--d: ${index * 70}ms;">
+                <span class="rec-badge ${index === 0 ? 'gold' : ''}">${badgeText}</span>
+                <img src="card_images/${rec.name}.png" alt="${rec.displayName}" title="${rec.displayName}"
+                    onerror="this.onerror=null; this.src='card_images/${rec.name}.webp';">
+                <button class="add-rec-btn generate-btn" data-name="${rec.name}" data-class="${rec.data.Class}" data-amount="${rec.targetCopies}">
+                    Add x${rec.targetCopies}
+                </button>
+            </div>`;
+        });
+
+        htmlString += `</div>`;
+
+        chatFeed.innerHTML = htmlString;
+
+        chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const amount = parseInt(e.target.getAttribute('data-amount')) || 1;
+                addSeed(e.target.getAttribute('data-name'), e.target.getAttribute('data-class'), currentFaction, amount);
+            });
+        });
+
+    }, 50);
+}
+
+// ------------------------------------------------------------
+// SWAP SUGGESTIONS — speech bubble edition
+// ------------------------------------------------------------
+function showSwapSuggestions(baseCardName) {
+    const chatFeed = document.getElementById('aiChatFeed');
+    if (!chatFeed) return;
+
+    // QoL toggle (unchanged)
+    if (window.activeSwapTarget === baseCardName) {
+        window.activeSwapTarget = null;
+        triggerAICoPilot();
+        return;
+    }
+    window.activeSwapTarget = baseCardName;
+
+    const baseSeed = currentSeeds.find(c => c.name === baseCardName);
+    if (!baseSeed) return;
+
+    const displayName = baseCardName.replace(/_/g, ' ');
+    initSynergyMatrix();
+
+    chatFeed.innerHTML = daveThinking(`Finding the best replacements for ${displayName}...`);
+
+    setTimeout(() => {
+        const replacements = getTopThreeRecommendations(baseCardName);
+
+        if (replacements.length === 0) {
+            chatFeed.innerHTML = daveSay(`I could not find any good replacements for <strong>${displayName}</strong>.`);
+            return;
+        }
+
+        // True baseline score of the current deck (unchanged)
+        const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
+        const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
+        const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
+        const baselineScore = baselineVerdict.score;
+
+        let html = daveSay(`Here are the top alternatives for <strong>${displayName}</strong>:`);
+        html += `<div class="rec-row">`;
+
+        replacements.forEach((rec, index) => {
+            const cardName = rec.name.replace(/_/g, ' ');
+            const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+
+            // Compare true percentage scores (unchanged)
+            const scoreDiff = Math.round(rec.score - baselineScore);
+
+            let comparisonText = "Equal";
+            let comparisonColor = "#9e9e9e";
+
+            if (scoreDiff > 0) {
+                comparisonText = `Better (+${scoreDiff}%)`;
+                comparisonColor = "#4CAF50";
+            } else if (scoreDiff < 0) {
+                comparisonText = `Worse (${scoreDiff}%)`;
+                comparisonColor = "#f44336";
+            }
+
+            html += `
+            <div class="rec-card" style="--d: ${index * 70}ms;">
+                <span class="rec-badge ${index === 0 ? 'gold' : ''}">${badgeText}</span>
+                <img src="card_images/${rec.name}.png" alt="${cardName}" title="${cardName}"
+                    onerror="this.onerror=null; this.src='card_images/${rec.name}.webp';">
+                <button class="add-rec-btn generate-btn" data-remove="${baseCardName}" data-add="${rec.name}">
+                    Swap
+                </button>
+                <div class="rec-compare" style="color: ${comparisonColor};">${comparisonText}</div>
+            </div>`;
+        });
+
+        html += `</div>`;
+        chatFeed.innerHTML = html;
+
+        chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const removeName = e.target.getAttribute('data-remove');
+                const addName = e.target.getAttribute('data-add');
+                applyFullSwap(removeName, addName);
+            });
+        });
+
+    }, 50);
+}
     function applyFullSwap(removeName, addName) {
         const removeSeed = currentSeeds.find(s => s.name === removeName);
         const addData = cardDatabase[addName];
