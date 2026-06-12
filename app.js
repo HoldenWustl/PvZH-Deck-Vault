@@ -593,7 +593,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return top10;
 };
-window.getTopDeckForEachHero2026 = function(customCtx) {
+window.getTop10DecksForHero2025 = function(targetHero, customCtx) {
+    if (!targetHero || typeof targetHero !== 'string') {
+        console.error("Error: Please provide a target hero name as the first parameter (e.g., 'Solar Flare').");
+        return [];
+    }
+
     // Fallback lookups for databases in global scope
     const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
     const cardDb = window.cardDatabase || (typeof cardDatabase !== 'undefined' ? cardDatabase : null);
@@ -633,8 +638,9 @@ window.getTopDeckForEachHero2026 = function(customCtx) {
         "Hearty,Sneaky": "Neptuna"
     };
 
-    const yearRegex = /\s+2026$/i;
-    const topDecksByHero = {};
+    const yearRegex = /\s+2025$/i;
+    const heroDecks = [];
+    const seenDecks = new Set(); // Tracks unique deck compositions
 
     for (const deckKey in db) {
         if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
@@ -642,13 +648,10 @@ window.getTopDeckForEachHero2026 = function(customCtx) {
         const deck = db[deckKey];
         if (!deck.upload_date || !deck.cards) continue;
 
-        // Filter strictly for 2026 uploads
+        // Filter strictly for 2025 uploads
         if (yearRegex.test(deck.upload_date.trim())) {
             try {
                 const activeCtx = customCtx || window.ctx || undefined;
-                
-                // Run your existing scoring function
-                const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
                 
                 // Track unique classes found within this specific deck
                 const uniqueClasses = new Set();
@@ -677,11 +680,30 @@ window.getTopDeckForEachHero2026 = function(customCtx) {
                 const classesKey = classesArray.join(',');
                 
                 const heroName = heroMap[classesKey] || "Unknown Hero";
-                const currentScore = verdict.score;
+                
+                // Check if this deck belongs to the requested hero
+                if (heroName.toLowerCase().includes(targetHero.toLowerCase())) {
+                    
+                    // Create a unique signature for the deck based on its cards
+                    // Normalizes casing, trims spaces, sorts alphabetically, and joins into a string
+                    const deckSignature = [...deck.cards]
+                        .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
+                        .sort()
+                        .join('|');
 
-                // Retain only the highest scoring deck configuration per hero
-                if (!topDecksByHero[heroName] || currentScore > topDecksByHero[heroName].score) {
-                    topDecksByHero[heroName] = {
+                    // If we have already seen this exact combination of cards, skip it to prevent duplicates
+                    if (seenDecks.has(deckSignature)) {
+                        continue;
+                    }
+
+                    // Mark this deck signature as seen
+                    seenDecks.add(deckSignature);
+
+                    // Run existing scoring function only for the target hero to save processing time
+                    const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+                    const currentScore = verdict.score;
+
+                    heroDecks.push({
                         hero: heroName,
                         id: deckKey,
                         name: deck.name,
@@ -694,7 +716,7 @@ window.getTopDeckForEachHero2026 = function(customCtx) {
                         date: deck.upload_date,
                         author: deck.credit || "Unknown",
                         cards: deck.cards // Save the raw array for detailed logging
-                    };
+                    });
                 }
             } catch (error) {
                 console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
@@ -702,20 +724,17 @@ window.getTopDeckForEachHero2026 = function(customCtx) {
         }
     }
 
-    // Flatten our map results back into an array
-    const topHeroDecks = Object.values(topDecksByHero);
+    // Sort descending by overall performance score and slice the top 10
+    heroDecks.sort((a, b) => b.score - a.score);
+    const top10Decks = heroDecks.slice(0, 10);
 
-    // Sort descending by overall performance score
-    topHeroDecks.sort((a, b) => b.score - a.score);
-
-    if (topHeroDecks.length === 0) {
-        console.log("%c No valid decks found for the year 2026.", "color: #ff9900; font-weight: bold;");
+    if (top10Decks.length === 0) {
+        console.log(`%c No valid 2025 decks found for the hero "${targetHero}".`, "color: #ff9900; font-weight: bold;");
     } else {
-        console.log(`%c--- TOP DECK FOR EACH HERO (FULL YEAR 2026) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+        console.log(`%c--- TOP ${top10Decks.length} DECKS FOR ${top10Decks[0].hero.toUpperCase()} (2025) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
         
-        // Map elements for console.table so the raw cards array doesn't clutter the table view
-        console.table(topHeroDecks.map(d => ({
-            Hero: d.hero,
+        // Map elements for console.table
+        console.table(top10Decks.map(d => ({
             "Deck Name": d.name,
             Score: d.score,
             Grade: d.grade,
@@ -728,13 +747,13 @@ window.getTopDeckForEachHero2026 = function(customCtx) {
         // Log out the full decklists with clean text separation
         console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
         
-        topHeroDecks.forEach(d => {
-            console.log(`%c[${d.hero}] ${d.name} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
+        top10Decks.forEach((d, index) => {
+            console.log(`%c#${index + 1}: ${d.name} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
             console.log(d.cards.join("\n"));
         });
     }
 
-    return topHeroDecks;
+    return top10Decks;
 };
     // --- Render Decks Function ---
     function renderDecks(data) {
@@ -5239,6 +5258,15 @@ const guidesData = [
     time: "6 min read",
     date: "June 11, 2026",
     icon: "stack"
+  },
+  {
+    title: "Best Immorticia Decks",
+    description: "Taking a look at the most powerful Immorticia decks.",
+    href: "/best-immorticia-decks",
+    badge: "Hero Guide", // Or "New" since it dropped today!
+    time: "4 min read",   // Standard length for a single-hero breakdown
+    date: "June 12, 2026",
+    icon: "hero"          // Matches your crisp shield SVG perfectly
   }
 ];
 
