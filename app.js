@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const seeds = [...seedMap.values()];
 
         // --- Totals, curve, sparks, synergy ---
-        let totalCards = 0, totalCost = 0, totalSparks = 0, totalConnection = 0;
+        let totalCards = 0, totalCost = 0, totalSparks = 0, totalConnection = 0, totalDepth = 0;
         const curve = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, "6+": 0 };
 
         seeds.forEach(seedA => {
@@ -387,16 +387,45 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (cost === 5) curve[5] += seedA.count;
             else curve["6+"] += seedA.count;
 
-            let cardBestConnection = 0;
             const freqA = cardFrequencies?.[seedA.key] || 1;
-            seeds.forEach(seedB => {
-                if (seedA.key === seedB.key) return;
-                const coOccurrences = synergyMatrix?.[seedA.key]?.[seedB.key] || 0;
-                const freqB = cardFrequencies?.[seedB.key] || 1;
-                const cs = coOccurrences / Math.sqrt(freqA * freqB);
-                if (cs > cardBestConnection) cardBestConnection = cs;
-            });
-            totalConnection += cardBestConnection * seedA.count;
+
+const partnerScores = [];
+seeds.forEach(seedB => {
+    if (seedA.key === seedB.key) return;
+
+    const coOccurrences = synergyMatrix?.[seedA.key]?.[seedB.key] || 0;
+    const freqB = cardFrequencies?.[seedB.key] || 1;
+    const cs = coOccurrences / Math.sqrt(freqA * freqB);
+
+    partnerScores.push({ key: seedB.key, cs });
+});
+
+partnerScores.sort((a, b) => b.cs - a.cs);
+
+const best = partnerScores[0]?.cs || 0;
+const second = partnerScores[1]?.cs || 0;
+
+// tiny 3-card bonus
+let triadBonus = 0;
+if (partnerScores.length >= 2) {
+    const k1 = partnerScores[0].key;
+    const k2 = partnerScores[1].key;
+
+    const f1 = cardFrequencies?.[k1] || 1;
+    const f2 = cardFrequencies?.[k2] || 1;
+    const co12 = synergyMatrix?.[k1]?.[k2] || 0;
+    const cs12 = co12 / Math.sqrt(f1 * f2);
+
+    triadBonus = 0.15 * Math.min(best, second, cs12);
+}
+
+// weighted local cluster score
+const localClusterScore = (0.7 * best) + (0.25 * second) + triadBonus;
+totalConnection += localClusterScore * seedA.count;
+
+// track how much the 2nd partner supports the 1st
+const depthRatio = best > 0 ? Math.min(1, second / best) : 0;
+totalDepth += depthRatio * seedA.count;
         });
 
         const avgCost = totalCards > 0 ? totalCost / totalCards : 0;
@@ -410,13 +439,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Synergy ---
         let synergyScore = 0;
-        if (totalCards > 0 && seeds.length > 1) {
-            const rawAvg = totalConnection / totalCards;
-            synergyScore = Math.min(Math.round(rawAvg * 100), 100);
-            if (totalCards < 6) synergyScore = Math.round(synergyScore * (totalCards / 6));
-        } else if (totalCards === 1) {
-            synergyScore = 5;
-        }
+if (totalCards > 0 && seeds.length > 1) {
+    const rawAvg = totalConnection / totalCards;
+    const depthAvg = totalDepth / totalCards;
+
+    synergyScore = Math.min(100, Math.round(rawAvg * 100));
+
+    // Only the very top end is harder now
+    // 100 requires stronger 2-level support
+    if (synergyScore >= 98) {
+        if (depthAvg < 0.55) synergyScore = 97;
+        else if (depthAvg < 0.70) synergyScore = 98;
+        else if (depthAvg < 0.85) synergyScore = 99;
+        else synergyScore = 100;
+    }
+
+    if (totalCards < 6) {
+        synergyScore = Math.round(synergyScore * (totalCards / 6));
+    }
+} else if (totalCards === 1) {
+    synergyScore = 5;
+}
 
         // --- Consistency ---
         let consistencyScore = 0;
