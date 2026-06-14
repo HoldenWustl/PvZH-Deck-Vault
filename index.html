@@ -1,947 +1,753 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PvZ Heroes Deck Builder & Database</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/chartjs-chart-wordcloud"></script>
-    <link rel="stylesheet" href="style.css">
-    <meta name="description" content="Search, build, and explore constantly updated PvZ Heroes decks and strategies.">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>Top 10 Best Decks in Plants vs. Zombies Heroes (June 2026 Meta Tier List)</title>
+  <meta name="description" content="The definitive June 2026 Plants vs. Zombies Heroes (PvZH) tier list. The 10 best ranked decks with full 40-card lists, grades, faction breakdowns, copyable deck codes, and an explained ranking methodology." />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+  <link rel="canonical" href="https://pvzhvault.com/best-decks-pvzh-june-2026/" />
+  <meta name="theme-color" content="#0e1413" />
+  <meta name="author" content="PvZH Deck Builder & Database" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="PvZH Vault — Deck Builder & Database" />
+  <meta property="og:title" content="Top 10 Best Decks in Plants vs. Zombies Heroes — June 2026 Tier List" />
+  <meta property="og:description" content="Full 40-card lists, grades, and methodology for the 10 strongest PvZH decks this month. Updated for the June 2026 meta." />
+  <meta property="og:url" content="https://pvzhvault.com/best-decks-pvzh-june-2026/" />
+  <meta property="og:image" content="https://pvzhvault.com/assets/og-image-june-2026.png" />
+  <meta property="og:image:alt" content="Top 10 Plants vs. Zombies Heroes decks, June 2026 edition" />
+  <meta property="article:published_time" content="2026-06-01T08:00:00+00:00" />
+  <meta property="article:modified_time" content="2026-06-11T08:00:00+00:00" />
+  <meta property="article:section" content="Deck Guides" />
+  <meta property="article:tag" content="PvZH" />
+  <meta property="article:tag" content="Plants vs Zombies Heroes" />
+  <meta property="article:tag" content="deck tier list" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Top 10 Best Decks in Plants vs. Zombies Heroes — June 2026" />
+  <meta name="twitter:description" content="Ranked PvZH meta decks with full card lists, grades, and copyable deck codes." />
+  <meta name="twitter:image" content="https://pvzhvault.com/assets/og-image-june-2026.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/guide-style.css" />
+
+  <!-- Structured data: Article -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Top 10 Best Decks in Plants vs. Zombies Heroes — June 2026 Tier List",
+    "description": "A data-backed tier list of the 10 best Plants vs. Zombies Heroes decks for the June 2026 meta, with full card lists, grades, and ranking methodology.",
+    "datePublished": "2026-06-01",
+    "dateModified": "2026-06-11",
+    "image": "https://pvzhvault.com/assets/og-image-june-2026.png",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://pvzhvault.com/best-decks-pvzh-june-2026/" },
+    "author": { "@type": "Organization", "name": "PvZH Deck Builder & Database", "url": "https://pvzhvault.com" },
+    "publisher": { "@type": "Organization", "name": "PvZH Deck Builder & Database", "url": "https://pvzhvault.com" }
+  }
+  </script>
+
+  <!-- Structured data: ranked list of decks -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Top 10 Plants vs. Zombies Heroes Decks — June 2026",
+    "itemListOrder": "https://schema.org/ItemListOrderDescending",
+    "numberOfItems": 10,
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1,  "name": "Coffee Crusher", "url": "https://pvzhvault.com/decks/coffee-crusher" },
+      { "@type": "ListItem", "position": 2,  "name": "Starch BOOM",    "url": "https://pvzhvault.com/decks/starch-boom" },
+      { "@type": "ListItem", "position": 3,  "name": "Log Bait",       "url": "https://pvzhvault.com/decks/log-bait" },
+      { "@type": "ListItem", "position": 4,  "name": "Tight Grimps",   "url": "https://pvzhvault.com/decks/tight-grimps" },
+      { "@type": "ListItem", "position": 5,  "name": "Heal Midrose",   "url": "https://pvzhvault.com/decks/heal-midrose" },
+      { "@type": "ListItem", "position": 6,  "name": "Dino Counter",   "url": "https://pvzhvault.com/decks/dino-counter" },
+      { "@type": "ListItem", "position": 7,  "name": "tank tings",     "url": "https://pvzhvault.com/decks/tank-tings" },
+      { "@type": "ListItem", "position": 8,  "name": "Lashroomgna",    "url": "https://pvzhvault.com/decks/lashroomgna" },
+      { "@type": "ListItem", "position": 9,  "name": "Muscle Lily",    "url": "https://pvzhvault.com/decks/muscle-lily" },
+      { "@type": "ListItem", "position": 10, "name": "Sensei",         "url": "https://pvzhvault.com/decks/sensei" }
+    ]
+  }
+  </script>
+
+  <!-- Structured data: FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the best deck in Plants vs. Zombies Heroes right now?",
+        "acceptedAnswer": { "@type": "Answer", "text": "As of June 2026, Coffee Crusher holds the #1 spot in our rankings. It pairs aggressive midrange pressure with top-tier meta values and consistently strong board control." }
+      },
+      {
+        "@type": "Question",
+        "name": "How often are these PvZH deck rankings updated?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Rankings refresh on dynamic database sweeps that track deck modifications across the live user database, so the list keeps pace with monthly meta shifts." }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do some decks with lower raw power rank higher?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The formula balances synergy coefficients and draw reliability alongside pure power values, rewarding dependable ladder performers over fragile high-roll setups." }
+      },
+      {
+        "@type": "Question",
+        "name": "Are these decks good for climbing the PvZH ranked ladder?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Consistency is one of the four ranking pillars, so every deck on this list is evaluated for dependable ladder play, not just tournament ceilings." }
+      },
+      {
+        "@type": "Question",
+        "name": "How many cards are in a Plants vs. Zombies Heroes deck?",
+        "acceptedAnswer": { "@type": "Answer", "text": "A PvZH deck contains exactly 40 cards, with a maximum of 4 copies of any single card. Every list in this guide follows that format." }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Structured data: Breadcrumbs -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home",   "item": "https://pvzhvault.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Guides", "item": "https://pvzhvault.com/#guides" },
+      { "@type": "ListItem", "position": 3, "name": "Top 10 Best Decks — June 2026", "item": "https://pvzhvault.com/best-decks-pvzh-june-2026/" }
+    ]
+  }
+  </script>
 </head>
 
-<body>
-    <!-- ============================================================
-  REPLACEMENT for everything inside <header> ... </header>
-  All existing IDs are preserved so app.js keeps working.
-============================================================ -->
-<header>
-    <div class="header-content">
-        <h1>PvZH Deck Builder & Database</h1>
-        <p>Browsing <span id="deckCount" class="highlight">...</span> <span id="randomAdjective">glorious</span> PvZ
-            Heroes decks <button id="infoBtn" class="info-btn">?</button></p>
-        <p class="last-updated">Last updated: June 11, 2026</p>
-        <a class="featured-decks-link" href="https://pvzhvault.com/best-decks-pvzh-june-2026/">
-            Top 10 Best Decks <span>(June 2026)</span>
-        </a>
+<body class="guide-page">
+  <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
 
-        <div id="controls" class="controls-container">
+  <header class="guide-hero">
+    <div class="lawn-stripes" aria-hidden="true"></div>
+    <div class="sun-glow" aria-hidden="true"></div>
 
-            <!-- HERO: search is the main event -->
-            <div id="searchWrapper" class="hero-search">
-                <div class="hero-search-field">
-                    <svg class="hero-search-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="7" />
-                        <path d="M21 21l-4.3-4.3" />
-                    </svg>
-                    <input type="text" id="searchInput" placeholder="Search decks, cards, heroes...">
-                </div>
+    <div class="guide-hero-inner">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span aria-hidden="true">/</span>
+        <a href="/#guides">Guides</a><span aria-hidden="true">/</span>
+        <span aria-current="page">Top 10 Best Decks</span>
+      </nav>
 
-                <div id="gradeFilter" class="grade-filter">
-                    <button class="grade-chip active" data-grade="">All</button>
-                    <button class="grade-chip" data-grade="S">S</button>
-                    <button class="grade-chip" data-grade="A">A</button>
-                    <button class="grade-chip" data-grade="B">B</button>
-                    <button class="grade-chip" data-grade="C">C</button>
-                    <button class="grade-chip" data-grade="D">D</button>
-                    <button class="grade-chip" data-grade="F">F</button>
-                </div>
-            </div>
+      <div class="hero-pill-row">
+        <span class="hero-pill hero-pill-accent">☀ June 2026 Edition</span>
+        <span class="hero-pill">Plants vs. Zombies Heroes Meta Guide</span>
+      </div>
 
-            <!-- TOOLS: secondary tier -->
-            <nav class="tools-row" aria-label="Tools">
+      <h1>Top 10 Best Decks in <span class="title-plants">Plants</span> vs. <span class="title-zombies">Zombies</span> Heroes</h1>
 
-                <button id="crafterBtn" class="tool-btn">
-                    <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11 8V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
-                        <path d="M14 11v-1a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
-                        <rect x="11" y="11" width="8" height="10" rx="1.5" />
-                        <path d="M16 5h6M19 2v6" />
-                    </svg>
-                    Deck Builder
-                </button>
-
-                <button id="tiersBtn" class="tool-btn">
-                    <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M5 7h14" />
-                        <path d="M5 12h10" />
-                        <path d="M5 17h6" />
-                        <path d="M5 7h1.5" />
-                        <path d="M5 12h1.5" />
-                        <path d="M5 17h1.5" />
-                    </svg>
-                    Tier List
-                </button>
-
-                <!-- EXTRAS: collapsed into one dropdown -->
-                <div class="more-menu">
-                    <button id="moreBtn" class="tool-btn" aria-haspopup="true" aria-expanded="false">
-                        More
-                        <svg class="btn-icon more-caret" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M6 9l6 6 6-6" />
-                        </svg>
-                    </button>
-
-                    <div id="moreDropdown" class="more-dropdown" hidden>
-                        <button id="statsBtn" class="more-item">
-                            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M4 19V5" />
-                                <path d="M4 19h16" />
-                                <path d="M7 15v-4M12 15V8M17 15v-6" />
-                            </svg>
-                            View Stats
-                        </button>
-
-                        <button id="guidesBtn" class="more-item">
-                            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 0-2 2V4Z" />
-                                <path d="M6 6a2 2 0 0 1 2-2h10" />
-                                <path d="M9 8h6M9 11h6M9 14h4" />
-                            </svg>
-                            Deck Guides
-                        </button>
-
-                        <button id="gamesBtn" class="more-item">
-                            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M6 8h12a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4v-2a4 4 0 0 1 4-4Z" />
-                                <path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" />
-                            </svg>
-                            Mini Game
-                        </button>
-                    </div>
-                </div>
-
-                <button id="backBtn" class="tool-btn back-btn hidden">
-                    <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                    Back to Decks
-                </button>
-
-            </nav>
-        </div>
-    </div>
-</header>
-
-    <main>
-        <div id="loading" class="loading">Loading database...</div>
-
-        <section id="deckView">
-            <div id="loadingIndicator" class="loading-container">
-                <div class="spinner"></div>
-                <p>Loading decks...</p>
-            </div>
-            <div id="deckGrid" class="deck-grid">
-
-            </div>
-        </section>
-
-       <section id="tiersView" class="hidden" style="padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box;">
-    
-    <div class="crafter-header" style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
-        <button id="prevClassBtn" style="padding: 8px 16px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">&#8592; Prev</button>
-        
-        <div style="text-align: center;">
-            <h2><span class="version-effect" id="tierClassTitle">Card Tier List</span></h2>
-            <p style="color: var(--text-secondary); margin-top: 5px;">The definitive ranking of PvZ Heroes cards.</p>
-        </div>
-        
-        <button id="nextClassBtn" style="padding: 8px 16px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">Next &#8594;</button>
-    </div>
-
-    <div class="tier-list-container">
-        </div>
-
-</section>
-<section id="guidesView" class="hidden guides-view">
-  <div class="guides-header">
-    <div>
-      <p class="section-eyebrow">Guides</p>
-      <h2 class="version-effect">PvZH Guides Collection</h2>
-      <p class="section-subtitle">
-        Fast, useful guides built around the meta, strategy, and the most searched topics.
+      <p class="hero-subtitle">
+        A data-backed tier list of the strongest PvZH decks this month — ranked across curve health, synergy matrices, and live meta popularity, with full 40-card lists you can copy in one tap.
       </p>
+
+      <p class="hero-byline">
+        By <strong>PvZH Deck Builder &amp; Database</strong> · Published <time datetime="2026-06-01">June 1, 2026</time> · Updated <time datetime="2026-06-11">June 11, 2026</time>
+      </p>
+
+      <div class="hero-stats" aria-label="Guide summary">
+        <div class="hero-stat"><strong>10</strong><span>ranked decks</span></div>
+        <div class="hero-stat"><strong>40</strong><span>cards per list</span></div>
+        <div class="hero-stat"><strong>4</strong><span>ranking pillars</span></div>
+        <div class="hero-stat"><strong>Live</strong><span>meta data</span></div>
+      </div>
     </div>
-  </div>
-
-  <div class="guides-grid" id="guidesGrid">
-    <!-- JS injects cards here -->
-  </div>
-</section>
-
-        <section id="statsView" class="hidden">
-            <div class="stats-container">
-                <div class="stats-header">
-                    <h2>Vault Analytics</h2>
-
-                    <div class="filter-group">
-                        <label for="deckLimitFilter">Timeframe:</label>
-                        <select id="deckLimitFilter">
-                            <option value="all">All-Time</option>
-
-                            <optgroup label="Latest Decks">
-                                <option value="latest_1000">1000 Decks</option>
-                                <option value="latest_500">500 Decks</option>
-                                <option value="latest_250">250 Decks</option>
-                                <option value="latest_100">100 Decks</option>
-                            </optgroup>
-
-                            <optgroup label="Oldest Decks">
-                                <option value="oldest_1000">1000 Decks</option>
-                                <option value="oldest_500">500 Decks</option>
-                                <option value="oldest_250">250 Decks</option>
-                                <option value="oldest_100">100 Decks</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="summary-cards">
-                    <div class="stat-card">
-                        <h3>Total Decks</h3>
-                        <p id="statTotalDecks">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Unique Cards Found</h3>
-                        <p id="statUniqueCards">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Avg. Distinct Cards / Deck</h3>
-                        <p id="statAvgVariety">0</p>
-                    </div>
-                </div>
-
-                <div class="charts-grid">
-                    <div class="chart-box full-width">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h3 style="margin: 0;">Most Used Cards</h3>
-                            <select id="topCardsFilter" onchange="applyTopCardsFilter(this.value)"
-                                style="background: #161b22; color: #c9d1d9; border: 1px solid #30363d; border-radius: 4px; padding: 4px 8px;">
-                                <option value="all">All Cards</option>
-                                <option value="minion">Minions</option>
-                                <option value="trick">Tricks</option>
-                                <option value="environment">Environments</option>
-                                <option value="wincon">Win Conditions (Cost 5+)</option>
-                            </select>
-                        </div>
-                        <div class="canvas-wrapper">
-                            <canvas id="topCardsChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-box">
-                        <h3>Decks Uploaded Over Time</h3>
-                        <p class="chart-subtitle">Based on YouTube upload dates.</p>
-                        <div class="canvas-wrapper">
-                            <canvas id="timelineChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-box">
-                        <h3>Fry's Favorite Buzzwords</h3>
-                        <p class="chart-subtitle">Most common words used in YouTube video titles.</p>
-                        <div class="canvas-wrapper">
-                            <canvas id="buzzwordChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-box">
-                        <h3>Most Frequently Included Cards</h3>
-                        <p class="chart-subtitle">Cards that appear in the highest number of unique decks.</p>
-                        <div class="canvas-wrapper">
-                            <canvas id="deckPresenceChart"></canvas>
-                        </div>
-                    </div>
-
-
-
-                    <div class="chart-box">
-    <div class="chart-header-flex">
-        <div class="chart-titles">
-            <h3>Ultimate Synergies</h3>
-            <p class="chart-subtitle">Cards most frequently played together in the same deck.</p>
-        </div>
-
-        <div class="synergy-toggle">
-            <input type="radio" id="synergyRaw" name="synergyType" value="raw" checked
-                onchange="toggleSynergyChart('raw')">
-            <label for="synergyRaw">Raw Count</label>
-
-            <input type="radio" id="synergyNorm" name="synergyType" value="normalized"
-                onchange="toggleSynergyChart('normalized')">
-            <label for="synergyNorm">Normalized</label>
-
-            <div class="toggle-slider"></div>
-        </div>
-    </div>
-
-    <div class="canvas-wrapper">
-        <canvas id="pairsChart"></canvas>
-    </div>
-    
-    <div style="text-align: right; margin-top: 8px;">
-    <span id="synergyEasterEgg" style="cursor: pointer; font-size: 0.75em;">
-        Generate Synergy Web
-    </span>
-</div>
-</div>
-
-
-
-                    <div class="chart-box">
-                        <h3>Overall Mana Curve</h3>
-                        <p class="chart-subtitle">Distribution of card costs across all decks.</p>
-                        <div class="canvas-wrapper">
-                            <canvas id="costCurveChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-box">
-                        <h3>Fry's Average Deck Formula</h3>
-                        <p class="chart-subtitle">How a typical 40-card deck is split by type.</p>
-                        <div class="canvas-wrapper">
-                            <canvas id="averageDeckChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-box full-width">
-                        <h3>Hot & Cold: Trending Cards</h3>
-                        <p class="chart-subtitle">
-                            Comparing usage in the last 100 decks vs. all-time average.
-                        </p>
-                        <div class="canvas-wrapper">
-                            <canvas id="trendingCardsChart"></canvas>
-                            <div id="trendingEmptyMsg"
-                                style="display: none; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--text-secondary); font-style: italic; padding: 20px;">
-                                Not enough historical data to calculate trends for this timeframe.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-box full-width">
-                        <div class="chart-header-flex">
-                            <div class="chart-titles">
-                                <h3>Card History & Meta Tracker</h3>
-                                <p class="chart-subtitle">Search up to two cards to compare their historical deck
-                                    inclusion rates over time.</p>
-                            </div>
-
-                            <div class="trend-search-container" style="display: flex; gap: 10px; align-items: center;">
-
-                                <input type="text" id="historicalSearchInput1" list="historicalOptions"
-                                    placeholder="Search card 1..." onchange="updateHistoricalChart()">
-
-                                <span style="color: #8b949e; font-size: 0.9em; font-weight: bold;">VS</span>
-
-                                <input type="text" id="historicalSearchInput2" list="historicalOptions"
-                                    placeholder="Search card 2 (optional)..." onchange="updateHistoricalChart()">
-
-                                <datalist id="historicalOptions"></datalist>
-                            </div>
-                        </div>
-
-                        <div class="canvas-wrapper">
-                            <canvas id="historicalCardChart"></canvas>
-                            <div id="historicalEmptyMsg"
-                                style="display: none; height: 100%; align-items: center; justify-content: center; text-align: center; color: #8b949e; font-style: italic; padding: 20px;">
-                                Not enough historical data or cards not found.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-box">
-                        <h3>Class Dominance</h3>
-                        <p class="chart-subtitle">Most played classes based on total copies.</p>
-                        <div class="canvas-wrapper">
-                            <canvas id="classRadarChart"></canvas>
-                        </div>
-                    </div>
-
-
-                    <div class="chart-box">
-                        <h3>Most Played Heroes</h3>
-                        <p class="chart-subtitle">Deduced from deck class combinations.</p>
-
-                        <div class="hero-tabs">
-                            <button class="hero-tab active" data-faction="plants">Plants</button>
-                            <button class="hero-tab" data-faction="zombies">Zombies</button>
-                        </div>
-
-                        <div class="canvas-wrapper">
-                            <canvas id="heroChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="chart-box extremes-box">
-                        <h3>The Deck Extremes</h3>
-                        <p class="chart-subtitle">Most extreme decks by Spark cost and Mana curve. Click to watch!</p>
-
-                        <div class="extremes-grid">
-
-                            <div class="extreme-card whale-card">
-                                <h4 class="extreme-title">Ultimate Whale Deck</h4>
-                                <a id="mostP2wLink" href="#" target="_blank" class="video-preview extreme-preview">
-                                    <img id="mostP2wImg" src="" alt="Whale Deck Thumbnail" loading="lazy">
-                                    <div id="mostP2wDeck" class="video-title-overlay">-</div>
-                                </a>
-                                <p id="mostP2wCost" class="extreme-cost">- Sparks</p>
-                            </div>
-
-                            <div class="extreme-card f2p-card">
-                                <h4 class="extreme-title">F2P Champion</h4>
-                                <a id="leastP2wLink" href="#" target="_blank" class="video-preview extreme-preview">
-                                    <img id="leastP2wImg" src="" alt="F2P Deck Thumbnail" loading="lazy">
-                                    <div id="leastP2wDeck" class="video-title-overlay">-</div>
-                                </a>
-                                <p id="leastP2wCost" class="extreme-cost">- Sparks</p>
-                            </div>
-
-                            <div class="extreme-card heavy-card">
-                                <h4 class="extreme-title">Heaviest Curve</h4>
-                                <a id="heaviestLink" href="#" target="_blank" class="video-preview extreme-preview">
-                                    <img id="heaviestImg" src="" alt="Heaviest Deck Thumbnail" loading="lazy">
-                                    <div id="heaviestDeck" class="video-title-overlay">-</div>
-                                </a>
-                                <p id="heaviestCost" class="extreme-cost">- Avg Cost</p>
-                            </div>
-
-                            <div class="extreme-card light-card">
-                                <h4 class="extreme-title">Lightest Curve</h4>
-                                <a id="lightestLink" href="#" target="_blank" class="video-preview extreme-preview">
-                                    <img id="lightestImg" src="" alt="Lightest Deck Thumbnail" loading="lazy">
-                                    <div id="lightestDeck" class="video-title-overlay">-</div>
-                                </a>
-                                <p id="lightestCost" class="extreme-cost">- Avg Cost</p>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <section id="crafterView" class="split-layout hidden">
-
-            <div class="deck-pane">
-                <div class="crafter-header">
-                    <h2><span class="version-effect">Deck Builder</span></h2>
-                    <p>Build the perfect PvZ Heroes deck.</p>
-                </div>
-
-                <div class="crafter-input-container" style="position: relative;">
-                    <input type="text" id="seedSearchInput" placeholder="Type a card name to add..." autocomplete="off">
-                    <ul id="smartSuggestions" class="suggestions-dropdown" style="display: none;"></ul>
-                </div>
-
-                <div class="crafter-seeds-container">
-                    <h3>Current Deck: <span id="cardCountTracker">0/40</span></h3>
-                </div>
-
-                <div class="crafter-controls panel-controls">
-                    <div class="toggles">
-                        <div class="toggle-group">
-                            <input type="checkbox" id="budgetToggle">
-                            <label for="budgetToggle">Budget</label>
-                        </div>
-                        <div class="toggle-group">
-                            <input type="checkbox" id="superBudgetToggle">
-                            <label for="superBudgetToggle">Super Budget</label>
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button id="clearSeedsBtn" class="clear-btn">Clear All</button>
-                        <button id="generateDeckBtn" class="generate-btn finish-btn" disabled>Finish For Me ✨</button>
-                    </div>
-                </div>
-
-                <div class="crafter-results-container">
-                    <h3 id="generatedDeckTitle" class="hidden">Final Deck</h3>
-                    <div id="generatedDeckList" class="generated-deck-grid"></div>
-                    <div id="deckActionContainer" class="hidden"
-                        style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; width: 100%;">
-                        <button id="copyDeckBtn" class="generate-btn"
-                            style="flex: 1 1 auto; min-width: 100px; white-space: nowrap; margin: 0; font-size: 0.9em;">Copy
-                            Text</button>
-                        <button id="downloadImageBtn" class="generate-btn"
-                            style="flex: 1 1 auto; min-width: 100px; white-space: nowrap; margin: 0; font-size: 0.9em;">Save
-                            Image</button>
-                        <button id="shareDeckBtn" class="generate-btn"
-                            style="flex: 1 1 auto; min-width: 100px; white-space: nowrap; margin: 0; font-size: 0.9em; background: #2196F3;">Share
-                            Link</button>
-                    </div>
-                </div>
-            </div>
-
-<!-- ============================================================
-     REPLACE the contents of <div class="ai-pane"> with this.
-     The deck-pane (left side) stays exactly as it was.
-     IDs deckStatsHud / verdictGrade / verdictArchetype /
-     verdictSubtitle / manaCurveChart / verdictCallouts are kept
-     so nothing else in your code breaks.
-     ============================================================ -->
-
-<div class="ai-pane">
-
-    <!-- Crazy Dave header (now with idle bob animation via CSS) -->
-    <div class="dave-header">
-        <img src="crazydave.webp" alt="Crazy Dave">
-        <div>
-            <h3>Crazy Dave</h3>
-        </div>
-    </div>
-
-    <!-- POWER METER — replaces the old blocky Deck Analytics HUD -->
-    <div id="deckStatsHud" class="power-meter-card" style="display: none;">
-
-        <!-- Grade letter · archetype · live score -->
-        <div class="pm-top">
-            <span class="pm-grade" id="verdictGrade">—</span>
-            <div class="pm-meta">
-                <div class="pm-archetype" id="verdictArchetype">—</div>
-                <div class="pm-subtitle" id="verdictSubtitle">add cards to begin</div>
-            </div>
-            <div class="pm-quality">
-                <span class="pm-quality-word" id="pmQualityWord">—</span>
-                <span class="pm-next-grade" id="pmNextGrade"></span>
-            </div>
-        </div>
-
-        <!-- 0–100 gauge. Zones + letters are built in JS from GRADE_CUTOFFS,
-             with equal visual width per grade and piecewise marker mapping. -->
-        <div class="pm-gauge">
-            <div class="pm-track">
-                <div class="pm-zones" id="pmZones"></div>
-                <div class="pm-marker" id="pmMarker"></div>
-            </div>
-            <div class="pm-letters" id="pmLetters"></div>
-        </div>
-
-        <!-- Mana curve sparkline (same SVG renderer as before) -->
-        <div id="manaCurveChart" class="pm-curve"></div>
-        <div class="pm-curve-labels">
-            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6+</span>
-        </div>
-
-        <!-- Notable highs / lows now render as pill chips -->
-        <div id="verdictCallouts" class="pm-callouts"></div>
-
-    </div>
-
-    <!-- Dave's chat feed (messages render as speech bubbles) -->
-    <div class="ai-chat-feed" id="aiChatFeed"></div>
-
-</div>
-
-        </section>
-
-        <section id="gamesView" class="hidden" style="max-width: 900px; margin: 0 auto; padding: 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #fff;">
-    <style>
-        .hl-arcade-container {
-            background: linear-gradient(145deg, #15151e, #0f0f15);
-            border: 3px solid #3a3f58;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,180,216,0.1);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        /* Fever Mode Active State */
-        .fever-active {
-            animation: feverPulse 1s infinite alternate;
-            border-color: #ffea00 !important;
-        }
-        @keyframes feverPulse {
-            0% { box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,234,0,0.1); }
-            100% { box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 50px rgba(255,234,0,0.5); }
-        }
-
-        .hl-stats-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            background: rgba(255,255,255,0.03);
-            padding: 15px 25px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .hl-stat-box { text-align: center; }
-        .hl-stat-val { font-size: 1.8rem; font-weight: 900; color: #00b4d8; text-shadow: 0 0 10px rgba(0,180,216,0.4); transition: color 0.3s; }
-        .hl-stat-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #8a8f9d; margin-top: 4px; }
-        
-        /* Dynamic Timer Bar */
-        .hl-timer-container {
-            width: 100%;
-            height: 12px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 6px;
-            margin-bottom: 30px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        #hlTimerBar {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, #00f5d4, #00b4d8);
-            transition: width 0.1s linear, background 0.3s ease;
-            box-shadow: 0 0 10px rgba(0,245,212,0.5);
-        }
-        .timer-warning { background: linear-gradient(90deg, #ff007f, #f44336) !important; box-shadow: 0 0 15px #ff007f !important; }
-
-        /* Matchup Arena */
-        .hl-arena {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 10px;
-        }
-        .hl-card-wrapper {
-            flex: 1;
-            background: rgba(255,255,255,0.02);
-            border: 2px solid #2d3142;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-        .hl-card-wrapper:hover {
-            transform: translateY(-5px);
-            border-color: #00b4d8;
-            box-shadow: 0 10px 25px rgba(0,180,216,0.2);
-        }
-        
-        .hl-card-img {
-            height: 180px;
-            width: auto;
-            max-width: 100%;
-            object-fit: contain;
-            margin-bottom: 15px;
-            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.5));
-        }
-        .hl-card-title { font-size: 1.1rem; font-weight: 700; color: #fff; min-height: 2.2rem; display: flex; align-items: center; justify-content: center; }
-        .hl-card-count { font-size: 1.6rem; font-weight: 800; color: #4CAF50; margin-top: 10px; }
-        .hl-vs-badge { font-size: 1.8rem; font-weight: 900; font-style: italic; color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.4); padding: 10px; transition: all 0.3s; }
-
-        /* Floating Combat Text */
-        .hl-floating-text {
-            position: absolute;
-            font-weight: 900;
-            font-size: 2.5rem;
-            pointer-events: none;
-            z-index: 100;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
-            animation: floatUp 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        /* Animation Classes */
-        .hl-correct-flash { animation: correctGlow 0.6s ease-out; }
-        .hl-wrong-flash { animation: wrongShake 0.5s ease-in-out; }
-        .hl-combo-pop { animation: comboPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .hl-slide-out { transform: translateY(40px) scale(0.9); opacity: 0; transition: all 0.3s ease-in; }
-
-        @keyframes floatUp {
-            0% { transform: translate(-50%, -10px) scale(0.5); opacity: 0; }
-            20% { transform: translate(-50%, -40px) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -90px) scale(1); opacity: 0; }
-        }
-        @keyframes correctGlow {
-            0% { border-color: #00f5d4; box-shadow: 0 0 30px rgba(0,245,212,0.6); transform: scale(1.02); }
-            100% { border-color: #2d3142; box-shadow: none; transform: scale(1); }
-        }
-        @keyframes wrongShake {
-            0%, 100% { transform: translateX(0); border-color: #ff007f; box-shadow: 0 0 30px rgba(255,0,127,0.4); }
-            20%, 60% { transform: translateX(-12px); }
-            40%, 80% { transform: translateX(12px); }
-        }
-        @keyframes comboPop {
-            0% { transform: scale(0.6); opacity: 0; }
-            50% { transform: scale(1.4); color: #ffea00; }
-            100% { transform: scale(1); }
-        }
-
-        /* UI Controls */
-        .hl-controls-footer { text-align: center; margin-top: 15px; }
-        .hl-btn {
-            background: linear-gradient(135deg, #00b4d8, #00f5d4);
-            color: #0f0f15;
-            border: none;
-            padding: 14px 40px;
-            font-size: 1.1rem;
-            font-weight: 800;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0,245,212,0.3);
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .hl-btn:hover { transform: scale(1.05); box-shadow: 0 12px 25px rgba(0,245,212,0.5); }
-        
-        .hl-btn-skip {
-            background: rgba(255,255,255,0.05);
-            color: #ffea00;
-            border: 1px solid rgba(255,234,0,0.3);
-            padding: 8px 24px;
-            font-size: 0.9rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: bold;
-        }
-        .hl-btn-skip:hover { background: rgba(255,234,0,0.1); transform: translateY(-2px); }
-        .hl-btn-skip:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-        /* Screen States Overlay */
-        .hl-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10,10,15,0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            border-radius: 18px;
-        }
-        /* Kinetic Flashes for the Timer Bar */
-.timer-gain-flash { animation: timerGain 0.4s ease-out; }
-.timer-loss-flash { animation: timerLoss 0.4s ease-out; }
-
-/* The Panic Heartbeat for low time */
-.timer-panic {
-    animation: timerHeartbeat 0.6s infinite alternate cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-}
-/* Staggered Game Over Animations */
-.hl-gameover-animate {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: hlSlideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-@keyframes hlSlideUpFade {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Specific item spacing */
-.hl-stat-line {
-    margin: 8px 0;
-    font-size: 1.25rem;
-}
-
-@keyframes timerGain {
-    0% { background: #fff; filter: brightness(2); }
-    100% { background: linear-gradient(90deg, #00f5d4, #00b4d8); }
-}
-
-@keyframes timerLoss {
-    0% { background: #fff; filter: brightness(2); }
-    50% { background: #ff007f; }
-    100% { background: linear-gradient(90deg, #ff007f, #f44336); }
-}
-
-@keyframes timerHeartbeat {
-    0% { transform: scaleY(1); filter: drop-shadow(0 0 2px #ff007f); }
-    100% { transform: scaleY(1.4); filter: drop-shadow(0 0 12px #ff007f); }
-}
-        /* =======================================
-           MOBILE RESPONSIVENESS (SMARTPHONES)
-           ======================================= */
-        @media (max-width: 768px) {
-            /* Shrink main container padding */
-            .hl-arcade-container { padding: 15px; }
-            
-            /* Squeeze top stats */
-            .hl-stats-header { padding: 10px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; gap: 15px; }
-            .hl-stat-box { flex: 1 1 40%; }
-            .hl-stat-val { font-size: 1.4rem; }
-            .hl-stat-lbl { font-size: 0.65rem; }
-            
-            .hl-timer-container { margin-bottom: 15px; }
-
-            /* Stack cards vertically */
-            .hl-arena { flex-direction: column; gap: 5px; }
-            
-            /* Make cards full width and shorter to save space */
-            .hl-card-wrapper { padding: 15px; width: 100%; box-sizing: border-box; }
-            .hl-card-img { height: 100px; margin-bottom: 10px; }
-            .hl-card-title { font-size: 1rem; min-height: 1.2rem; }
-            .hl-card-count { font-size: 1.3rem; margin-top: 5px; }
-            
-            /* Tighten up the VS text */
-            .hl-vs-badge { font-size: 1.2rem; padding: 0; margin: 0; }
-            
-            /* Scale down overlay text so it doesn't break boundaries */
-            .hl-floating-text { font-size: 1.8rem; }
-            #hlStartScreen h1, #hlGameOverScreen h1 { font-size: 2rem; }
-            #hlStartScreen p { font-size: 0.9rem; padding: 0 10px; }
-            .hl-btn { padding: 12px 30px; font-size: 1rem; max-height: 10%;}
-        }
-    </style>
-
-    <div id="hlArcadeContainer" class="hl-arcade-container">
-        <div class="hl-stats-header">
-            <div class="hl-stat-box">
-                <div id="hlScoreVal" class="hl-stat-val">0</div>
-                <div class="hl-stat-lbl">Score</div>
-            </div>
-            <div class="hl-stat-box">
-                <div id="hlComboVal" class="hl-stat-val">1.0x</div>
-                <div class="hl-stat-lbl">Combo</div>
-            </div>
-            <div class="hl-stat-box">
-                <div id="hlStreakVal" class="hl-stat-val">0</div>
-                <div class="hl-stat-lbl">Streak</div>
-            </div>
-            <div class="hl-stat-box">
-                <div id="hlBestVal" class="hl-stat-val">0</div>
-                <div class="hl-stat-lbl">High Score</div>
-            </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #8a8f9d; font-weight: bold;">Time Remaining</span>
-    <span id="hlTimerText" style="font-family: monospace; font-size: 1.2rem; font-weight: 900; color: #00f5d4; text-shadow: 0 0 10px rgba(0,245,212,0.4);">60.0s</span>
-</div>
-<div class="hl-timer-container">
-    <div id="hlTimerBar"></div>
-</div>
-
-        <div class="hl-arena">
-            <div id="hlCardLeft" class="hl-card-wrapper">
-                <img id="hlImgLeft" src="" class="hl-card-img" alt="Left Entry">
-                <div id="hlNameLeft" class="hl-card-title"></div>
-                <div id="hlCountLeft" class="hl-card-count">-- Decks</div>
-            </div>
-
-            <div id="hlVsBadge" class="hl-vs-badge">VS</div>
-
-            <div id="hlCardRight" class="hl-card-wrapper">
-                <img id="hlImgRight" src="" class="hl-card-img" alt="Right Entry">
-                <div id="hlNameRight" class="hl-card-title"></div>
-                <div id="hlCountRight" class="hl-card-count">??? Decks</div>
-            </div>
-        </div>
-        
-        <p style="text-align: center; color: #8a8f9d; font-size: 0.9rem; margin-top: 10px; margin-bottom: 10px;">
-            Which card is used in <strong>MORE</strong> decks? Click your selection fast!
+  </header>
+
+  <main class="guide-layout">
+    <aside class="guide-sidebar">
+      <div class="toc-card">
+        <p class="toc-label">On this page</p>
+        <nav class="toc-nav" id="tocNav" aria-label="Table of contents">
+          <a href="#overview">Overview</a>
+          <a href="#methodology">How rankings work</a>
+          <a href="#ranked-list">Top 10 decks</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+      </div>
+
+      <div class="toc-card jump-card">
+        <p class="toc-label">Jump to a deck</p>
+        <nav class="toc-nav deck-jump" id="deckJump" aria-label="Deck quick links"></nav>
+      </div>
+    </aside>
+
+    <article class="guide-article">
+      <section id="overview" class="content-card reveal">
+        <h2>Overview: the June 2026 PvZH meta at a glance</h2>
+        <p>
+          Welcome to the definitive competitive snapshot of <strong>Plants vs. Zombies Heroes</strong> for June 2026. This ledger breaks down the 10 highest-performing deck archetypes, calculated straight out of the active user database. Each entry covers raw synergy indexes, resource-management profiles, structural reliability — and the full 40-card list, rendered card by card.
         </p>
+        <p>
+          Zombie aggression leads the month: <a href="#deck-coffee-crusher">Coffee Crusher</a> takes the crown with relentless midrange pressure, while plant strategies answer with the value engines of <a href="#deck-starch-boom">Starch BOOM</a> and the technical mastery of <a href="#deck-log-bait">Log Bait</a>.
+        </p>
+      </section>
 
-        <div class="hl-controls-footer">
-            <button id="hlSkipBtn" class="hl-btn-skip">⚡ Skip Matchup (-2s) | <span id="hlSkipCount">3</span> Left</button>
+      <section id="methodology" class="content-card reveal">
+        <h2>How these decks are ranked</h2>
+        <p class="section-note">Every deck is scored across four pillars, then graded and ordered by composite value.</p>
+        <div class="method-grid">
+          <div class="method-box">
+            <span class="method-icon" aria-hidden="true">⚔</span>
+            <h3>Performance</h3>
+            <p>Calculated from core popularity metrics against the current highest-tier meta envelopes.</p>
+          </div>
+          <div class="method-box">
+            <span class="method-icon" aria-hidden="true">♻</span>
+            <h3>Consistency</h3>
+            <p>Analyzes draw patterns, heavily favoring optimized 3x and 4x card sets over inconsistent singletons.</p>
+          </div>
+          <div class="method-box">
+            <span class="method-icon" aria-hidden="true">🔗</span>
+            <h3>Synergy</h3>
+            <p>Determined by a continuous co-occurrence matrix evaluated across all interconnected cards.</p>
+          </div>
+          <div class="method-box">
+            <span class="method-icon" aria-hidden="true">📈</span>
+            <h3>Curve health</h3>
+            <p>Measures macro-curve values against target historical archetypes to penalize awkward spacing.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="ranked-list" class="content-card reveal">
+        <div class="section-header">
+          <div>
+            <h2>The top 10 decks, ranked</h2>
+            <p class="section-note">Live data processed and ranked by our internal algorithmic evaluation matrix.</p>
+          </div>
         </div>
 
-        <div id="hlStartScreen" class="hl-overlay">
-            <h1 style="font-size: 2.5rem; margin-bottom: 10px; color: #fff; text-align:center;">SPEED RUNNER</h1>
-            <p style="color: #8a8f9d; margin-bottom: 25px; text-align: center; max-width: 450px; line-height: 1.5;">
-                60 seconds on the clock. Correct guesses add time and juice your combo.<br>
-                <span style="color:#ff007f;">Wrong answers burn time.</span>
-            </p>
-            <button id="hlStartBtn" class="hl-btn">Start Game</button>
+        <div class="deck-toolbar" role="region" aria-label="Filter decks">
+          <div class="filter-chips" id="factionFilters">
+            <button class="chip is-active" data-faction="all" type="button">All decks</button>
+            <button class="chip chip-plants" data-faction="plants" type="button">🌱 Plants</button>
+            <button class="chip chip-zombies" data-faction="zombies" type="button">🧠 Zombies</button>
+          </div>
+          <div class="search-wrap">
+            <input id="deckSearch" type="search" placeholder="Search decks or cards… e.g. Gatling Pea" aria-label="Search decks or cards" />
+          </div>
         </div>
+        <p class="filter-empty" id="filterEmpty" hidden>No decks match that filter. Try clearing the search or switching faction.</p>
 
-        <div id="hlGameOverScreen" class="hl-overlay" style="display: none;">
-    <h1 class="hl-gameover-animate" style="font-size: 2.5rem; color: #ff007f; margin-bottom: 15px; animation-delay: 0s;">TIME OUT!</h1>
-    
-    <div id="hlFinalSummary" style="color: #fff; margin-bottom: 25px; text-align: center;"></div>
-    
-    <button id="hlRestartBtn" class="hl-btn hl-gameover-animate" style="animation-delay: 1.1s;">Run It Back</button>
-</div>
+        <ol class="deck-list" id="deckList">
+  <!-- DECK 1 -->
+  <li class="deck-card faction-zombies reveal" id="deck-coffee-crusher" data-faction="zombies" data-name="Coffee Crusher">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Rustbolt.webp" alt="Rustbolt" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#1</span>
+          <span class="faction-tag faction-tag-zombies">🧠 Zombies</span>
+          <span class="deck-label deck-label-best">Best overall</span>
+        </div>
+        <h3>Coffee Crusher</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-a">Grade: A</span>
+          <span class="stat-badge">Updated: May 22, 2026</span>
+          <span class="stat-badge">By: King Fish Commander</span>
+          <span class="stat-badge card-count" data-count></span>
+        </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["4x Mustache Waxer", "4x Rolling Stone", "3x Teleport", "3x Teleportation Zombie", "4x Duckstache", "3x Gentleman Zombie", "4x Going Viral", "3x Rocket Science", "4x Turquiose Skull Zombie", "3x Intergalactic Warlord", "3x Viking", "2x Coffee Zombie"]'></div>
+        </div>
+        <p class="deck-summary">An absolute powerhouse that leverages staggering high-end power and top-tier meta values to lock down board control. It applies aggressive midrange pressure that leaves little room for counter-play.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          <a class="deck-link" href="/decks/coffee-crusher">Read full breakdown →</a>
+        </div>
+      </div>
     </div>
-</section>
+  </li>
 
-        <section id="synergyView" class="hidden">
-            <div id="synergyCanvasContainer"
-                style="width: 100%; height: calc(100vh - 80px); background-color: #0f172a; position: relative;">
-
-                <div id="synergyLoadingOverlay"
-                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #0f172a; z-index: 10; transition: opacity 0.5s;">
-                    <div id="synergyLoadingText"
-                        style="color: #fff; font-size: 1.5rem; margin-bottom: 20px; font-weight: bold;">Analyzing 1,800+
-                        Decks...</div>
-                    <div
-                        style="width: 60%; max-width: 400px; height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
-                        <div id="synergyProgressBar"
-                            style="width: 0%; height: 100%; background: linear-gradient(90deg, #4CAF50, #81C784); transition: width 0.1s;">
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-    </main>
-
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>How was this made? 🤓</h2>
-                <span class="close-btn" id="closeModal">&times;</span>
-            </div>
-
-            <div class="modal-body">
-                <p>This database wasn't typed by hand! All deck lists were extracted automatically using computer
-                    vision, written in Python.</p>
-                <ul>
-                    <li><strong>The Cards:</strong> Scraped directly from YouTube video screenshots by isolating the
-                        card slots and reading the counts.</li>
-                    <li><strong>The Names:</strong> Grabbed by applying color-masking to the deck title
-                        banners.</li>
-                    <li><strong>The Videos:</strong> Matched directly to FryEmUp's YouTube channels using script
-                        automation to pull the links and titles.</li>
-                    <li><strong>The Images:</strong> Pulled from the PvZ Fandom Wiki infoboxes.</li>
-                    <li><strong>The Card Data:</strong> To make all the beautiful stats work, the base game data was
-                        sourced from <a href="https://github.com/dannyguy253/PvZHeroes-Database" target="_blank"
-                            style="color: #58a6ff; text-decoration: none;">this repo</a>
-                        and modified into JSON files.</li>
-                </ul>
-                <p>Everything was then compiled and cleaned up! You can download the raw data for
-                    yourself below. Please give credit if you use it for any commercial purposes.</p>
-
-                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px;">
-                    <a href="deck_database_final.json" download="pvzh_deck_database.json" class="download-btn"
-                        style="flex: 1; text-align: center; min-width: 200px;">
-                        📥 Download Decks <span class="file-size">(~1.21 MB)</span>
-                    </a>
-
-                    <a href="card_data.json" download="pvzh_card_data.json" class="download-btn"
-                        style="flex: 1; text-align: center; background-color: #238636; min-width: 200px;">
-                        📊 Download Card Data <span class="file-size">(~175 KB)</span>
-                    </a>
-                </div>
-            </div>
+  <!-- DECK 2 -->
+  <li class="deck-card faction-plants reveal" id="deck-starch-boom" data-faction="plants" data-name="Starch BOOM">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Spudow.webp" alt="Spudow" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#2</span>
+          <span class="faction-tag faction-tag-plants">🌱 Plants</span>
+          <span class="deck-label">High tier</span>
         </div>
-    </div>
-    <div id="deckVisualModal" class="deck-modal hidden">
-        <div class="deck-modal-content">
-            <span class="close-modal-btn">&times;</span>
-            <h2 id="modalDeckTitle">Deck Name</h2>
-
-            <div style="text-align: center;">
-                <button id="modalAnalyzeBtn" class="analyze-deck-btn">
-                    Analyze Deck
-                </button>
-            </div>
-
-            <div id="modalDeckGrid" class="visual-deck-grid"></div>
+        <h3>Starch BOOM</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-a">Grade: A</span>
+          <span class="stat-badge">Updated: May 05, 2026</span>
+          <span class="stat-badge">By: FryEmUp</span>
+          <span class="stat-badge card-count" data-count></span>
         </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["4x Forget-Me-Nuts", "4x Garlic", "2x Photosynthesizer", "4x Berry Blast", "4x Fireweed", "4x Imitater", "2x Shamrocket", "4x Veloci-Radish Packmate", "4x Sonic Bloom", "4x Starch Lord", "4x Gravitree"]'></div>
+        </div>
+        <p class="deck-summary">Boasting an aggressive build layout, this archetype chains card generation with high-synergy roots to continuously out-value opponents over extended matches.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          <a class="deck-link" href="/decks/starch-boom">Read full breakdown →</a>
+        </div>
+      </div>
     </div>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://unpkg.com/force-graph"></script>
-    <script src="app.js"></script>
+  </li>
+
+  <!-- DECK 3 -->
+  <li class="deck-card faction-plants reveal" id="deck-log-bait" data-faction="plants" data-name="Log Bait">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Captain_Combustible.webp" alt="Captain Combustible" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#3</span>
+          <span class="faction-tag faction-tag-plants">🌱 Plants</span>
+          <span class="deck-label">Meta staple</span>
+        </div>
+        <h3>Log Bait</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-a">Grade: A</span>
+          <span class="stat-badge">Updated: May 24, 2026</span>
+          <span class="stat-badge">By: Xera, Salt, The_Cute_Chick(TCC)</span>
+          <span class="stat-badge card-count" data-count></span>
+        </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["4x Bonk Choy", "4x Clique Peas", "2x Umbrella Leaf", "4x Berry Blast", "3x Lily of the Valley", "4x Split Pea", "4x Wild Berry", "3x Fertilizer", "3x Veloci-Radish Packmate", "1x Plant Food", "4x Fig", "4x Gatling Pea"]'></div>
+        </div>
+        <p class="deck-summary">A complex, highly technical build designed to draw out crucial zombie removal tracks early on. Once resources are depleted, it cleanly sets up unstoppable finishing patterns.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          <a class="deck-link" href="/decks/log-bait">Read full breakdown →</a>
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <!-- DECK 4 -->
+  <li class="deck-card faction-zombies reveal" id="deck-tight-grimps" data-faction="zombies" data-name="Tight Grimps">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Neptuna.webp" alt="Neptuna" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#4</span>
+          <span class="faction-tag faction-tag-zombies">🧠 Zombies</span>
+          <span class="deck-label">Top contender</span>
+        </div>
+        <h3>Tight Grimps</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-a">Grade: A</span>
+          <span class="stat-badge">Updated: May 24, 2026</span>
+          <span class="stat-badge">By: King Fish Commander</span>
+          <span class="stat-badge card-count" data-count></span>
+        </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["2x Arm Wrestler", "4x Black Hole", "4x Imposter", "3x Imp Throwing Imp", "3x Toxic Waste Imp", "3x Going Viral", "4x Line Dancing Zombie", "4x Pogo Zombie", "4x Cryo-Yeti", "4x Intergalactic Warlord", "3x Mixed-Up Gravedigger", "2x Cursed Gargolith"]'></div>
+        </div>
+        <p class="deck-summary">With an explosive grave and control engine, this deck relies on highly efficient curves to aggressively swarm lanes before defensive options can catch up.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          <a class="deck-link" href="/decks/tight-grimps">Read full breakdown →</a>
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <!-- DECK 5 -->
+  <li class="deck-card faction-plants reveal" id="deck-heal-midrose" data-faction="plants" data-name="Heal Midrose">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Rose.webp" alt="Rose" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#5</span>
+          <span class="faction-tag faction-tag-plants">🌱 Plants</span>
+          <span class="deck-label">Reliable pick</span>
+        </div>
+        <h3>Heal Midrose</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-b">Grade: B</span>
+          <span class="stat-badge">Updated: May 25, 2026</span>
+          <span class="stat-badge">By: The_Cute_Chick(TCC), Salt</span>
+          <span class="stat-badge card-count" data-count></span>
+        </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["4x Li&apos;l Buddy", "3x Primal Peashooter", "4x Sun Shroom", "1x Twin Sunflower", "4x Pepper M.D.", "4x Cross-Pollination", "3x Ketchup Mechanic", "2x Shrinking Violet", "4x Aloesaurus", "4x Brainana", "3x Cob Cannon", "3x Winter Melon", "1x Dark Matter Dragonfruit"]'></div>
+        </div>
+        <p class="deck-summary">A robust package where every card complements the next, turning late-game defensive stall loops into fatal offensive turnarounds.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          <a class="deck-link" href="/decks/heal-midrose">Read full breakdown →</a>
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <!-- DECK 6 -->
+  <li class="deck-card faction-plants reveal" id="deck-dino-counter" data-faction="plants" data-name="Dino Counter">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Citron.webp" alt="Citron" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#6</span>
+          <span class="faction-tag faction-tag-plants">🌱 Plants</span>
+          <span class="deck-label">Strong ladder deck</span>
+        </div>
+        <h3>Dino Counter</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-b">Grade: B</span>
+          <span class="stat-badge">Updated: May 26, 2026</span>
+          <span class="stat-badge">By: Lolatopia</span>
+          <span class="stat-badge card-count" data-count></span>
+        </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["4x Admiral Navy Bean", "4x Forget-Me-Nuts", "4x Lima Pleurodon", "4x Mars Flytrap", "4x Photosynthesizer", "2x Grave Mistake", "3x Tricarrotops", "2x Spring Bean", "4x Bean Counter", "4x Jelly Bean", "2x Jumping Bean", "3x Brainana"]'></div>
+        </div>
+        <p class="deck-summary">This list stacks high-threat bean and cycle elements that demand answering, successfully taking over rows if left unmanaged for even a single phase.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <!-- DECK 7 -->
+  <li class="deck-card faction-zombies reveal" id="deck-tank-tings" data-faction="zombies" data-name="tank tings">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Impfinity.webp" alt="Impfinity" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#7</span>
+          <span class="faction-tag faction-tag-zombies">🧠 Zombies</span>
+          <span class="deck-label">Solid option</span>
+        </div>
+        <h3>tank tings</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-b">Grade: B</span>
+          <span class="stat-badge">Updated: May 12, 2026</span>
+          <span class="stat-badge">By: Crimpton</span>
+          <span class="stat-badge card-count" data-count></span>
+        </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["4x Bungee Plumber", "4x Disco-Naut", "4x Quickdraw Con Man", "3x Barrel of Barrels", "4x Dr. Spacetime", "3x Frosty Mustache", "4x Quazard", "3x Gizzard Lizard", "3x Laser Base Alpha", "4x Tankylosaurus", "4x Cryo-Yeti"]'></div>
+        </div>
+        <p class="deck-summary">Extremely optimized structural architecture gives this layout a massive consistency edge. It relies on multi-target splash damage triggers to reliably sweep wide plant boards clean.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <!-- DECK 8 -->
+  <li class="deck-card faction-plants reveal" id="deck-lashroomgna" data-faction="plants" data-name="Lashroomgna">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Solar_Flare.webp" alt="Solar Flare" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#8</span>
+          <span class="faction-tag faction-tag-plants">🌱 Plants</span>
+          <span class="deck-label">Niche threat</span>
+        </div>
+        <h3>Lashroomgna</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-b">Grade: B</span>
+          <span class="stat-badge">Updated: May 09, 2026</span>
+          <span class="stat-badge">By: Pasta</span>
+          <span class="stat-badge card-count" data-count></span>
+        </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["4x Puff Shroom", "4x Astro Shroom", "3x Shroom For Two", "3x Sun Shroom", "4x Berry Blast", "4x Buff Shroom", "3x Wild Berry", "3x Cro-Magnolia", "3x Veloci-Radish Packmate", "4x Astrocado", "3x Gloom-Shroom", "2x Cob Cannon"]'></div>
+        </div>
+        <p class="deck-summary">An explosive combo-oriented build that outputs rapid mushroom packages to pin down lane paths before converting field presence into massive burn bursts.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <!-- DECK 9 -->
+  <li class="deck-card faction-plants reveal" id="deck-muscle-lily" data-faction="plants" data-name="Muscle Lily">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Captain_Combustible.webp" alt="Captain Combustible" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#9</span>
+          <span class="faction-tag faction-tag-plants">🌱 Plants</span>
+          <span class="deck-label">Playable niche</span>
+        </div>
+        <h3>Muscle Lily</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-b">Grade: B</span>
+          <span class="stat-badge">Updated: May 19, 2026</span>
+          <span class="stat-badge">By: FryEmUp</span>
+          <span class="stat-badge card-count" data-count></span>
+        </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["4x Bonk Choy", "4x Shroom For Two", "3x Umbrella Leaf", "4x Berry Blast", "2x Coffee Grounds", "4x Lily of the Valley", "4x Imitater", "4x Muscle Sprout", "4x Fig", "4x Apotatosaurus", "3x Espresso Fiesta"]'></div>
+        </div>
+        <p class="deck-summary">Highly consistent layout focusing on multiplying stat-scaling vectors. It punishes slow tempo openings by accelerating small assets into massive single-lane threats early on.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          
+        </div>
+      </div>
+    </div>
+  </li>
+
+  <!-- DECK 10 -->
+  <li class="deck-card faction-plants reveal" id="deck-sensei" data-faction="plants" data-name="Sensei">
+    <div class="deck-main-layout">
+      <div class="deck-hero-wrapper">
+        <img src="/hero_images/Grass_Knuckles.webp" alt="Grass Knuckles" class="deck-hero-avatar" loading="lazy" />
+      </div>
+      <div class="deck-details-content">
+        <div class="deck-topline">
+          <span class="rank-badge">#10</span>
+          <span class="faction-tag faction-tag-plants">🌱 Plants</span>
+          <span class="deck-label">Honorable mention</span>
+        </div>
+        <h3>Sensei</h3>
+        <div class="deck-stat-badges">
+          <span class="stat-badge score-badge grade-b">Grade: B</span>
+          <span class="stat-badge">Updated: May 11, 2026</span>
+          <span class="stat-badge">By: Xera, Durga</span>
+          <span class="stat-badge card-count" data-count></span>
+        </div>
+        <div class="deck-image-container">
+          <div class="singleDeckVisual visual-deck-grid" data-cards='["3x Bonk Choy", "4x Clique Peas", "4x Forget-Me-Nuts", "4x Sting Bean", "3x Lily of the Valley", "4x Pea Patch", "4x Split Pea", "3x Fertilizer", "4x Podfather", "1x Body-Gourd", "4x Gatling Pea", "2x Espresso Fiesta"]'></div>
+        </div>
+        <p class="deck-summary">Rounding out our top ten list, this style favors high-IQ positioning matrices to capitalize on punish triggers and outmaneuver target answers.</p>
+        <div class="deck-actions">
+          <button class="copy-btn" type="button" data-copy>📋 Copy deck list</button>
+          
+        </div>
+      </div>
+    </div>
+  </li>
+</ol>
+      </section>
+
+      <section id="faq" class="content-card reveal">
+        <h2>Frequently asked questions</h2>
+        <div class="faq-grid">
+          <details class="faq-item">
+            <summary>What is the best deck in Plants vs. Zombies Heroes right now?</summary>
+            <p>As of June 2026, <a href="#deck-coffee-crusher">Coffee Crusher</a> holds the #1 spot. It pairs aggressive midrange pressure with top-tier meta values and consistently strong board control.</p>
+          </details>
+          <details class="faq-item">
+            <summary>How often are these metrics calculated?</summary>
+            <p>Rankings update on dynamic database sweeps to match deck tracking modifications over ongoing monthly meta shifts.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Why do some decks with lower power rank higher?</summary>
+            <p>Our formula balances synergy coefficients and overall draw reliability alongside pure power values to reward dependable ladder variants over fragile setups.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Are these decks good for climbing the ranked ladder?</summary>
+            <p>Yes — consistency is one of our four ranking pillars, so each list is evaluated for dependable ladder play, not just tournament ceilings.</p>
+          </details>
+          <details class="faq-item">
+            <summary>How many cards are in a PvZH deck?</summary>
+            <p>A Plants vs. Zombies Heroes deck contains exactly 40 cards, with a maximum of 4 copies of any single card. Every list in this guide follows that format.</p>
+          </details>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <button class="back-to-top" id="backToTop" type="button" aria-label="Back to top">☀</button>
+
+  <script src="/app.js" defer></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      /* ---------- Render deck card grids from data-cards ---------- */
+      const deckContainers = document.querySelectorAll('.singleDeckVisual');
+
+      deckContainers.forEach(container => {
+        const rawData = container.getAttribute('data-cards');
+        if (!rawData) return;
+
+        let cardsArray = [];
+        try { cardsArray = JSON.parse(rawData); }
+        catch (e) { console.error('Failed to parse deck cards:', e); return; }
+
+        container.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        let totalCards = 0;
+
+        cardsArray.forEach(cardRaw => {
+          let quantityStr = '1x';
+          let qty = 1;
+          let parsedCardName = cardRaw.trim();
+
+          const match = cardRaw.match(/^(\d+)x?\s+(.+)$/i);
+          if (match) {
+            qty = parseInt(match[1], 10) || 1;
+            quantityStr = qty + 'x';
+            parsedCardName = match[2].trim();
+          }
+          totalCards += qty;
+
+          const nameWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+          const pngUrl = `/card_images/${nameWithUnderscores}.png`;
+          const webpUrl = `/card_images/${nameWithUnderscores}.webp`;
+
+          const cardEl = document.createElement('div');
+          cardEl.className = 'visual-card-item';
+          cardEl.innerHTML = `
+            <div class="card-image-wrapper" tabindex="0">
+              <img src="${pngUrl}"
+                   onerror="this.onerror=null; this.src='${webpUrl}';"
+                   alt="${parsedCardName} — PvZH card"
+                   title="${quantityStr} ${parsedCardName}"
+                   loading="lazy" decoding="async">
+              <span class="card-quantity">${quantityStr}</span>
+            </div>`;
+          fragment.appendChild(cardEl);
+        });
+
+        container.appendChild(fragment);
+
+        // Fill card-count badge + store plain-text list for the copy button
+        const deckCard = container.closest('.deck-card');
+        if (deckCard) {
+          const countBadge = deckCard.querySelector('[data-count]');
+          if (countBadge) countBadge.textContent = totalCards + ' cards';
+          deckCard.dataset.decklist = cardsArray.join('\n');
+          deckCard.dataset.cardnames = cardsArray.join(' ').toLowerCase();
+        }
+      });
+
+      /* ---------- Copy deck list ---------- */
+      document.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const deckCard = btn.closest('.deck-card');
+          const name = deckCard.dataset.name || 'Deck';
+          const list = `${name} — PvZH (pvzhvault.com)\n${deckCard.dataset.decklist || ''}`;
+          try {
+            await navigator.clipboard.writeText(list);
+            const original = btn.textContent;
+            btn.textContent = '✔ Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1600);
+          } catch (e) {
+            btn.textContent = 'Copy failed';
+            setTimeout(() => { btn.textContent = '📋 Copy deck list'; }, 1600);
+          }
+        });
+      });
+
+      /* ---------- Build "Jump to a deck" sidebar links ---------- */
+      const deckJump = document.getElementById('deckJump');
+      if (deckJump) {
+        document.querySelectorAll('.deck-card').forEach((card, i) => {
+          const a = document.createElement('a');
+          a.href = '#' + card.id;
+          a.innerHTML = `<span class="jump-rank">#${i + 1}</span> ${card.dataset.name}`;
+          a.classList.add(card.dataset.faction === 'plants' ? 'jump-plants' : 'jump-zombies');
+          deckJump.appendChild(a);
+        });
+      }
+
+      /* ---------- Faction filter + search ---------- */
+      const chips = document.querySelectorAll('#factionFilters .chip');
+      const searchInput = document.getElementById('deckSearch');
+      const emptyMsg = document.getElementById('filterEmpty');
+      let activeFaction = 'all';
+
+      function applyFilters() {
+        const q = (searchInput.value || '').trim().toLowerCase();
+        let visible = 0;
+        document.querySelectorAll('.deck-card').forEach(card => {
+          const factionOk = activeFaction === 'all' || card.dataset.faction === activeFaction;
+          const text = (card.dataset.name + ' ' + (card.dataset.cardnames || '')).toLowerCase();
+          const searchOk = !q || text.includes(q);
+          const show = factionOk && searchOk;
+          card.classList.toggle('is-hidden', !show);
+          if (show) visible++;
+        });
+        emptyMsg.hidden = visible !== 0;
+      }
+
+      chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          chips.forEach(c => c.classList.remove('is-active'));
+          chip.classList.add('is-active');
+          activeFaction = chip.dataset.faction;
+          applyFilters();
+        });
+      });
+      searchInput.addEventListener('input', applyFilters);
+
+      /* ---------- Scrollspy for TOC ---------- */
+      const tocLinks = document.querySelectorAll('#tocNav a');
+      const sections = [...tocLinks].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+      const spy = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            tocLinks.forEach(a => a.classList.toggle('is-current', a.getAttribute('href') === '#' + entry.target.id));
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      sections.forEach(s => spy.observe(s));
+
+      /* ---------- Reveal on scroll (respects reduced motion) ---------- */
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!prefersReduced && 'IntersectionObserver' in window) {
+        const revealer = new IntersectionObserver(entries => {
+          entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('is-visible'); revealer.unobserve(e.target); }
+          });
+        }, { threshold: 0.08 });
+        document.querySelectorAll('.reveal').forEach(el => revealer.observe(el));
+      } else {
+        document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
+      }
+
+      /* ---------- Reading progress bar ---------- */
+      const bar = document.getElementById('progressBar');
+      const onScroll = () => {
+        const h = document.documentElement;
+        const pct = h.scrollTop / (h.scrollHeight - h.clientHeight) * 100;
+        bar.style.width = pct + '%';
+        backToTop.classList.toggle('is-shown', h.scrollTop > 600);
+      };
+
+      /* ---------- Back to top ---------- */
+      const backToTop = document.getElementById('backToTop');
+      backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' }));
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    });
+  </script>
 </body>
-
 </html>
