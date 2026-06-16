@@ -142,10 +142,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     const gradeFilter = document.getElementById('gradeFilter');
     function handleRouting() {
+        function trackPageView(hash) {
+    if (!window.gtag) return;
+
+    const page = hash || '#home';
+
+    gtag('event', 'page_view', {
+        page_path: '/' + page.replace('#', ''),
+        page_title: document.title,
+        page_location: window.location.href
+    });
+}
+
         // IMPORTANT: If the data hasn't finished downloading yet, stop right here!
         if (!isDataLoaded) return;
 
-        const hash = window.location.hash;
+        const hash = window.location.hash || '#home';
+        trackPageView(hash);
 
         // 1. Hide absolutely everything first
         if (moreMenu) moreMenu.classList.add('hidden');
