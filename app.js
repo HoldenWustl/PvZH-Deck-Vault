@@ -5568,7 +5568,19 @@ function renderGuides() {
     </a>
   `).join("");
 }
-
+document.addEventListener("DOMContentLoaded", function() {
+    const container = document.querySelector('.featured-decks-container');
+    if (container) {
+        const links = container.querySelectorAll('.featured-decks-link');
+        if (links.length > 0) {
+            // Choose a random index between 0 and the total number of links
+            const randomIndex = Math.floor(Math.random() * links.length);
+            
+            // Un-hide the chosen link
+            links[randomIndex].classList.add('is-visible');
+        }
+    }
+});
 document.addEventListener("DOMContentLoaded", renderGuides);
 
 // ============================================================

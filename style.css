@@ -3420,3 +3420,13 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     .swap-duel,
     .pm-chip { animation-duration: 0.01ms; }
 }
+
+/* Hide all guides by default so human users don't see a messy stack */
+.featured-decks-container .featured-decks-link {
+    display: none;
+}
+
+/* This class will be added by JavaScript to show just one */
+.featured-decks-container .featured-decks-link.is-visible {
+    display: inline-block; /* Or 'inline' / 'block' depending on your header layout */
+}
