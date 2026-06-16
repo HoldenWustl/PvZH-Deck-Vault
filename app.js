@@ -819,6 +819,168 @@ window.getTop10DecksForHero2025 = function(targetHero, customCtx) {
 
     return top10Decks;
 };
+window.getTop10DecksForCard = function(targetCard, customCtx) {
+    if (!targetCard || typeof targetCard !== 'string') {
+        console.error("Error: Please provide a target card name as the first parameter (e.g., 'Teleport').");
+        return [];
+    }
+
+    // Direct scope lookups since they are not attached to window
+    const db = typeof fullDatabase !== 'undefined' ? fullDatabase : null;
+    const cardDb = typeof cardDatabase !== 'undefined' ? cardDatabase : null;
+    
+    if (!db) {
+        console.error("Error: 'fullDatabase' could not be found in the accessible scope.");
+        return [];
+    }
+    if (!cardDb) {
+        console.error("Error: 'cardDatabase' could not be found in the accessible scope.");
+        return [];
+    }
+
+    const heroMap = {
+        // Plants
+        "Mega-Grow,Smarty": "Green Shadow",
+        "Kabloom,Solar": "Solar Flare",
+        "Guardian,Solar": "Wall-Knight",
+        "Mega-Grow,Solar": "Chompzilla",
+        "Guardian,Kabloom": "Spudow",
+        "Guardian,Smarty": "Citron / Beta-Carrotina",
+        "Guardian,Mega-Grow": "Grass Knuckles",
+        "Kabloom,Smarty": "Nightcap",
+        "Kabloom,Mega-Grow": "Captain Combustible",
+        "Smarty,Solar": "Rose",
+
+        // Zombies
+        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
+        "Beastly,Hearty": "The Smash",
+        "Crazy,Sneaky": "Impfinity",
+        "Brainy,Hearty": "Rustbolt",
+        "Beastly,Crazy": "Electric Boogaloo",
+        "Beastly,Sneaky": "Brain Freeze",
+        "Brainy,Crazy": "Professor Brainstorm",
+        "Beastly,Brainy": "Immorticia",
+        "Crazy,Hearty": "Z-Mech",
+        "Hearty,Sneaky": "Neptuna"
+    };
+
+    const cardDecks = [];
+    const seenDecks = new Set(); 
+
+    for (const deckKey in db) {
+        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
+        
+        const deck = db[deckKey];
+        if (!deck.cards) continue; 
+
+        try {
+            // Safe evaluation of the local ctx variable
+            const activeCtx = customCtx || (typeof ctx !== 'undefined' ? ctx : undefined);
+            
+            const uniqueClasses = new Set();
+            let containsTargetCard = false;
+            
+            for (const cardRaw of deck.cards) {
+                let parsedCardName = cardRaw.trim();
+                
+                const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+                if (match) {
+                    parsedCardName = match[2].trim();
+                }
+                
+                if (parsedCardName.toLowerCase().includes(targetCard.toLowerCase().trim())) {
+                    containsTargetCard = true;
+                }
+                
+                const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+                const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
+                
+                const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
+                if (cardData && cardData.Class) {
+                    uniqueClasses.add(cardData.Class.trim());
+                }
+            }
+
+            if (!containsTargetCard) {
+                continue;
+            }
+
+            const classesArray = Array.from(uniqueClasses).sort();
+            const classesKey = classesArray.join(',');
+            
+            const heroName = heroMap[classesKey] || "Unknown Hero";
+            
+            const deckSignature = [...deck.cards]
+                .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
+                .sort()
+                .join('|');
+
+            if (seenDecks.has(deckSignature)) {
+                continue;
+            }
+
+            seenDecks.add(deckSignature);
+
+            // Dynamically check for the function in the local scope, falling back to window if needed
+            let verdict;
+            if (typeof getDeckVerdictFromCards === 'function') {
+                verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+            } else {
+                throw new Error("getDeckVerdictFromCards could not be found in the current scope.");
+            }
+
+            const currentScore = verdict.score;
+
+            cardDecks.push({
+                hero: heroName,
+                id: deckKey,
+                name: deck.name || "Unnamed Deck",
+                score: parseFloat(currentScore.toFixed(2)),
+                grade: verdict.grade,
+                cost: verdict.costLabel,
+                synergy: verdict.synergyScore,
+                power: verdict.powerScore,
+                consistency: verdict.consistencyScore,
+                date: deck.upload_date || "Unknown Date",
+                author: deck.credit || "Unknown",
+                cards: deck.cards 
+            });
+            
+        } catch (error) {
+            console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+        }
+    }
+
+    cardDecks.sort((a, b) => b.score - a.score);
+    const top10Decks = cardDecks.slice(0, 10);
+
+    if (top10Decks.length === 0) {
+        console.log(`%c No valid decks found containing the card "${targetCard}".`, "color: #ff9900; font-weight: bold;");
+    } else {
+        console.log(`%c--- TOP ${top10Decks.length} DECKS CONTAINING "${targetCard.toUpperCase()}" (ALL TIME) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+        
+        console.table(top10Decks.map(d => ({
+            "Hero": d.hero,
+            "Deck Name": d.name,
+            "Score": d.score,
+            "Grade": d.grade,
+            "Synergy": d.synergy,
+            "Power": d.power,
+            "Consistency": d.consistency,
+            "Year": d.date.split(' ').pop() || d.date, 
+            "Author": d.author
+        })));
+
+        console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
+        
+        top10Decks.forEach((d, index) => {
+            console.log(`%c#${index + 1}: ${d.name} | Hero: ${d.hero} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
+            console.log(d.cards.join("\n"));
+        });
+    }
+
+    return top10Decks;
+};
     // --- Render Decks Function ---
     function renderDecks(data) {
         const searchInput = document.getElementById('searchInput');
@@ -5351,6 +5513,15 @@ const guidesData = [
     time: "4 min read",   // Standard length for a single-hero breakdown
     date: "June 12, 2026",
     icon: "hero"          // Matches your crisp shield SVG perfectly
+  },
+  {
+    title: "Top 10 Espresso Fiesta Decks",
+    description: "A breakdown of the highest-scoring decks featuring the Espresso Fiesta finisher.",
+    href: "/best-espresso-fiesta-decks",
+    badge: "Card Guide", 
+    time: "5 min read",  
+    date: "June 16, 2026",
+    icon: "book"          
   }
 ];
 
