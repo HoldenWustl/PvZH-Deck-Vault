@@ -142,93 +142,102 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     const gradeFilter = document.getElementById('gradeFilter');
     function handleRouting() {
-        function trackPageView(hash) {
-    if (!window.gtag) return;
+    // IMPORTANT: If the data hasn't finished downloading yet, stop right here!
+    if (!isDataLoaded) return;
 
-    const page = hash || '#home';
+    const hash = window.location.hash || '#home';
 
-    gtag('event', 'page_view', {
-        page_path: '/' + page.replace('#', ''),
-        page_title: document.title,
-        page_location: window.location.href
-    });
+    // 1. Hide absolutely everything first
+    if (moreMenu) moreMenu.classList.add('hidden');
+    gradeFilter.classList.add('hidden');
+    deckView.classList.add('hidden');
+    statsView.classList.add('hidden');
+    tiersView.classList.add('hidden');
+    guidesView.classList.add('hidden');
+    crafterView.classList.add('hidden');
+    gamesView.classList.add('hidden');
+    searchWrapper.classList.add('hidden');
+    statsBtn.classList.add('hidden');
+    guidesBtn.classList.add('hidden');
+    crafterBtn.classList.add('hidden');
+    gamesBtn.classList.add('hidden');
+    tiersBtn.classList.add('hidden');
+    synergyView.classList.add('hidden');
+
+    if (typeof backBtn !== 'undefined') backBtn.classList.add('hidden');
+
+    // 2. Determine what to show based on the hash & Update Titles
+    if (hash === '#stats') {
+        statsView.classList.remove('hidden');
+        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+        
+        document.title = "Stats - My App"; // Optional: Update title for accuracy
+        const currentLimit = document.getElementById('deckLimitFilter') ? document.getElementById('deckLimitFilter').value : 'all';
+        if (typeof renderStatsChart === 'function') renderStatsChart(currentLimit);
+
+    } else if (hash === '#crafter') {
+        crafterView.classList.remove('hidden');
+        document.title = "Crafter - My App";
+        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+
+    } else if (hash === '#games') {
+        gamesView.classList.remove('hidden');
+        document.title = "Games - My App";
+        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+        if (typeof renderGames === 'function') renderGames();
+
+    } else if (hash === '#synergy') {
+        synergyView.classList.remove('hidden');
+        document.title = "Synergy - My App";
+        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+        if (typeof renderSynergyWeb === 'function') renderSynergyWeb();
+
+    } else if (hash === '#tiers') {
+        tiersView.classList.remove('hidden');
+        document.title = "Tiers - My App";
+        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+        if (typeof renderTiers === 'function') renderTiers();
+        
+    } else if (hash === '#guides') {
+        guidesView.classList.remove('hidden');
+        document.title = "Guides - My App";
+        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+    } else {
+        // Default Home UI
+        deckView.classList.remove('hidden');
+        searchWrapper.classList.remove('hidden');
+        statsBtn.classList.remove('hidden');
+        guidesBtn.classList.remove('hidden');
+        tiersBtn.classList.remove('hidden');
+        crafterBtn.classList.remove('hidden');
+        gamesBtn.classList.remove('hidden');
+        gradeFilter.classList.remove('hidden');
+        if (moreMenu) moreMenu.classList.remove('hidden');
+        
+        document.title = "Home - My App";
+    }
+
+    // 3. CRITICAL CHANGE: Track the page view AFTER the DOM and titles have updated
+    trackPageView(hash);
 }
 
-        // IMPORTANT: If the data hasn't finished downloading yet, stop right here!
-        if (!isDataLoaded) return;
+function trackPageView(hash) {
+    if (!window.gtag) return;
 
-        const hash = window.location.hash || '#home';
-        trackPageView(hash);
+    const pageSlug = (hash || '#home').replace('#', '');
+    const cleanPath = '/' + pageSlug;
 
-        // 1. Hide absolutely everything first
-        if (moreMenu) moreMenu.classList.add('hidden');
-        gradeFilter.classList.add('hidden');
-        deckView.classList.add('hidden');
-        statsView.classList.add('hidden');
-        tiersView.classList.add('hidden');
-        guidesView.classList.add('hidden');
-        crafterView.classList.add('hidden');
-        gamesView.classList.add('hidden');
-        searchWrapper.classList.add('hidden');
-        statsBtn.classList.add('hidden');
-        guidesBtn.classList.add('hidden');
-        crafterBtn.classList.add('hidden');
-        gamesBtn.classList.add('hidden');
-        tiersBtn.classList.add('hidden');
-        synergyView.classList.add('hidden');
+    // Construct a flawless virtual URL structure using the URL API
+    const virtualLocation = new URL(window.location.href);
+    virtualLocation.pathname = cleanPath; // Replaces the root path with the virtual one (e.g., /stats)
+    virtualLocation.hash = '';            // Strips the hash entirely so GA4 doesn't get confused
 
-        // REMOVED: synergyBtn.classList.add('hidden');
-
-        if (typeof backBtn !== 'undefined') backBtn.classList.add('hidden');
-
-        // 2. Determine what to show based on the hash
-        if (hash === '#stats') {
-            statsView.classList.remove('hidden');
-            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-
-            const currentLimit = document.getElementById('deckLimitFilter') ? document.getElementById('deckLimitFilter').value : 'all';
-            if (typeof renderStatsChart === 'function') renderStatsChart(currentLimit);
-
-        } else if (hash === '#crafter') {
-            crafterView.classList.remove('hidden');
-            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-
-        } else if (hash === '#games') {
-            gamesView.classList.remove('hidden');
-            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-            if (typeof renderGames === 'function') renderGames();
-
-        }
-        else if (hash === '#synergy') {
-            synergyView.classList.remove('hidden');
-            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-            if (typeof renderSynergyWeb === 'function') renderSynergyWeb();
-
-        }
-        else if (hash === '#tiers') {
-            tiersView.classList.remove('hidden');
-            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-            if (typeof renderTiers === 'function') renderTiers();
-        }
-        else if (hash === '#guides') {
-            guidesView.classList.remove('hidden');
-            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-        }
-        else {
-            // Default Home UI
-            deckView.classList.remove('hidden');
-            searchWrapper.classList.remove('hidden');
-            statsBtn.classList.remove('hidden');
-            guidesBtn.classList.remove('hidden');
-            tiersBtn.classList.remove('hidden');
-            crafterBtn.classList.remove('hidden');
-            gamesBtn.classList.remove('hidden');
-            gradeFilter.classList.remove('hidden');
-            if (moreMenu) moreMenu.classList.remove('hidden');
-
-            // REMOVED: synergyBtn.classList.remove('hidden');
-        }
-    }
+    gtag('event', 'page_view', {
+        page_path: cleanPath,
+        page_title: document.title,
+        page_location: virtualLocation.href // Sends: https://yourdomain.com/stats
+    });
+}
     // --- Helper Functions ---
     function getYouTubeId(url) {
         if (!url) return null;
