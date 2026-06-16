@@ -1027,7 +1027,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     margin-top: 10px;
 }
 
-.grade-chip {
+.grade-chip, .grade-chip-main {
     border: 1px solid rgba(255,255,255,0.15);
     background: rgba(255,255,255,0.06);
     color: white;
@@ -1038,11 +1038,11 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     transition: 0.15s ease;
 }
 
-.grade-chip:hover {
+.grade-chip:hover, .grade-chip-main:hover {
     background: rgba(255,255,255,0.12);
 }
 
-.grade-chip.active {
+.grade-chip.active, .grade-chip-main.active {
     background: rgba(255,255,255,0.2);
     border-color: rgba(255,255,255,0.35);
 }
@@ -2867,7 +2867,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
         gap: 6px !important;
     }
 
-    .hero-search .grade-chip {
+    .hero-search .grade-chip, .hero-search .grade-chip-main {
         padding: 5px 11px;
         font-size: 0.78rem;
     }
@@ -3429,4 +3429,93 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 /* This class will be added by JavaScript to show just one */
 .featured-decks-container .featured-decks-link.is-visible {
     display: inline-block; /* Or 'inline' / 'block' depending on your header layout */
+}
+/* Container to hold the date and star together elegantly */
+.deck-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Base Star Styling - Minimalist */
+.deck-star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    transition: transform 0.2s ease;
+}
+
+/* Subtle idle state so it doesn't clutter visually */
+.deck-star-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: transparent;
+    stroke: #888; /* Gray outline */
+    stroke-width: 2px;
+    transition: all 0.2s ease;
+}
+
+/* Hover state */
+.deck-star-btn:hover svg {
+    stroke: #ffd700;
+}
+
+/* The Active (Starred) State + Animation trigger */
+.deck-star-btn.starred svg {
+    fill: #ffd700; /* Gold fill */
+    stroke: #ffd700;
+    /* Retention Glue: A snappy elastic pop animation */
+    animation: starPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* The Keyframe Animation */
+@keyframes starPop {
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+    40% {
+        transform: scale(1.4) rotate(15deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+.grade-chip, .grade-chip-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+}
+.grade-chip svg, .grade-chip-main svg {
+    display: block;
+    flex-shrink: 0;
+    transform: translateY(-0.5px);
+}
+.grade-filter-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.grade-menu {
+    position: relative;
+}
+
+/* reuse your existing dropdown style, just constrain it */
+.grade-dropdown {
+    padding: 8px !important;
+    min-width: 0 !important;
+    flex-direction: row !important;
+}
+
+/* make dropdown chips tighter */
+.grade-chip--small {
+    padding: 6px 10px;
+    font-size: 12px;
+    justify-content: center;
 }

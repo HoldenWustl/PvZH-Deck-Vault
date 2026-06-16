@@ -998,169 +998,137 @@ window.getTop10DecksForCard = function(targetCard, customCtx) {
 };
     // --- Render Decks Function ---
     function renderDecks(data) {
-        const searchInput = document.getElementById('searchInput');
-        const statsBtn = document.getElementById('statsBtn');
-        const loadingIndicator = document.getElementById('loadingIndicator');
+    const searchInput = document.getElementById('searchInput');
+    const statsBtn = document.getElementById('statsBtn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
 
-        // 1. Show loader and disable controls BEFORE rendering
-        if (loadingIndicator) loadingIndicator.classList.remove('hidden');
-        deckGrid.classList.add('hidden');
-        if (statsBtn) statsBtn.disabled = true;
-        if (guidesBtn) guidesBtn.disabled = true;
-        if (crafterBtn) crafterBtn.disabled = true;
-        if (gamesBtn) gamesBtn.disabled = true;
-        if (tiersBtn) tiersBtn.disabled = true;
+    // 1. Show loader and disable controls BEFORE rendering
+    if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+    deckGrid.classList.add('hidden');
+    if (statsBtn) statsBtn.disabled = true;
+    if (guidesBtn) guidesBtn.disabled = true;
+    if (crafterBtn) crafterBtn.disabled = true;
+    if (gamesBtn) gamesBtn.disabled = true;
+    if (tiersBtn) tiersBtn.disabled = true;
 
+    setTimeout(() => {
+        deckGrid.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        const ctx = getVerdictContext();
 
-        setTimeout(() => {
-            deckGrid.innerHTML = '';
-            const fragment = document.createDocumentFragment();
-            const ctx = getVerdictContext(); // built once, reused for the whole loop
+        // --- FETCH STARRED DECKS FROM LOCAL STORAGE ---
+        const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
 
-            // --- PRE-PROCESS DUPLICATES ---
-            const signatureMap = new Map();
-            for (const [deckKey, deckInfo] of Object.entries(data)) {
-                if (!deckInfo.cards) continue;
-
-                const signature = deckInfo.cards.map(c => {
-                    return c.replace(/_/g, ' ')
-                        .replace(/\s+/g, ' ')
-                        .trim()
-                        .toLowerCase();
-                }).sort().join('|');
-
-                let dateVal = 0;
-                if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
-                    const parsed = Date.parse(deckInfo.upload_date);
-                    if (!isNaN(parsed)) dateVal = parsed;
-                }
-
-                if (!signatureMap.has(signature)) {
-                    signatureMap.set(signature, []);
-                }
-                signatureMap.get(signature).push({ key: deckKey, dateVal: dateVal });
+        // --- PRE-PROCESS DUPLICATES (unchanged) ---
+        const signatureMap = new Map();
+        for (const [deckKey, deckInfo] of Object.entries(data)) {
+            if (!deckInfo.cards) continue;
+            const signature = deckInfo.cards.map(c => c.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase()).sort().join('|');
+            let dateVal = 0;
+            if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
+                const parsed = Date.parse(deckInfo.upload_date);
+                if (!isNaN(parsed)) dateVal = parsed;
             }
+            if (!signatureMap.has(signature)) {
+                signatureMap.set(signature, []);
+            }
+            signatureMap.get(signature).push({ key: deckKey, dateVal: dateVal });
+        }
 
-            const duplicateKeys = new Set();
-            for (const decks of signatureMap.values()) {
-                if (decks.length > 1) {
-                    decks.sort((a, b) => b.dateVal - a.dateVal);
-                    for (let i = 1; i < decks.length; i++) {
-                        duplicateKeys.add(decks[i].key);
-                    }
+        const duplicateKeys = new Set();
+        for (const decks of signatureMap.values()) {
+            if (decks.length > 1) {
+                decks.sort((a, b) => b.dateVal - a.dateVal);
+                for (let i = 1; i < decks.length; i++) {
+                    duplicateKeys.add(decks[i].key);
                 }
             }
-            // -----------------------------------
+        }
+        // -----------------------------------
 
-            let cardIndex = 0; // NEW: Counter for the stagger effect
+        let cardIndex = 0;
 
-            for (const [deckKey, deckInfo] of Object.entries(data)) {
-                const cardEl = document.createElement('div');
+        for (const [deckKey, deckInfo] of Object.entries(data)) {
+            const cardEl = document.createElement('div');
 
-                // --- FACTION & CLASS EVALUATION LOOP ---
-                let factionClass = 'plant-deck'; // Fallback default
-                const uniqueClasses = new Set();
-                let factionFound = false;
+            // --- FACTION & CLASS EVALUATION LOOP (unchanged) ---
+            let factionClass = 'plant-deck';
+            const uniqueClasses = new Set();
+            let factionFound = false;
 
-                if (deckInfo.cards && deckInfo.cards.length > 0) {
-                    for (const cardRaw of deckInfo.cards) {
-                        let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
+            if (deckInfo.cards && deckInfo.cards.length > 0) {
+                for (const cardRaw of deckInfo.cards) {
+                    let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
+                    const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
+                    const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
+                    const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
 
-                        const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
-                        const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
+                    if (cardData) {
+                        const cls = cardData.Class || cardData.class;
+                        if (cls) uniqueClasses.add(cls);
 
-                        const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
-
-                        if (cardData) {
-                            // 1. Collect card class if it exists
-                            const cls = cardData.Class || cardData.class;
-                            if (cls) uniqueClasses.add(cls);
-
-                            // 2. Resolve deck faction (only if not found yet)
-                            if (!factionFound && (cardData.Type || cardData.type)) {
-                                const typeString = (cardData.Type || cardData.type).toLowerCase();
-
-                                if (typeString.includes('zombie')) {
-                                    factionClass = 'zombie-deck';
-                                    factionFound = true;
-                                } else if (typeString.includes('plant')) {
-                                    factionClass = 'plant-deck';
-                                    factionFound = true;
-                                }
+                        if (!factionFound && (cardData.Type || cardData.type)) {
+                            const typeString = (cardData.Type || cardData.type).toLowerCase();
+                            if (typeString.includes('zombie')) {
+                                factionClass = 'zombie-deck';
+                                factionFound = true;
+                            } else if (typeString.includes('plant')) {
+                                factionClass = 'plant-deck';
+                                factionFound = true;
                             }
                         }
                     }
                 }
+            }
 
-                cardEl.className = `deck-card ${factionClass}`;
+            cardEl.className = `deck-card ${factionClass}`;
+            cardEl.style.setProperty('--reveal-delay', `${Math.min(cardIndex * 8, 600)}ms`);
+            cardIndex++;
 
-                // NEW: Add a staggered delay. 
-                // 8ms per card means the first ~75 cards cascade beautifully. 
-                // Capped at 600ms so the remaining 1700+ load together instantly out of view.
-                cardEl.style.setProperty('--reveal-delay', `${Math.min(cardIndex * 8, 600)}ms`);
-                cardIndex++;
+            // --- MATCH HERO STAMP (unchanged) ---
+            let heroStampHtml = '';
+            if (uniqueClasses.size === 2) {
+                const classesArray = Array.from(uniqueClasses);
+                const comboA = `${classesArray[0]},${classesArray[1]}`;
+                const comboB = `${classesArray[1]},${classesArray[0]}`;
+                const heroName = heroMap[comboA] || heroMap[comboB];
 
-                // --- MATCH HERO STAMP ---
-                let heroStampHtml = '';
-                if (uniqueClasses.size === 2) {
-                    const classesArray = Array.from(uniqueClasses);
-                    const comboA = `${classesArray[0]},${classesArray[1]}`;
-                    const comboB = `${classesArray[1]},${classesArray[0]}`;
-                    const heroName = heroMap[comboA] || heroMap[comboB];
+                if (heroName) {
+                    const individualHeroes = heroName.split(/\s*\/\s*/);
+                    const badgesHtml = individualHeroes.map(name => {
+                        const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
+                        return `<img src="hero_images/${imgFilename}" alt="${name}" class="hero-badge-img" title="${name}">`;
+                    }).join('');
 
-                    if (heroName) {
-                        // Split shared heroes (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
-                        const individualHeroes = heroName.split(/\s*\/\s*/);
-
-                        const badgesHtml = individualHeroes.map(name => {
-                            // Converts spaces and hyphens to underscores to match file names
-                            const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
-
-                            return `
-                            <img src="hero_images/${imgFilename}" 
-                                 alt="${name}" 
-                                 class="hero-badge-img" 
-                                 title="${name}">
-                        `;
-                        }).join('');
-
-                        heroStampHtml = `
-                        <div class="deck-hero-stamps-wrapper">
-                            ${badgesHtml}
-                        </div>
-                    `;
-                    }
+                    heroStampHtml = `<div class="deck-hero-stamps-wrapper">${badgesHtml}</div>`;
                 }
-                // -----------------------------------
+            }
+            // -----------------------------------
 
-                const isMobileView = window.matchMedia('(max-width: 600px)').matches;
-let cardsHtml = `
-    <details class="deck-cards-details"${isMobileView ? '' : ' open'}>
-        <summary class="deck-cards-summary">View Card List</summary>
-        <ul class="card-list">`;
-deckInfo.cards.forEach(card => {
-    const cleanCardName = card.replace(/_/g, ' ');
-    cardsHtml += `<li>${cleanCardName}</li>`;
-});
-cardsHtml += '</ul></details>';
+            const isMobileView = window.matchMedia('(max-width: 600px)').matches;
+            let cardsHtml = `
+                <details class="deck-cards-details"${isMobileView ? '' : ' open'}>
+                    <summary class="deck-cards-summary">View Card List</summary>
+                    <ul class="card-list">`;
+            deckInfo.cards.forEach(card => {
+                const cleanCardName = card.replace(/_/g, ' ');
+                cardsHtml += `<li>${cleanCardName}</li>`;
+            });
+            cardsHtml += '</ul></details>';
 
-                const dateStr = deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
-                    ? deckInfo.upload_date
-                    : "Unknown Date";
+            const dateStr = deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE" ? deckInfo.upload_date : "Unknown Date";
+            const creditStr = deckInfo.credit || "Unknown";
+            const videoId = getYouTubeId(deckInfo.youtube_url);
+            const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+            const creditIconSrc = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
+            const isFryVideo = creditStr === "FryEmUp" && deckInfo.youtube_url;
 
-                const creditStr = deckInfo.credit || "Unknown";
-                const videoId = getYouTubeId(deckInfo.youtube_url);
-                const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
-                const creditIconSrc = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
-                const isFryVideo = creditStr === "FryEmUp" && deckInfo.youtube_url;
-
-                const videoControlsHtml = isFryVideo ? `
-                <details class="video-dropdown" 
-                         ontoggle="this.closest('.deck-card').querySelector('.video-preview').classList.toggle('hidden', !this.open)">
+            const videoControlsHtml = isFryVideo ? `
+                <details class="video-dropdown" ontoggle="this.closest('.deck-card').querySelector('.video-preview').classList.toggle('hidden', !this.open)">
                     <summary>View Video</summary>
                 </details>` : '';
 
-                const videoPreviewHtml = isFryVideo ? `
+            const videoPreviewHtml = isFryVideo ? `
                 <div class="video-preview hidden">
                     <a href="${deckInfo.youtube_url}" target="_blank" title="${deckInfo.youtube_title}">
                         <img src="${thumbnailUrl}" alt="Video Thumbnail" loading="lazy">
@@ -1168,14 +1136,19 @@ cardsHtml += '</ul></details>';
                     </a>
                 </div>` : '';
 
-                const verdict = deckInfo.verdict || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
-                deckInfo.verdict = verdict;
+            const verdict = deckInfo.verdict || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
+            deckInfo.verdict = verdict;
 
-                const duplicateBadgeHtml = duplicateKeys.has(deckKey)
-                    ? `<span class="deck-duplicate-badge" title="Older Duplicate Deck" style="background:#ffaa00; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.8em; cursor:help;">Dup</span>`
-                    : '';
+            const duplicateBadgeHtml = duplicateKeys.has(deckKey)
+                ? `<span class="deck-duplicate-badge" title="Older Duplicate Deck" style="background:#ffaa00; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.8em; cursor:help;">Dup</span>`
+                : '';
 
-                cardEl.innerHTML = `
+            // CHECK STAR STATUS
+            const isStarred = starredDecks[deckKey] === true;
+            const starClass = isStarred ? 'deck-star-btn starred' : 'deck-star-btn';
+
+            // ADDED: Star button injected into the deck-header next to the date
+            cardEl.innerHTML = `
                 <div class="deck-card-inner">
                     <div class="deck-header">
                         <div class="deck-title-group">
@@ -1190,12 +1163,16 @@ cardsHtml += '</ul></details>';
                                 ${duplicateBadgeHtml}
                             </div>
                         </div>
-                        <span class="deck-date">${dateStr}</span>
+                        <div class="deck-header-right">
+                            <span class="deck-date">${dateStr}</span>
+                            <button class="${starClass}" data-deck="${deckKey}" aria-label="Star deck">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                            </button>
+                        </div>
                     </div>
                    
                     <div class="deck-controls-wrapper">
                         ${videoControlsHtml}
-                        
                         <details class="visual-deck-details">
                             <summary class="view-visual-btn" 
                                      data-title="${deckInfo.name}" 
@@ -1213,22 +1190,42 @@ cardsHtml += '</ul></details>';
                 </div>
             `;
 
-                fragment.appendChild(cardEl);
-            }
+            fragment.appendChild(cardEl);
+        }
 
-            deckGrid.appendChild(fragment);
+        deckGrid.appendChild(fragment);
 
-            if (loadingIndicator) loadingIndicator.classList.add('hidden');
-            deckGrid.classList.remove('hidden');
-            if (statsBtn) statsBtn.disabled = false;
-            if (guidesBtn) guidesBtn.disabled = false;
-            if (tiersBtn) tiersBtn.disabled = false;
-            if (crafterBtn) crafterBtn.disabled = false;
-            if (gamesBtn) gamesBtn.disabled = false;
+        if (loadingIndicator) loadingIndicator.classList.add('hidden');
+        deckGrid.classList.remove('hidden');
+        if (statsBtn) statsBtn.disabled = false;
+        if (guidesBtn) guidesBtn.disabled = false;
+        if (tiersBtn) tiersBtn.disabled = false;
+        if (crafterBtn) crafterBtn.disabled = false;
+        if (gamesBtn) gamesBtn.disabled = false;
 
+    }, 50);
+}
 
-        }, 50);
+// 2. Global Event Listener for Star Buttons (Put this outside renderDecks so it runs once)
+document.getElementById('deckGrid').addEventListener('click', (e) => {
+    const starBtn = e.target.closest('.deck-star-btn');
+    if (!starBtn) return;
+
+    const deckKey = starBtn.getAttribute('data-deck');
+    const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
+
+    if (starBtn.classList.contains('starred')) {
+        // Unstar
+        starBtn.classList.remove('starred');
+        delete starredDecks[deckKey];
+    } else {
+        // Star! (Triggers CSS animation)
+        starBtn.classList.add('starred');
+        starredDecks[deckKey] = true;
     }
+
+    localStorage.setItem('pvz_starred_decks', JSON.stringify(starredDecks));
+});
 
     // --- Combined Search + Grade Filter ---
 
@@ -1292,33 +1289,56 @@ cardsHtml += '</ul></details>';
     }
 
     function applyFilters() {
-        const filteredData = {};
+    const filteredData = {};
 
-        const searchRegex = currentSearchTerm
-            ? new RegExp("\\b" + escapeRegExp(currentSearchTerm), "i")
-            : null;
+    const searchRegex = currentSearchTerm
+        ? new RegExp("\\b" + escapeRegExp(currentSearchTerm), "i")
+        : null;
 
-        for (const [deckKey, deckInfo] of Object.entries(fullDatabase)) {
-            const grade = deckInfo.verdict?.grade || "—";
+    const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
 
-            // Grade filter
-            if (currentGradeFilter && grade !== currentGradeFilter) continue;
+    for (const [deckKey, deckInfo] of Object.entries(fullDatabase)) {
+        const grade = deckInfo.verdict?.grade || "—";
 
-            // Search filter
-            if (searchRegex && !matchesSearch(deckInfo, searchRegex)) continue;
-
-            filteredData[deckKey] = deckInfo;
+        // Starred filter
+        if (currentGradeFilter === "STARRED") {
+            if (!starredDecks[deckKey]) continue;
+        }
+        // Normal grade filter
+        else if (currentGradeFilter && grade !== currentGradeFilter) {
+            continue;
         }
 
-        renderDecks(filteredData);
+        // Search filter
+        if (searchRegex && !matchesSearch(deckInfo, searchRegex)) continue;
+
+        filteredData[deckKey] = deckInfo;
     }
+
+    renderDecks(filteredData);
+}
 
     // --- Search input ---
     searchInput.addEventListener("input", (e) => {
         currentSearchTerm = e.target.value.trim();
         applyFilters();
     });
+const gradesBtn = document.getElementById("gradesBtn");
+const gradesDropdown = document.getElementById("gradesDropdown");
 
+gradesBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    const open = !gradesDropdown.hidden;
+    gradesDropdown.hidden = open;
+
+    gradesBtn.setAttribute("aria-expanded", String(!open));
+});
+
+document.addEventListener("click", () => {
+    gradesDropdown.hidden = true;
+    gradesBtn.setAttribute("aria-expanded", "false");
+});
     // --- Grade buttons ---
     gradeButtons.forEach(button => {
         button.addEventListener("click", () => {
