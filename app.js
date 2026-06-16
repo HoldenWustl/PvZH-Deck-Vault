@@ -171,36 +171,30 @@ document.addEventListener('DOMContentLoaded', () => {
         statsView.classList.remove('hidden');
         if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
         
-        document.title = "Stats - My App"; // Optional: Update title for accuracy
         const currentLimit = document.getElementById('deckLimitFilter') ? document.getElementById('deckLimitFilter').value : 'all';
         if (typeof renderStatsChart === 'function') renderStatsChart(currentLimit);
 
     } else if (hash === '#crafter') {
         crafterView.classList.remove('hidden');
-        document.title = "Crafter - My App";
         if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
 
     } else if (hash === '#games') {
         gamesView.classList.remove('hidden');
-        document.title = "Games - My App";
         if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
         if (typeof renderGames === 'function') renderGames();
 
     } else if (hash === '#synergy') {
         synergyView.classList.remove('hidden');
-        document.title = "Synergy - My App";
         if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
         if (typeof renderSynergyWeb === 'function') renderSynergyWeb();
 
     } else if (hash === '#tiers') {
         tiersView.classList.remove('hidden');
-        document.title = "Tiers - My App";
         if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
         if (typeof renderTiers === 'function') renderTiers();
         
     } else if (hash === '#guides') {
         guidesView.classList.remove('hidden');
-        document.title = "Guides - My App";
         if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
     } else {
         // Default Home UI
@@ -213,8 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gamesBtn.classList.remove('hidden');
         gradeFilter.classList.remove('hidden');
         if (moreMenu) moreMenu.classList.remove('hidden');
-        
-        document.title = "Home - My App";
+    
     }
 
     // 3. CRITICAL CHANGE: Track the page view AFTER the DOM and titles have updated
