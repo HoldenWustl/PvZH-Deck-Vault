@@ -6,7 +6,7 @@
             "x2 Buried_Treasure",
             "x2 Quickdraw_Con_Man",
             "x2 Aerobics_Instructor",
-            "x4 Dr. Spacetime",
+            "x4 Dr._Spacetime",
             "x4 Space_Ninja",
             "x2 Abracadaver",
             "x4 Laser_Base_Alpha",
@@ -527,7 +527,7 @@
             "x3 Interdimensional_Zombie",
             "x4 Neutron_Imp",
             "x3 Teleport",
-            "x4 Dr. Spacetime",
+            "x4 Dr._Spacetime",
             "x4 Teleportation_Zombie",
             "x4 Zombot_Drone_Engineer",
             "x3 Laser_Base_Alpha",
@@ -856,6 +856,26 @@
         "upload_date": "Apr 08, 2026",
         "credit": "Xera"
     },
+    "deck_10003": {
+        "name": "Pospresso",
+        "cards": [
+            "x4 Li'l_Buddy",
+            "x4 Clique_Peas",
+            "x2 Coffee_Grounds",
+            "x4 Pepper_M.D.",
+            "x4 Water_Balloons",
+            "x4 Ketchup_Mechanic",
+            "x4 Sunnier_Shroom",
+            "x4 Wingnut",
+            "x4 Apotatosaurus",
+            "x3 Three_Headed_Chomper",
+            "x3 Espresso_Fiesta"
+        ],
+        "youtube_title": "Omae-Wa-Mou Ahh PvZ Heroes Highlights",
+        "youtube_url": "https://www.youtube.com/watch?v=d7JoBcbE8to",
+        "upload_date": "Apr 07, 2026",
+        "credit": "FryEmUp"
+    },
     "deck_14": {
         "name": "Soul Patch Supreme",
         "cards": [
@@ -918,6 +938,26 @@
         "youtube_url": "",
         "upload_date": "Apr 03, 2026",
         "credit": "Seasons"
+    },
+    "deck_10004": {
+        "name": "Soul Patch Supreme",
+        "cards": [
+            "x4 Forget-Me-Nuts",
+            "x4 Garlic",
+            "x4 Berry_Blast",
+            "x4 Fireweed",
+            "x3 Grave_Buster",
+            "x4 Imitater",
+            "x3 Shamrocket",
+            "x2 Force_Field",
+            "x4 Starch_Lord",
+            "x4 Pecanolith",
+            "x4 Soul_Patch"
+        ],
+        "youtube_title": "When the 2 Trolliest Decks Collide (26-Minute Match)e",
+        "youtube_url": "https://www.youtube.com/watch?v=ieuaJrjTFYQ",
+        "upload_date": "Apr 2, 2026",
+        "credit": "FryEmUp"
     },
     "deck_17": {
         "name": "ValkStache BMR",
@@ -6851,6 +6891,26 @@
         "upload_date": "Dec 8, 2024",
         "credit": "FryEmUp"
     },
+    "deck_3730": {
+        "name": "Grandpa Shark Doo-doo-doo-doo",
+        "cards": [
+            "x4 Buried_Treasure",
+            "x4 Imposter",
+            "x4 Teleport",
+            "x4 Dr._Spacetime",
+            "x4 Imp_Throwing_Imp",
+            "x2 Lurch_For_Lunch",
+            "x4 Teleportation_Zombie",
+            "x4 Toxic_Waste_Imp",
+            "x3 Duckstache",
+            "x3 Medulla_Nebula",
+            "x4 Zombot_Sharktronic_Sub"
+        ],
+        "youtube_title": "I’m Just a Chill Guy Failing at PvZ Heroes",
+        "youtube_url": "https://www.youtube.com/watch?v=I5bVpaNGkIQ",
+        "upload_date": "Dec 6, 2024",
+        "credit": "FryEmUp"
+    },
     "deck_285": {
         "name": "All-Out Cornucopia",
         "cards": [
@@ -8948,6 +9008,27 @@
         "upload_date": "Mar 10, 2024",
         "credit": "FryEmUp"
     },
+    "deck_3702": {
+        "name": "Professional Graves",
+        "cards": [
+            "x3 Black_Hole",
+            "x4 Headstone_Carver",
+            "x3 Healthy_Treat",
+            "x4 Middle_Manager",
+            "x4 Jurassic_Fossilhead",
+            "x4 Sumo_Wrestler",
+            "x2 Excavator_Zombie",
+            "x4 Going_Viral",
+            "x4 Landscaper",
+            "x2 Pogo_Zombie",
+            "x2 Turquiose_Skull_Zombie",
+            "x4 Mixed-Up_Gravedigger"
+        ],
+        "youtube_title": "PvZ Heroes Fails That Made Seedling Sad",
+        "youtube_url": "https://www.youtube.com/watch?v=cCKQfuw9LDI",
+        "upload_date": "Mar 9, 2024",
+        "credit": "FryEmUp"
+    },
     "deck_372": {
         "name": "All-Out Conjure",
         "cards": [
@@ -10191,6 +10272,26 @@
         "upload_date": "Nov 18, 2023",
         "credit": "FryEmUp"
     },
+    "deck_7308": {
+        "name": "Octopussy 3",
+        "cards": [
+            "x4 Cheese_Cutter",
+            "x4 Nibble",
+            "x4 Teleport",
+            "x3 Cryo-Brain",
+            "x4 Cyborg_Zombie",
+            "x4 Evolutionary_Leap",
+            "x4 Teleportation_Zombie",
+            "x4 Rocket_Science",
+            "x4 Bounty_Hunter",
+            "x2 Mechasaur",
+            "x3 Octozombie"
+        ],
+        "youtube_title": "OctoZombie 3: Masterpiece Version",
+        "youtube_url": "https://www.youtube.com/watch?v=YOTMCGgdybk",
+        "upload_date": "Nov 17, 2023",
+        "credit": "FryEmUp"
+    },
     "deck_420": {
         "name": "Troll or Treat",
         "cards": [
@@ -11406,6 +11507,7 @@
         "upload_date": "Aug 14, 2023",
         "credit": "FryEmUp"
     },
+    
     "deck_461": {
         "name": "Birb Ramp",
         "cards": [
@@ -15067,6 +15169,27 @@
         "upload_date": "Aug 15, 2022",
         "credit": "FryEmUp"
     },
+    "deck_6202": {
+        "name": "The Gas Wizard",
+        "cards": [
+            "x3 Bungee_Plumber",
+            "x4 Quickdraw_Con_Man",
+            "x4 Barrel_Of_Deadbeards",
+            "x4 Exploding_Fruitcake",
+            "x3 Final_Mission",
+            "x2 Lurch_For_Lunch",
+            "x3 Quazard",
+            "x4 Teleportation_Zombie",
+            "x3 Mustache_Monument",
+            "x4 Valkyrie",
+            "x3 Gas_Giant",
+            "x3 Wizard_Gargantuar"
+        ],
+        "youtube_title": "PvZ Heroes Highlights So Good, They Made Me Retire",
+        "youtube_url": "https://www.youtube.com/watch?v=U9bX1pFvlYE",
+        "upload_date": "Aug 14, 2022",
+        "credit": "FryEmUp"
+    },
     "deck_622": {
         "name": "Gentleman's Ramp",
         "cards": [
@@ -17960,6 +18083,26 @@
         "youtube_title": "The Best Zombie Deck, Probably",
         "youtube_url": "https://www.youtube.com/watch?v=g2YYpn28tlo",
         "upload_date": "Dec 13, 2021",
+        "credit": "FryEmUp"
+    },
+     "deck_7501": {
+        "name": "Splash Knuckles",
+        "cards": [
+            "x4 Banana_Peel",
+            "x4 Forget-Me-Nuts",
+            "x4 Galacta-Cactus",
+            "x4 Photosynthesizer",
+            "x4 Jugger-Nut",
+            "x3 Spikeweed_Sector",
+            "x4 Tricarrotops",
+            "x4 Hibernating_Beary",
+            "x4 Pear_Cub",
+            "x3 Plant_Food",
+            "x2 Whipvine"
+        ],
+        "youtube_title": "PvZ Heroes Highlights That You Can't Dislike",
+        "youtube_url": "https://www.youtube.com/watch?v=Sy-LZCopI7w",
+        "upload_date": "Dec 11, 2021",
         "credit": "FryEmUp"
     },
     "deck_752": {
@@ -27214,6 +27357,28 @@
         "upload_date": "Feb 16, 2019",
         "credit": "FryEmUp"
     },
+    "deck_11608": {
+        "name": "Fig-get About It",
+        "cards": [
+            "x4 Galacta-Cactus",
+            "x4 Garlic",
+            "x4 Hot_Lava",
+            "x3 Berry_Blast",
+            "x3 Tricarrotops",
+            "x3 Hibernating_Beary",
+            "x3 Pear_Cub",
+            "x3 Primal_Wall-Nut",
+            "x2 Shamrocket",
+            "x3 Molekale",
+            "x4 Fig",
+            "x4 Pecanolith"
+            
+        ],
+        "youtube_title": "Daily Challenge Solution Wednesday Feb. 13 2019",
+        "youtube_url": "https://www.youtube.com/watch?v=hMV1SAVo46I",
+        "upload_date": "Feb 13, 2019",
+        "credit": "FryEmUp"
+    },
     "deck_1169": {
         "name": "How's Ya FACE Feelin'?",
         "cards": [
@@ -27231,6 +27396,26 @@
         "youtube_title": "PUTTING A REAL HACKER TO SHAME",
         "youtube_url": "https://www.youtube.com/watch?v=ZJhIr92BbA4",
         "upload_date": "Feb 13, 2019",
+        "credit": "FryEmUp"
+    },
+    "deck_11700": {
+        "name": "Cycle-Cap",
+        "cards": [
+            "x4 Puff_Shroom",
+            "x4 Admiral_Navy_Bean",
+            "x4 Astro_Shroom",
+            "x4 Lima_Pleurodon",
+            "x4 Shroom_For_Two",
+            "x4 Berry_Blast",
+            "x4 Cosmic_Bean",
+            "x4 Planet_of_the_Grapes",
+            "x2 Spring_Bean",
+            "x4 Pineclone",
+            "x2 Sonic_Bloom"
+        ],
+        "youtube_title": "RIDICULOUS MOMENTS - PvZ Heroes Highlights and Glitches #8",
+        "youtube_url": "https://www.youtube.com/watch?v=JsSZQ6Q_uVI",
+        "upload_date": "Feb 10, 2019",
         "credit": "FryEmUp"
     },
     "deck_1170": {
@@ -27752,6 +27937,26 @@
         "upload_date": "Dec 06, 2018",
         "credit": "FryEmUp"
     },
+     "deck_11903": {
+        "name": "Clique Pea + Molekale",
+        "cards": [
+            "x4 Puff_Shroom",
+            "x4 Clique_Peas",
+            "x4 Shroom_For_Two",
+            "x4 Berry_Blast",
+            "x4 Fireweed",
+            "x4 Captain_Cucumber",
+            "x3 Imitater",
+            "x4 Molekale",
+            "x4 Pineclone",
+            "x2 Plant_Food",
+            "x3 Onion_Rings"
+        ],
+        "youtube_title": "Daily Challenge Solution. Wednesday Dec 5, 2018",
+        "youtube_url": "https://www.youtube.com/watch?v=QS20YTFy-u0",
+        "upload_date": "Dec 05, 2018",
+        "credit": "FryEmUp"
+    },
     "deck_1194": {
         "name": "Troller Citron",
         "cards": [
@@ -27795,6 +28000,26 @@
         "upload_date": "Dec 03, 2018",
         "credit": "FryEmUp"
     },
+     "deck_11904": {
+        "name": "Clique Pea + Molekale",
+        "cards": [
+            "x4 Puff_Shroom",
+            "x4 Clique_Peas",
+            "x4 Shroom_For_Two",
+            "x3 Berry_Blast",
+            "x4 Fireweed",
+            "x4 Captain_Cucumber",
+            "x4 Imitater",
+            "x4 Molekale",
+            "x4 Pineclone",
+            "x2 Plant_Food",
+            "x3 Onion_Rings"
+        ],
+        "youtube_title": "THE INVISIBLE CARD GLITCH - HILARIOUS",
+        "youtube_url": "https://www.youtube.com/watch?v=sIZvA3vr2zI",
+        "upload_date": "Nov 30, 2018",
+        "credit": "FryEmUp"
+    },
     "deck_1196": {
         "name": "Cwazy Vimps",
         "cards": [
@@ -27833,6 +28058,26 @@
         "youtube_title": "When Gardening Gloves Take Over",
         "youtube_url": "https://www.youtube.com/watch?v=qBdQr88KReY",
         "upload_date": "Nov 28, 2018",
+        "credit": "FryEmUp"
+    },
+    "deck_11907": {
+        "name": "Ramp Pineclone",
+        "cards": [
+            "x3 Li'l_Buddy",
+            "x4 Primal_Sunflower",
+            "x4 Solar_Winds",
+            "x4 Sunflower_Seed",
+            "x4 Briar_Rose",
+            "x4 Pineclone",
+            "x2 Cross-Pollination",
+            "x4 Wingnut",
+            "x4 Astrocado",
+            "x4 Cob_Cannon",
+            "x3 Shroom_For_Two"
+        ],
+        "youtube_title": "POSSIBLE STAT CHANGES LEAK! Nov 25, 2018",
+        "youtube_url": "https://www.youtube.com/watch?v=aSIT4BizNdQ",
+        "upload_date": "Nov 25, 2018",
         "credit": "FryEmUp"
     },
     "deck_1198": {
@@ -27891,6 +28136,25 @@
         "youtube_title": "BRUTAL - PvZ Heroes Highlights and Glitches #6",
         "youtube_url": "https://www.youtube.com/watch?v=T07sLQdtCuw",
         "upload_date": "Nov 19, 2018",
+        "credit": "FryEmUp"
+    },
+    "deck_11909": {
+        "name": "CycleCap RNGezus",
+        "cards": [
+            "x4 Puff_Shroom",
+            "x4 Astro_Shroom",
+            "x4 Reincarnation",
+            "x4 Shroom_For_Two",
+            "x4 Berry_Blast",
+            "x4 Planet_of_the_Grapes",
+            "x4 Mayflower",
+            "x4 Veloci-Radish_Packmate",
+            "x4 Molekale",
+            "x4 Pineclone"
+        ],
+        "youtube_title": "Best. Daily. Ever.",
+        "youtube_url": "https://www.youtube.com/watch?v=31DO3BDykLg",
+        "upload_date": "Nov 18, 2018",
         "credit": "FryEmUp"
     },
     "deck_1201": {
@@ -29104,7 +29368,7 @@
         "upload_date": "Jul 25, 2018",
         "credit": "FryEmUp"
     },
-    "deck_1258": {
+    "deck_12508": {
         "name": "OTK Magnifying Grass",
         "cards": [
             "x4 Primal_Sunflower",
@@ -29123,6 +29387,27 @@
         "youtube_title": "3 Cost 12/4...Sounds Fair.",
         "youtube_url": "https://www.youtube.com/watch?v=zv5SQkJ3d_Q",
         "upload_date": "Jul 24, 2018",
+        "credit": "FryEmUp"
+    },
+    "deck_1258": {
+        "name": "OTK Magnifying Grass",
+        "cards": [
+            "x4 Primal_Sunflower",
+            "x2 Sunflower",
+            "x4 Solar_Winds",
+            "x3 Sweet_Pea",
+            "x4 Magnifying_Grass",
+            "x4 Sunflower_Seed",
+            "x4 Briar_Rose",
+            "x4 Plant_Food",
+            "x2 Wingnut",
+            "x3 Astrocado",
+            "x2 Onion_Rings",
+            "x4 Cob_Cannon"
+        ],
+        "youtube_title": "Daily Challenge Solution! Sunday July 22, 2018",
+        "youtube_url": "https://www.youtube.com/watch?v=CQBRQQyIKP8",
+        "upload_date": "Jul 22, 2018",
         "credit": "FryEmUp"
     },
     "deck_1259": {
@@ -29266,6 +29551,27 @@
         "youtube_title": "The Synchronized Goat - No Legendaries",
         "youtube_url": "https://www.youtube.com/watch?v=WzlQdPcbsac",
         "upload_date": "Jul 06, 2018",
+        "credit": "FryEmUp"
+    },
+     "deck_12605": {
+        "name": "Really FAST Tempo",
+        "cards": [
+            "x4 Goat",
+            "x4 Camel_Crossing",
+            "x4 Cat_Lady",
+            "x3 Hunting_Grounds",
+            "x3 Synchronized_Swimmer",
+            "x4 Zookeeper",
+            "x3 Alien_Ooze",
+            "x4 Going_Viral",
+            "x4 Hover-Goat_3000",
+            "x2 Loudmouth",
+            "x2 Cosmic_Yeti",
+            "x3 Secret_Agent"
+        ],
+        "youtube_title": "Daily Challenge Solution! Wednesday, July 4 2018",
+        "youtube_url": "https://www.youtube.com/watch?v=O7w1BkXZgQY",
+        "upload_date": "Jul 05, 2018",
         "credit": "FryEmUp"
     },
     "deck_1266": {
@@ -29808,6 +30114,26 @@
         "upload_date": "May 16, 2018",
         "credit": "FryEmUp"
     },
+    "deck_12900": {
+        "name": "OTK Valk",
+        "cards": [
+            "x4 Disco-Naut",
+            "x4 Final_Mission",
+            "x4 Quickdraw_Con_Man",
+            "x4 Teleport",
+            "x2 Trapper_Territory",
+            "x4 Barrel_Of_Deadbeards",
+            "x4 Exploding_Fruitcake",
+            "x2 Lurch_For_Lunch",
+            "x4 Mustache_Monument",
+            "x4 Regifting_Zombie",
+            "x4 Valkyrie"
+        ],
+        "youtube_title": "(I Think I Cheated) Daily Challenge Solved! March 14, 2018",
+        "youtube_url": "https://www.youtube.com/watch?v=tN2gmcwiPFQ",
+        "upload_date": "May 14, 2018",
+        "credit": "FryEmUp"
+    },
     "deck_1291": {
         "name": "Troller Rose",
         "cards": [
@@ -30240,6 +30566,27 @@
         "upload_date": "Apr 05, 2018",
         "credit": "FryEmUp"
     },
+    "deck_13004": {
+        "name": "Trickster + Tricks",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Teleport",
+            "x4 Beam_Me_Up",
+            "x4 Exploding_Fruitcake",
+            "x3 Lurch_For_Lunch",
+            "x4 Fun-Dead_Raiser",
+            "x2 Rocket_Science",
+            "x4 Zombot's_Wrath",
+            "x2 The_Chickening",
+            "x4 Hail-A-Copter",
+            "x4 Trickster",
+            "x1 Gargantuars'_Feast"
+        ],
+        "youtube_title": "Daily Challenge Solution. Wednesday, April 4, 2018",
+        "youtube_url": "https://www.youtube.com/watch?v=2XAOJ5vaCHg",
+        "upload_date": "Apr 04, 2018",
+        "credit": "FryEmUp"
+    },
     "deck_1312": {
         "name": "Ramp Molekale",
         "cards": [
@@ -30420,6 +30767,31 @@
         "youtube_title": "Aggro Impfinity, And Fry's Not-So-Secret Admirer...",
         "youtube_url": "https://www.youtube.com/watch?v=KG6nQB80NmM",
         "upload_date": "Mar 16, 2018",
+        "credit": "FryEmUp"
+    },
+     "deck_13201": {
+        "name": "Baby Fry's First Deck",
+        "cards": [
+            "x1 Cardboard_Robot_Zombie",
+            "x1 Cat_Lady",
+            "x1 Chimney_Sweep",
+            "x4 Fraidy_Cat",
+            "x3 Interdimensional_Zombie",
+            "x3 Leprechaun_Imp",
+            "x4 Beam_Me_Up",
+            "x1 Mustache_Monument",
+            "x4 Pied_Piper",
+            "x2 Duckstache",
+            "x4 Hover-Goat_3000",
+            "x2 Wormhole_Gatekeeper",
+            "x1 B-flat",
+            "x4 Kangaroo_Rider",
+            "x4 Mondo_Bronto",
+            "x1 Maniacal_Laugh"
+        ],
+        "youtube_title": "BABY FRY MAKES A DECK, AND WE PLAY IT!",
+        "youtube_url": "https://www.youtube.com/watch?v=PKZkSKorYqE",
+        "upload_date": "Mar 15, 2018",
         "credit": "FryEmUp"
     },
     "deck_1321": {
@@ -30884,6 +31256,25 @@
         "youtube_title": "SET 4 CARD REVIEW!",
         "youtube_url": "https://www.youtube.com/watch?v=yyOKE7W6by4",
         "upload_date": "Jan 31, 2018",
+        "credit": "FryEmUp"
+    },
+     "deck_1576_imported_01": {
+        "name": "Conjure Rngezus",
+        "cards": [
+            "x4 High-Voltage_Currant",
+            "x4 Reincarnation",
+            "x4 Banana_Launcher",
+            "x4 Berry_Blast",
+            "x4 Fireweed",
+            "x4 Captain_Cucumber",
+            "x4 Cosmic_Mushroom",
+            "x4 Cosmic_Peashooter",
+            "x4 Bananasaurus_Rex",
+            "x4 Plucky_Clover"
+        ],
+        "youtube_title": "OPENING 79 TRIASSIC PACKS!!!",
+        "youtube_url": "https://www.youtube.com/watch?v=-2d6CKR0MUU",
+        "upload_date": "Jan 30, 2018",
         "credit": "FryEmUp"
     },
     "deck_1341": {
@@ -33297,6 +33688,28 @@
         "youtube_title": "BEST ENDING EVER...",
         "youtube_url": "https://www.youtube.com/watch?v=uJWwvPSJb5k",
         "upload_date": "Aug 11, 2017",
+        "credit": "FryEmUp"
+    },
+     "deck_14409": {
+        "name": "???",
+        "cards": [
+            "x4 Galacta-Cactus",
+            "x2 Morning_Glory",
+            "x3 Grave_Buster",
+            "x3 Hot_Date",
+            "x3 Solar_Winds",
+            "x2 2nd-Best_Taco_of_All_Time",
+            "x4 Pear_Cub",
+            "x4 Briar_Rose",
+            "x4 Heartichoke",
+            "x3 Venus_Flytraplanet",
+            "x4 Poppin'_Poppies",
+            "x2 Astro_Vera",
+            "x2 Wall-Nut_Bowling"
+        ],
+        "youtube_title": "KITCHEN SINK ZOMBIE AND ATOMIC BOMBERGRANATE! PACK OPENING AND DECK IDEAS!",
+        "youtube_url": "https://www.youtube.com/watch?v=VcQvlhAucKU",
+        "upload_date": "Aug 08, 2017",
         "credit": "FryEmUp"
     },
     "deck_1450": {
@@ -36313,6 +36726,29 @@
         "upload_date": "Jan 02, 2017",
         "credit": "FryEmUp"
     },
+    "deck_15700": {
+        "name": "???",
+        "cards": [
+            "x4 Iceberg_Lettuce",
+            "x2 Morning_Glory",
+            "x4 Snowdrop",
+            "x2 Snow_Pea",
+            "x2 Cattail",
+            "x4 Chilly_Pepper",
+            "x3 Vanilla",
+            "x4 Bloomerang",
+            "x4 Snapdragon",
+            "x2 Winter_Squash",
+            "x4 Power_Flower",
+            "x1 Squash",
+            "x2 Brainana",
+            "x2 Briar_Rose"
+        ],
+        "youtube_title": "OPENING 12 JOLLY HOLLY PACKS! + SURPRISE...",
+        "youtube_url": "https://www.youtube.com/watch?v=Zjek2cfJKjA",
+        "upload_date": "Jan 02, 2017",
+        "credit": "FryEmUp"
+    },
     "deck_1571": {
         "name": "Freeze",
         "cards": [
@@ -36430,6 +36866,28 @@
         "upload_date": "Dec 29, 2016",
         "credit": "FryEmUp"
     },
+    "deck_15703": {
+        "name": "???",
+        "cards": [
+            "x4 Pea_Pod",
+            "x4 Sweet_Potato",
+            "x4 Torchwood",
+            "x4 Black_Eyed_Pea",
+            "x4 Fire_Peashooter",
+            "x3 Snow_Pea",
+            "x4 Flourish",
+            "x4 Grow-Shroom",
+            "x4 Mayflower",
+            "x1 Muscle_Sprout",
+            "x2 Podfather",
+            "x1 Snapdragon",
+            "x1 Espresso_Fiesta"
+        ],
+        "youtube_title": "Massive Pack Opening! From 11-24-2016.",
+        "youtube_url": "https://www.youtube.com/watch?v=y7kMR78UAVM",
+        "upload_date": "Dec 29, 2016",
+        "credit": "FryEmUp"
+    },
     "deck_1881": {
         "name": "Freeze",
         "cards": [
@@ -36500,6 +36958,31 @@
         "upload_date": "Dec 27, 2016",
         "credit": "FryEmUp"
     },
+    
+    "deck_15705": {
+        "name": "F2P Gravestone",
+        "cards": [
+            "x4 Camel_Crossing",
+            "x4 Headstone_Carver",
+            "x2 Fishy_Imp",
+            "x4 Sumo_Wrestler",
+            "x4 Swashbuckler_Zombie",
+            "x3 Landscaper",
+            "x4 Smelly_Zombie",
+            "x4 Stealthy_Imp",
+            "x1 Weed_Spray",
+            "x4 Pogo_Zombie",
+            "x1 Mixed-Up_Gravedigger",
+            "x1 Monster_Mash",
+            "x3 Surprise_Gargantuar",
+            "x1 Walrus_Rider"
+        ],
+        "youtube_title": "Fry's Free2Play Account, Climbing the PvZ Heroes Ranks. Episode 8, Ranks 24-26",
+        "youtube_url": "https://www.youtube.com/watch?v=D_Dn5bWEzLI",
+        "upload_date": "Dec 27, 2016",
+        "credit": "FryEmUp"
+    },
+
     "deck_1575": {
         "name": "F2P Gravestone",
         "cards": [
@@ -36524,6 +37007,7 @@
         "upload_date": "Dec 26, 2016",
         "credit": "FryEmUp"
     },
+    
     "deck_1576": {
         "name": "Imps",
         "cards": [
@@ -36608,6 +37092,34 @@
         ],
         "youtube_title": "Shark + Chickening! PvZ Heroes Guides and Gameplay #79, Impfinity Gravestone Sharktronic Deck Part 2",
         "youtube_url": "https://www.youtube.com/watch?v=qF9vM5Oxsk4",
+        "upload_date": "Dec 23, 2016",
+        "credit": "FryEmUp"
+    },
+     "deck_15708": {
+        "name": "???",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x1 Headstone_Carver",
+            "x4 Mini_Ninja",
+            "x2 Smoke_Bomb",
+            "x3 Tennis_Champ",
+            "x4 Fishy_Imp",
+            "x1 Hot_Dog_Imp",
+            "x1 Newspaper_Zombie",
+            "x1 Swashbuckler_Zombie",
+            "x4 Disco_Zombie",
+            "x1 Imp_Commander",
+            "x4 Smelly_Zombie",
+            "x1 Cakesplosion",
+            "x1 Orchestra_Conductor",
+            "x2 Pogo_Zombie",
+            "x1 Foot_Soldier_Zombie",
+            "x2 Imp-Throwing_Gargantuar",
+            "x2 Surprise_Gargantuar",
+            "x1 Zombot_Stomp"
+        ],
+        "youtube_title": "Fry's Free2Play Account, Climbing the PvZ Heroes Ranks. Episode 5, Ranks 15-20 +Pack Opening!",
+        "youtube_url": "https://www.youtube.com/watch?v=cOi5fbcB1iU",
         "upload_date": "Dec 23, 2016",
         "credit": "FryEmUp"
     },
@@ -36801,6 +37313,31 @@
         "youtube_title": "Fry's Free2Play Account, Climbing the PvZ Heroes Ranks. Episode 2 [PART 2], Ranks 5-9",
         "youtube_url": "https://www.youtube.com/watch?v=2DasDXqSD5g",
         "upload_date": "Dec 20, 2016",
+        "credit": "FryEmUp"
+    },
+    "deck_15800": {
+        "name": "Green Shadow #1",
+        "cards": [
+            "x1 Bonk_Choy",
+            "x3 Snowdrop",
+            "x3 Torchwood",
+            "x1 Black_Eyed_Pea",
+            "x3 Cabbage_Pult",
+            "x3 Snow_Pea",
+            "x3 Cattail",
+            "x3 Chilly_Pepper",
+            "x3 Fertilizer",
+            "x2 Flourish",
+            "x3 Grow-Shroom",
+            "x1 Muscle_Sprout",
+            "x3 Repeater",
+            "x1 Snapdragon",
+            "x4 Smoosh-Shroom",
+            "x3 Threepeater"
+        ],
+        "youtube_title": "Fry's Free2Play Account, Climbing the PvZ Heroes Ranks. Episode 1, Ranks 1-5",
+        "youtube_url": "https://www.youtube.com/watch?v=f5SW5rlJ1_I",
+        "upload_date": "Dec 19, 2016",
         "credit": "FryEmUp"
     },
     "deck_1584": {
@@ -37278,6 +37815,29 @@
         "upload_date": "Dec 01, 2016",
         "credit": "FryEmUp"
     },
+    "deck_15906": {
+        "name": "???",
+        "cards": [
+            "x3 Teleport",
+            "x4 Beam_Me_Up",
+            "x4 Hot_Dog_Imp",
+            "x4 Lurch_For_Lunch",
+            "x4 Toxic_Waste_Imp",
+            "x2 Fun-Dead_Raiser",
+            "x3 Imp_Commander",
+            "x3 Rocket_Science",
+            "x4 Smelly_Zombie",
+            "x2 Tomb_Raiser",
+            "x1 Viking",
+            "x1 Hail-A-Copter",
+            "x3 Zombot_Plank_Walker",
+            "x2 Trickster"
+        ],
+        "youtube_title": "Epic and Funny Plants vs. Zombies Heroes Moments #8, The Scrub vs The Scalawag",
+        "youtube_url": "https://www.youtube.com/watch?v=nd4k78FxumA",
+        "upload_date": "Nov 29, 2016",
+        "credit": "FryEmUp"
+    },
     "deck_1596": {
         "name": "???",
         "cards": [
@@ -37392,6 +37952,30 @@
         "upload_date": "Nov 25, 2016",
         "credit": "FryEmUp"
     },
+     "deck_15909": {
+        "name": "???",
+        "cards": [
+            "x4 Camel_Crossing",
+            "x4 Cat_Lady",
+            "x4 Dog_Walker",
+            "x1 Squirrel_Herder",
+            "x4 Turkey_Rider",
+            "x4 Zookeeper",
+            "x4 Dolphin_Rider",
+            "x2 Weed_Spray",
+            "x1 Zombie_Yeti",
+            "x3 Locust_Swarm",
+            "x4 Smashing_Gargantuar",
+            "x1 Deep_Sea_Gargantuar",
+            "x1 Undying_Pharaoh",
+            "x1 Nurse_Garg",
+            "x2 Octozombie"
+        ],
+        "youtube_title": "Epic and Funny Plants vs. Zombies Heroes Moments #6, How to Slay a Garg",
+        "youtube_url": "https://www.youtube.com/watch?v=TBisT51baI0",
+        "upload_date": "Nov 25, 2016",
+        "credit": "FryEmUp"
+    },
     "deck_1599": {
         "name": "???",
         "cards": [
@@ -37503,6 +38087,30 @@
         ],
         "youtube_title": "Pet Shoes. Plants vs Zombies: Heroes Guides and Gameplay #56  Boogaloo Pet Deck Part 1",
         "youtube_url": "https://www.youtube.com/watch?v=tXDtCo0RFWo",
+        "upload_date": "Nov 20, 2016",
+        "credit": "FryEmUp"
+    },
+    "deck_19308": {
+        "name": "???",
+        "cards": [
+            "x4 Arm_Wrestler",
+            "x1 Barrel_Of_Deadbeards",
+            "x1 Flag_Zombie",
+            "x4 Newspaper_Zombie",
+            "x4 Sumo_Wrestler",
+            "x2 Exploding_Imp",
+            "x3 Jester",
+            "x4 Landscaper",
+            "x1 Valkyrie",
+            "x2 Weed_Spray",
+            "x3 Orchestra_Conductor",
+            "x3 Zombie_King",
+            "x3 Imp-Throwing_Gargantuar",
+            "x3 Monster_Mash",
+            "x2 Disco-Tron_3000"
+        ],
+        "youtube_title": "Epic Plants vs. Zombies Heroes Moments #5, Murphy's Law",
+        "youtube_url": "https://www.youtube.com/watch?v=tO9WuhX4iVY",
         "upload_date": "Nov 20, 2016",
         "credit": "FryEmUp"
     },
@@ -38018,6 +38626,31 @@
         "youtube_title": "Robo Dance! Plants vs Zombies Heroes Guides and Gameplay #38, Z-Mech Dancing Deck Part 1",
         "youtube_url": "https://www.youtube.com/watch?v=vovlFHhBZ6Q",
         "upload_date": "Oct 27, 2016",
+        "credit": "FryEmUp"
+    },
+    "deck_19603": {
+        "name": "Tempo Grass",
+        "cards": [
+            "x3 Bonk_Choy",
+            "x3 Pea_Pod",
+            "x4 Torchwood",
+            "x4 Black_Eyed_Pea",
+            "x2 Grave_Buster",
+            "x2 Jugger-Nut",
+            "x4 Sea-Shroom",
+            "x3 Fertilizer",
+            "x4 Grow-Shroom",
+            "x2 Muscle_Sprout",
+            "x1 Repeater",
+            "x1 Bananasaurus_Rex",
+            "x2 Guacodile",
+            "x1 Potted_Powerhouse",
+            "x3 Tough_Beets",
+            "x1 Poppin'_Poppies"
+        ],
+        "youtube_title": "The Best 3 \"Budget\" Decks in Plants vs Zombies Heroes",
+        "youtube_url": "https://www.youtube.com/watch?v=tGaBh8Hq7f0",
+        "upload_date": "Oct 19, 2016",
         "credit": "FryEmUp"
     },
     "deck_1615": {
