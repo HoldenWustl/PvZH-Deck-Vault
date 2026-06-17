@@ -5544,10 +5544,10 @@ const guidesData = [
     title: "Best Immorticia Decks",
     description: "Taking a look at the most powerful Immorticia decks.",
     href: "/best-immorticia-decks",
-    badge: "Hero Guide", // Or "New" since it dropped today!
-    time: "4 min read",   // Standard length for a single-hero breakdown
+    badge: "Hero Guide", 
+    time: "4 min read",  
     date: "June 12, 2026",
-    icon: "hero"          // Matches your crisp shield SVG perfectly
+    icon: "hero"          
   },
   {
     title: "Top 10 Espresso Fiesta Decks",
@@ -5557,6 +5557,15 @@ const guidesData = [
     time: "5 min read",  
     date: "June 16, 2026",
     icon: "book"          
+  },
+  {
+    title: "Top 10 Bad Moon Rising Decks",
+    description: "A showcase of the most chaotic and competitive decks relying on the Bad Moon Rising finisher.",
+    href: "/best-bad-moon-rising-decks",
+    badge: "Card Guide",
+    time: "5 min read",
+    date: "June 17, 2026",
+    icon: "book"
   }
 ];
 

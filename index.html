@@ -3,14 +3,14 @@
 
 <head>
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-TKRPPRCNM4"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TKRPPRCNM4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
 
-  gtag('config', 'G-TKRPPRCNM4');
-</script>
+        gtag('config', 'G-TKRPPRCNM4');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PvZ Heroes Deck Builder & Database</title>
@@ -25,143 +25,148 @@
   REPLACEMENT for everything inside <header> ... </header>
   All existing IDs are preserved so app.js keeps working.
 ============================================================ -->
-<header>
-    <div class="header-content">
-        <h1>PvZH Deck Builder & Database</h1>
-        <p>Browsing <span id="deckCount" class="highlight">...</span> <span id="randomAdjective">glorious</span> PvZ
-            Heroes decks <button id="infoBtn" class="info-btn">?</button></p>
-        <p class="last-updated">Last updated: June 16, 2026</p>
-        <div class="featured-decks-container">
-    <a class="featured-decks-link" href="https://pvzhvault.com/best-decks-pvzh-june-2026/">
-        Top 10 Best Decks <span>(June 2026)</span>
-    </a>
-    <a class="featured-decks-link" href="https://pvzhvault.com/best-immorticia-decks/">
-        Best Immorticia Decks <span>(Hero Guide)</span>
-    </a>
-    <a class="featured-decks-link" href="https://pvzhvault.com/best-espresso-fiesta-decks/">
-        Top 10 Espresso Fiesta Decks <span>(Card Guide)</span>
-    </a>
-</div>
-
-        <div id="controls" class="controls-container">
-
-    <div id="searchWrapper" class="hero-search">
-        <div class="hero-search-field">
-            <svg class="hero-search-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="7" />
-                <path d="M21 21l-4.3-4.3" />
-            </svg>
-            <input type="text" id="searchInput" placeholder="Search decks, cards, heroes...">
-        </div>
-
-        <div class="grade-filter-wrapper">
-            <div id="gradeFilter" class="grade-filter">
-                <button class="grade-chip active" data-grade="">All</button>
-                <button class="grade-chip" data-grade="STARRED">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    Starred
-                </button>
+    <header>
+        <div class="header-content">
+            <h1>PvZH Deck Builder & Database</h1>
+            <p>Browsing <span id="deckCount" class="highlight">...</span> <span id="randomAdjective">glorious</span> PvZ
+                Heroes decks <button id="infoBtn" class="info-btn">?</button></p>
+            <p class="last-updated">Last updated: June 16, 2026</p>
+            <div class="featured-decks-container">
+                <a class="featured-decks-link" href="https://pvzhvault.com/best-decks-pvzh-june-2026/">
+                    Top 10 Best Decks <span>(June 2026)</span>
+                </a>
+                <a class="featured-decks-link" href="https://pvzhvault.com/best-immorticia-decks/">
+                    Best Immorticia Decks <span>(Hero Guide)</span>
+                </a>
+                <a class="featured-decks-link" href="https://pvzhvault.com/best-espresso-fiesta-decks/">
+                    Top 10 Espresso Fiesta Decks <span>(Card Guide)</span>
+                </a>
+                <a class="featured-decks-link" href="https://pvzhvault.com/best-bad-moon-rising-decks/">
+                    Top 10 Bad Moon Rising Decks <span>(Card Guide)</span>
+                </a>
             </div>
 
-            <div class="more-menu grade-menu">
-                <button id="gradesBtn" class="grade-chip-main" aria-haspopup="true" aria-expanded="false">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                        <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
-                    </svg>
-                    Grades
-                    <svg class="btn-icon more-caret" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M6 9l6 6 6-6" />
-                    </svg>
-                </button>
+            <div id="controls" class="controls-container">
 
-                <div id="gradesDropdown" class="more-dropdown grade-dropdown" hidden>
-                    <button class="grade-chip grade-chip--small" data-grade="S">S</button>
-                    <button class="grade-chip grade-chip--small" data-grade="A">A</button>
-                    <button class="grade-chip grade-chip--small" data-grade="B">B</button>
-                    <button class="grade-chip grade-chip--small" data-grade="C">C</button>
-                    <button class="grade-chip grade-chip--small" data-grade="D">D</button>
-                    <button class="grade-chip grade-chip--small" data-grade="F">F</button>
+                <div id="searchWrapper" class="hero-search">
+                    <div class="hero-search-field">
+                        <svg class="hero-search-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="M21 21l-4.3-4.3" />
+                        </svg>
+                        <input type="text" id="searchInput" placeholder="Search decks, cards, heroes...">
+                    </div>
+
+                    <div class="grade-filter-wrapper">
+                        <div id="gradeFilter" class="grade-filter">
+                            <button class="grade-chip active" data-grade="">All</button>
+                            <button class="grade-chip" data-grade="STARRED">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                Starred
+                            </button>
+                        </div>
+
+                        <div class="more-menu grade-menu">
+                            <button id="gradesBtn" class="grade-chip-main" aria-haspopup="true" aria-expanded="false">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                    <path
+                                        d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
+                                </svg>
+                                Grades
+                                <svg class="btn-icon more-caret" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M6 9l6 6 6-6" />
+                                </svg>
+                            </button>
+
+                            <div id="gradesDropdown" class="more-dropdown grade-dropdown" hidden>
+                                <button class="grade-chip grade-chip--small" data-grade="S">S</button>
+                                <button class="grade-chip grade-chip--small" data-grade="A">A</button>
+                                <button class="grade-chip grade-chip--small" data-grade="B">B</button>
+                                <button class="grade-chip grade-chip--small" data-grade="C">C</button>
+                                <button class="grade-chip grade-chip--small" data-grade="D">D</button>
+                                <button class="grade-chip grade-chip--small" data-grade="F">F</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <nav class="tools-row" aria-label="Tools">
+
+                    <button id="crafterBtn" class="tool-btn">
+                        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 8V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
+                            <path d="M14 11v-1a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
+                            <rect x="11" y="11" width="8" height="10" rx="1.5" />
+                            <path d="M16 5h6M19 2v6" />
+                        </svg>
+                        Deck Builder
+                    </button>
+
+                    <button id="tiersBtn" class="tool-btn">
+                        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M5 7h14" />
+                            <path d="M5 12h10" />
+                            <path d="M5 17h6" />
+                            <path d="M5 7h1.5" />
+                            <path d="M5 12h1.5" />
+                            <path d="M5 17h1.5" />
+                        </svg>
+                        Tier List
+                    </button>
+
+                    <div class="more-menu home-menu-more">
+                        <button id="moreBtn" class="tool-btn" aria-haspopup="true" aria-expanded="false">
+                            More
+                            <svg class="btn-icon more-caret" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </button>
+
+                        <div id="moreDropdown" class="more-dropdown" hidden>
+                            <button id="statsBtn" class="more-item">
+                                <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 19V5" />
+                                    <path d="M4 19h16" />
+                                    <path d="M7 15v-4M12 15V8M17 15v-6" />
+                                </svg>
+                                View Stats
+                            </button>
+
+                            <button id="guidesBtn" class="more-item">
+                                <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 0-2 2V4Z" />
+                                    <path d="M6 6a2 2 0 0 1 2-2h10" />
+                                    <path d="M9 8h6M9 11h6M9 14h4" />
+                                </svg>
+                                Deck Guides
+                            </button>
+
+                            <button id="gamesBtn" class="more-item">
+                                <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M6 8h12a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4v-2a4 4 0 0 1 4-4Z" />
+                                    <path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" />
+                                </svg>
+                                Mini Game
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="backBtn" class="tool-btn back-btn hidden">
+                        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                        Back to Decks
+                    </button>
+
+                </nav>
             </div>
         </div>
-    </div>
-
-    <nav class="tools-row" aria-label="Tools">
-
-        <button id="crafterBtn" class="tool-btn">
-            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 8V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
-                <path d="M14 11v-1a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
-                <rect x="11" y="11" width="8" height="10" rx="1.5" />
-                <path d="M16 5h6M19 2v6" />
-            </svg>
-            Deck Builder
-        </button>
-
-        <button id="tiersBtn" class="tool-btn">
-            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 7h14" />
-                <path d="M5 12h10" />
-                <path d="M5 17h6" />
-                <path d="M5 7h1.5" />
-                <path d="M5 12h1.5" />
-                <path d="M5 17h1.5" />
-            </svg>
-            Tier List
-        </button>
-
-        <div class="more-menu home-menu-more">
-            <button id="moreBtn" class="tool-btn" aria-haspopup="true" aria-expanded="false">
-                More
-                <svg class="btn-icon more-caret" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M6 9l6 6 6-6" />
-                </svg>
-            </button>
-
-            <div id="moreDropdown" class="more-dropdown" hidden>
-                <button id="statsBtn" class="more-item">
-                    <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M4 19V5" />
-                        <path d="M4 19h16" />
-                        <path d="M7 15v-4M12 15V8M17 15v-6" />
-                    </svg>
-                    View Stats
-                </button>
-
-                <button id="guidesBtn" class="more-item">
-                    <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 0-2 2V4Z" />
-                        <path d="M6 6a2 2 0 0 1 2-2h10" />
-                        <path d="M9 8h6M9 11h6M9 14h4" />
-                    </svg>
-                    Deck Guides
-                </button>
-
-                <button id="gamesBtn" class="more-item">
-                    <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M6 8h12a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4v-2a4 4 0 0 1 4-4Z" />
-                        <path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" />
-                    </svg>
-                    Mini Game
-                </button>
-            </div>
-        </div>
-
-        <button id="backBtn" class="tool-btn back-btn hidden">
-            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
-            </svg>
-            Back to Decks
-        </button>
-
-    </nav>
-</div>
-    </div>
-</header>
+    </header>
 
     <main>
         <div id="loading" class="loading">Loading database...</div>
@@ -176,38 +181,45 @@
             </div>
         </section>
 
-       <section id="tiersView" class="hidden" style="padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box;">
-    
-    <div class="crafter-header" style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
-        <button id="prevClassBtn" style="padding: 8px 16px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">&#8592; Prev</button>
-        
-        <div style="text-align: center;">
-            <h2><span class="version-effect" id="tierClassTitle">Card Tier List</span></h2>
-            <p style="color: var(--text-secondary); margin-top: 5px;">The definitive ranking of PvZ Heroes cards.</p>
-        </div>
-        
-        <button id="nextClassBtn" style="padding: 8px 16px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">Next &#8594;</button>
-    </div>
+        <section id="tiersView" class="hidden"
+            style="padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box;">
 
-    <div class="tier-list-container">
-        </div>
+            <div class="crafter-header"
+                style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
+                <button id="prevClassBtn"
+                    style="padding: 8px 16px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">&#8592;
+                    Prev</button>
 
-</section>
-<section id="guidesView" class="hidden guides-view">
-  <div class="guides-header">
-    <div>
-      <p class="section-eyebrow">Guides</p>
-      <h2 class="version-effect">PvZH Guides Collection</h2>
-      <p class="section-subtitle">
-        Fast, useful guides built around the meta, strategy, and the most searched topics.
-      </p>
-    </div>
-  </div>
+                <div style="text-align: center;">
+                    <h2><span class="version-effect" id="tierClassTitle">Card Tier List</span></h2>
+                    <p style="color: var(--text-secondary); margin-top: 5px;">The definitive ranking of PvZ Heroes
+                        cards.</p>
+                </div>
 
-  <div class="guides-grid" id="guidesGrid">
-    <!-- JS injects cards here -->
-  </div>
-</section>
+                <button id="nextClassBtn"
+                    style="padding: 8px 16px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">Next
+                    &#8594;</button>
+            </div>
+
+            <div class="tier-list-container">
+            </div>
+
+        </section>
+        <section id="guidesView" class="hidden guides-view">
+            <div class="guides-header">
+                <div>
+                    <p class="section-eyebrow">Guides</p>
+                    <h2 class="version-effect">PvZH Guides Collection</h2>
+                    <p class="section-subtitle">
+                        Fast, useful guides built around the meta, strategy, and the most searched topics.
+                    </p>
+                </div>
+            </div>
+
+            <div class="guides-grid" id="guidesGrid">
+                <!-- JS injects cards here -->
+            </div>
+        </section>
 
         <section id="statsView" class="hidden">
             <div class="stats-container">
@@ -297,35 +309,35 @@
 
 
                     <div class="chart-box">
-    <div class="chart-header-flex">
-        <div class="chart-titles">
-            <h3>Ultimate Synergies</h3>
-            <p class="chart-subtitle">Cards most frequently played together in the same deck.</p>
-        </div>
+                        <div class="chart-header-flex">
+                            <div class="chart-titles">
+                                <h3>Ultimate Synergies</h3>
+                                <p class="chart-subtitle">Cards most frequently played together in the same deck.</p>
+                            </div>
 
-        <div class="synergy-toggle">
-            <input type="radio" id="synergyRaw" name="synergyType" value="raw" checked
-                onchange="toggleSynergyChart('raw')">
-            <label for="synergyRaw">Raw Count</label>
+                            <div class="synergy-toggle">
+                                <input type="radio" id="synergyRaw" name="synergyType" value="raw" checked
+                                    onchange="toggleSynergyChart('raw')">
+                                <label for="synergyRaw">Raw Count</label>
 
-            <input type="radio" id="synergyNorm" name="synergyType" value="normalized"
-                onchange="toggleSynergyChart('normalized')">
-            <label for="synergyNorm">Normalized</label>
+                                <input type="radio" id="synergyNorm" name="synergyType" value="normalized"
+                                    onchange="toggleSynergyChart('normalized')">
+                                <label for="synergyNorm">Normalized</label>
 
-            <div class="toggle-slider"></div>
-        </div>
-    </div>
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
 
-    <div class="canvas-wrapper">
-        <canvas id="pairsChart"></canvas>
-    </div>
-    
-    <div style="text-align: right; margin-top: 8px;">
-    <span id="synergyEasterEgg" style="cursor: pointer; font-size: 0.75em;">
-        Generate Synergy Web
-    </span>
-</div>
-</div>
+                        <div class="canvas-wrapper">
+                            <canvas id="pairsChart"></canvas>
+                        </div>
+
+                        <div style="text-align: right; margin-top: 8px;">
+                            <span id="synergyEasterEgg" style="cursor: pointer; font-size: 0.75em;">
+                                Generate Synergy Web
+                            </span>
+                        </div>
+                    </div>
 
 
 
@@ -512,7 +524,7 @@
                 </div>
             </div>
 
-<!-- ============================================================
+            <!-- ============================================================
      REPLACE the contents of <div class="ai-pane"> with this.
      The deck-pane (left side) stays exactly as it was.
      IDs deckStatsHud / verdictGrade / verdictArchetype /
@@ -520,385 +532,618 @@
      so nothing else in your code breaks.
      ============================================================ -->
 
-<div class="ai-pane">
+            <div class="ai-pane">
 
-    <!-- Crazy Dave header (now with idle bob animation via CSS) -->
-    <div class="dave-header">
-        <img src="crazydave.webp" alt="Crazy Dave">
-        <div>
-            <h3>Crazy Dave</h3>
-        </div>
-    </div>
+                <!-- Crazy Dave header (now with idle bob animation via CSS) -->
+                <div class="dave-header">
+                    <img src="crazydave.webp" alt="Crazy Dave">
+                    <div>
+                        <h3>Crazy Dave</h3>
+                    </div>
+                </div>
 
-    <!-- POWER METER — replaces the old blocky Deck Analytics HUD -->
-    <div id="deckStatsHud" class="power-meter-card" style="display: none;">
+                <!-- POWER METER — replaces the old blocky Deck Analytics HUD -->
+                <div id="deckStatsHud" class="power-meter-card" style="display: none;">
 
-        <!-- Grade letter · archetype · live score -->
-        <div class="pm-top">
-            <span class="pm-grade" id="verdictGrade">—</span>
-            <div class="pm-meta">
-                <div class="pm-archetype" id="verdictArchetype">—</div>
-                <div class="pm-subtitle" id="verdictSubtitle">add cards to begin</div>
-            </div>
-            <div class="pm-quality">
-                <span class="pm-quality-word" id="pmQualityWord">—</span>
-                <span class="pm-next-grade" id="pmNextGrade"></span>
-            </div>
-        </div>
+                    <!-- Grade letter · archetype · live score -->
+                    <div class="pm-top">
+                        <span class="pm-grade" id="verdictGrade">—</span>
+                        <div class="pm-meta">
+                            <div class="pm-archetype" id="verdictArchetype">—</div>
+                            <div class="pm-subtitle" id="verdictSubtitle">add cards to begin</div>
+                        </div>
+                        <div class="pm-quality">
+                            <span class="pm-quality-word" id="pmQualityWord">—</span>
+                            <span class="pm-next-grade" id="pmNextGrade"></span>
+                        </div>
+                    </div>
 
-        <!-- 0–100 gauge. Zones + letters are built in JS from GRADE_CUTOFFS,
+                    <!-- 0–100 gauge. Zones + letters are built in JS from GRADE_CUTOFFS,
              with equal visual width per grade and piecewise marker mapping. -->
-        <div class="pm-gauge">
-            <div class="pm-track">
-                <div class="pm-zones" id="pmZones"></div>
-                <div class="pm-marker" id="pmMarker"></div>
+                    <div class="pm-gauge">
+                        <div class="pm-track">
+                            <div class="pm-zones" id="pmZones"></div>
+                            <div class="pm-marker" id="pmMarker"></div>
+                        </div>
+                        <div class="pm-letters" id="pmLetters"></div>
+                    </div>
+
+                    <!-- Mana curve sparkline (same SVG renderer as before) -->
+                    <div id="manaCurveChart" class="pm-curve"></div>
+                    <div class="pm-curve-labels">
+                        <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6+</span>
+                    </div>
+
+                    <!-- Notable highs / lows now render as pill chips -->
+                    <div id="verdictCallouts" class="pm-callouts"></div>
+
+                </div>
+
+                <!-- Dave's chat feed (messages render as speech bubbles) -->
+                <div class="ai-chat-feed" id="aiChatFeed"></div>
+
             </div>
-            <div class="pm-letters" id="pmLetters"></div>
-        </div>
-
-        <!-- Mana curve sparkline (same SVG renderer as before) -->
-        <div id="manaCurveChart" class="pm-curve"></div>
-        <div class="pm-curve-labels">
-            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6+</span>
-        </div>
-
-        <!-- Notable highs / lows now render as pill chips -->
-        <div id="verdictCallouts" class="pm-callouts"></div>
-
-    </div>
-
-    <!-- Dave's chat feed (messages render as speech bubbles) -->
-    <div class="ai-chat-feed" id="aiChatFeed"></div>
-
-</div>
 
         </section>
 
-        <section id="gamesView" class="hidden" style="max-width: 900px; margin: 0 auto; padding: 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #fff;">
-    <style>
-        .hl-arcade-container {
-            background: linear-gradient(145deg, #15151e, #0f0f15);
-            border: 3px solid #3a3f58;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,180,216,0.1);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        /* Fever Mode Active State */
-        .fever-active {
-            animation: feverPulse 1s infinite alternate;
-            border-color: #ffea00 !important;
-        }
-        @keyframes feverPulse {
-            0% { box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,234,0,0.1); }
-            100% { box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 50px rgba(255,234,0,0.5); }
-        }
+        <section id="gamesView" class="hidden"
+            style="max-width: 900px; margin: 0 auto; padding: 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #fff;">
+            <style>
+                .hl-arcade-container {
+                    background: linear-gradient(145deg, #15151e, #0f0f15);
+                    border: 3px solid #3a3f58;
+                    border-radius: 20px;
+                    padding: 30px;
+                    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 180, 216, 0.1);
+                    position: relative;
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                }
 
-        .hl-stats-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            background: rgba(255,255,255,0.03);
-            padding: 15px 25px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .hl-stat-box { text-align: center; }
-        .hl-stat-val { font-size: 1.8rem; font-weight: 900; color: #00b4d8; text-shadow: 0 0 10px rgba(0,180,216,0.4); transition: color 0.3s; }
-        .hl-stat-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #8a8f9d; margin-top: 4px; }
-        
-        /* Dynamic Timer Bar */
-        .hl-timer-container {
-            width: 100%;
-            height: 12px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 6px;
-            margin-bottom: 30px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        #hlTimerBar {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, #00f5d4, #00b4d8);
-            transition: width 0.1s linear, background 0.3s ease;
-            box-shadow: 0 0 10px rgba(0,245,212,0.5);
-        }
-        .timer-warning { background: linear-gradient(90deg, #ff007f, #f44336) !important; box-shadow: 0 0 15px #ff007f !important; }
+                /* Fever Mode Active State */
+                .fever-active {
+                    animation: feverPulse 1s infinite alternate;
+                    border-color: #ffea00 !important;
+                }
 
-        /* Matchup Arena */
-        .hl-arena {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 10px;
-        }
-        .hl-card-wrapper {
-            flex: 1;
-            background: rgba(255,255,255,0.02);
-            border: 2px solid #2d3142;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-        .hl-card-wrapper:hover {
-            transform: translateY(-5px);
-            border-color: #00b4d8;
-            box-shadow: 0 10px 25px rgba(0,180,216,0.2);
-        }
-        
-        .hl-card-img {
-            height: 180px;
-            width: auto;
-            max-width: 100%;
-            object-fit: contain;
-            margin-bottom: 15px;
-            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.5));
-        }
-        .hl-card-title { font-size: 1.1rem; font-weight: 700; color: #fff; min-height: 2.2rem; display: flex; align-items: center; justify-content: center; }
-        .hl-card-count { font-size: 1.6rem; font-weight: 800; color: #4CAF50; margin-top: 10px; }
-        .hl-vs-badge { font-size: 1.8rem; font-weight: 900; font-style: italic; color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.4); padding: 10px; transition: all 0.3s; }
+                @keyframes feverPulse {
+                    0% {
+                        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255, 234, 0, 0.1);
+                    }
 
-        /* Floating Combat Text */
-        .hl-floating-text {
-            position: absolute;
-            font-weight: 900;
-            font-size: 2.5rem;
-            pointer-events: none;
-            z-index: 100;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
-            animation: floatUp 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
+                    100% {
+                        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 50px rgba(255, 234, 0, 0.5);
+                    }
+                }
 
-        /* Animation Classes */
-        .hl-correct-flash { animation: correctGlow 0.6s ease-out; }
-        .hl-wrong-flash { animation: wrongShake 0.5s ease-in-out; }
-        .hl-combo-pop { animation: comboPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .hl-slide-out { transform: translateY(40px) scale(0.9); opacity: 0; transition: all 0.3s ease-in; }
+                .hl-stats-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 25px;
+                    background: rgba(255, 255, 255, 0.03);
+                    padding: 15px 25px;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                }
 
-        @keyframes floatUp {
-            0% { transform: translate(-50%, -10px) scale(0.5); opacity: 0; }
-            20% { transform: translate(-50%, -40px) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -90px) scale(1); opacity: 0; }
-        }
-        @keyframes correctGlow {
-            0% { border-color: #00f5d4; box-shadow: 0 0 30px rgba(0,245,212,0.6); transform: scale(1.02); }
-            100% { border-color: #2d3142; box-shadow: none; transform: scale(1); }
-        }
-        @keyframes wrongShake {
-            0%, 100% { transform: translateX(0); border-color: #ff007f; box-shadow: 0 0 30px rgba(255,0,127,0.4); }
-            20%, 60% { transform: translateX(-12px); }
-            40%, 80% { transform: translateX(12px); }
-        }
-        @keyframes comboPop {
-            0% { transform: scale(0.6); opacity: 0; }
-            50% { transform: scale(1.4); color: #ffea00; }
-            100% { transform: scale(1); }
-        }
+                .hl-stat-box {
+                    text-align: center;
+                }
 
-        /* UI Controls */
-        .hl-controls-footer { text-align: center; margin-top: 15px; }
-        .hl-btn {
-            background: linear-gradient(135deg, #00b4d8, #00f5d4);
-            color: #0f0f15;
-            border: none;
-            padding: 14px 40px;
-            font-size: 1.1rem;
-            font-weight: 800;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0,245,212,0.3);
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .hl-btn:hover { transform: scale(1.05); box-shadow: 0 12px 25px rgba(0,245,212,0.5); }
-        
-        .hl-btn-skip {
-            background: rgba(255,255,255,0.05);
-            color: #ffea00;
-            border: 1px solid rgba(255,234,0,0.3);
-            padding: 8px 24px;
-            font-size: 0.9rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: bold;
-        }
-        .hl-btn-skip:hover { background: rgba(255,234,0,0.1); transform: translateY(-2px); }
-        .hl-btn-skip:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+                .hl-stat-val {
+                    font-size: 1.8rem;
+                    font-weight: 900;
+                    color: #00b4d8;
+                    text-shadow: 0 0 10px rgba(0, 180, 216, 0.4);
+                    transition: color 0.3s;
+                }
 
-        /* Screen States Overlay */
-        .hl-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10,10,15,0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            border-radius: 18px;
-        }
-        /* Kinetic Flashes for the Timer Bar */
-.timer-gain-flash { animation: timerGain 0.4s ease-out; }
-.timer-loss-flash { animation: timerLoss 0.4s ease-out; }
+                .hl-stat-lbl {
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1.5px;
+                    color: #8a8f9d;
+                    margin-top: 4px;
+                }
 
-/* The Panic Heartbeat for low time */
-.timer-panic {
-    animation: timerHeartbeat 0.6s infinite alternate cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-}
-/* Staggered Game Over Animations */
-.hl-gameover-animate {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: hlSlideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
+                /* Dynamic Timer Bar */
+                .hl-timer-container {
+                    width: 100%;
+                    height: 12px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 6px;
+                    margin-bottom: 30px;
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                }
 
-@keyframes hlSlideUpFade {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+                #hlTimerBar {
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, #00f5d4, #00b4d8);
+                    transition: width 0.1s linear, background 0.3s ease;
+                    box-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
+                }
 
-/* Specific item spacing */
-.hl-stat-line {
-    margin: 8px 0;
-    font-size: 1.25rem;
-}
+                .timer-warning {
+                    background: linear-gradient(90deg, #ff007f, #f44336) !important;
+                    box-shadow: 0 0 15px #ff007f !important;
+                }
 
-@keyframes timerGain {
-    0% { background: #fff; filter: brightness(2); }
-    100% { background: linear-gradient(90deg, #00f5d4, #00b4d8); }
-}
+                /* Matchup Arena */
+                .hl-arena {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 20px;
+                    margin-bottom: 10px;
+                }
 
-@keyframes timerLoss {
-    0% { background: #fff; filter: brightness(2); }
-    50% { background: #ff007f; }
-    100% { background: linear-gradient(90deg, #ff007f, #f44336); }
-}
+                .hl-card-wrapper {
+                    flex: 1;
+                    background: rgba(255, 255, 255, 0.02);
+                    border: 2px solid #2d3142;
+                    border-radius: 16px;
+                    padding: 20px;
+                    text-align: center;
+                    cursor: pointer;
+                    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, box-shadow 0.2s;
+                    position: relative;
+                }
 
-@keyframes timerHeartbeat {
-    0% { transform: scaleY(1); filter: drop-shadow(0 0 2px #ff007f); }
-    100% { transform: scaleY(1.4); filter: drop-shadow(0 0 12px #ff007f); }
-}
-        /* =======================================
+                .hl-card-wrapper:hover {
+                    transform: translateY(-5px);
+                    border-color: #00b4d8;
+                    box-shadow: 0 10px 25px rgba(0, 180, 216, 0.2);
+                }
+
+                .hl-card-img {
+                    height: 180px;
+                    width: auto;
+                    max-width: 100%;
+                    object-fit: contain;
+                    margin-bottom: 15px;
+                    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5));
+                }
+
+                .hl-card-title {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    color: #fff;
+                    min-height: 2.2rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .hl-card-count {
+                    font-size: 1.6rem;
+                    font-weight: 800;
+                    color: #4CAF50;
+                    margin-top: 10px;
+                }
+
+                .hl-vs-badge {
+                    font-size: 1.8rem;
+                    font-weight: 900;
+                    font-style: italic;
+                    color: #ff007f;
+                    text-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+                    padding: 10px;
+                    transition: all 0.3s;
+                }
+
+                /* Floating Combat Text */
+                .hl-floating-text {
+                    position: absolute;
+                    font-weight: 900;
+                    font-size: 2.5rem;
+                    pointer-events: none;
+                    z-index: 100;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+                    animation: floatUp 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                }
+
+                /* Animation Classes */
+                .hl-correct-flash {
+                    animation: correctGlow 0.6s ease-out;
+                }
+
+                .hl-wrong-flash {
+                    animation: wrongShake 0.5s ease-in-out;
+                }
+
+                .hl-combo-pop {
+                    animation: comboPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                }
+
+                .hl-slide-out {
+                    transform: translateY(40px) scale(0.9);
+                    opacity: 0;
+                    transition: all 0.3s ease-in;
+                }
+
+                @keyframes floatUp {
+                    0% {
+                        transform: translate(-50%, -10px) scale(0.5);
+                        opacity: 0;
+                    }
+
+                    20% {
+                        transform: translate(-50%, -40px) scale(1.2);
+                        opacity: 1;
+                    }
+
+                    100% {
+                        transform: translate(-50%, -90px) scale(1);
+                        opacity: 0;
+                    }
+                }
+
+                @keyframes correctGlow {
+                    0% {
+                        border-color: #00f5d4;
+                        box-shadow: 0 0 30px rgba(0, 245, 212, 0.6);
+                        transform: scale(1.02);
+                    }
+
+                    100% {
+                        border-color: #2d3142;
+                        box-shadow: none;
+                        transform: scale(1);
+                    }
+                }
+
+                @keyframes wrongShake {
+
+                    0%,
+                    100% {
+                        transform: translateX(0);
+                        border-color: #ff007f;
+                        box-shadow: 0 0 30px rgba(255, 0, 127, 0.4);
+                    }
+
+                    20%,
+                    60% {
+                        transform: translateX(-12px);
+                    }
+
+                    40%,
+                    80% {
+                        transform: translateX(12px);
+                    }
+                }
+
+                @keyframes comboPop {
+                    0% {
+                        transform: scale(0.6);
+                        opacity: 0;
+                    }
+
+                    50% {
+                        transform: scale(1.4);
+                        color: #ffea00;
+                    }
+
+                    100% {
+                        transform: scale(1);
+                    }
+                }
+
+                /* UI Controls */
+                .hl-controls-footer {
+                    text-align: center;
+                    margin-top: 15px;
+                }
+
+                .hl-btn {
+                    background: linear-gradient(135deg, #00b4d8, #00f5d4);
+                    color: #0f0f15;
+                    border: none;
+                    padding: 14px 40px;
+                    font-size: 1.1rem;
+                    font-weight: 800;
+                    border-radius: 30px;
+                    cursor: pointer;
+                    box-shadow: 0 8px 20px rgba(0, 245, 212, 0.3);
+                    transition: all 0.2s;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+
+                .hl-btn:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 12px 25px rgba(0, 245, 212, 0.5);
+                }
+
+                .hl-btn-skip {
+                    background: rgba(255, 255, 255, 0.05);
+                    color: #ffea00;
+                    border: 1px solid rgba(255, 234, 0, 0.3);
+                    padding: 8px 24px;
+                    font-size: 0.9rem;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    font-weight: bold;
+                }
+
+                .hl-btn-skip:hover {
+                    background: rgba(255, 234, 0, 0.1);
+                    transform: translateY(-2px);
+                }
+
+                .hl-btn-skip:disabled {
+                    opacity: 0.4;
+                    cursor: not-allowed;
+                    transform: none;
+                }
+
+                /* Screen States Overlay */
+                .hl-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(10, 10, 15, 0.95);
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10;
+                    border-radius: 18px;
+                }
+
+                /* Kinetic Flashes for the Timer Bar */
+                .timer-gain-flash {
+                    animation: timerGain 0.4s ease-out;
+                }
+
+                .timer-loss-flash {
+                    animation: timerLoss 0.4s ease-out;
+                }
+
+                /* The Panic Heartbeat for low time */
+                .timer-panic {
+                    animation: timerHeartbeat 0.6s infinite alternate cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+                }
+
+                /* Staggered Game Over Animations */
+                .hl-gameover-animate {
+                    opacity: 0;
+                    transform: translateY(20px);
+                    animation: hlSlideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                }
+
+                @keyframes hlSlideUpFade {
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                /* Specific item spacing */
+                .hl-stat-line {
+                    margin: 8px 0;
+                    font-size: 1.25rem;
+                }
+
+                @keyframes timerGain {
+                    0% {
+                        background: #fff;
+                        filter: brightness(2);
+                    }
+
+                    100% {
+                        background: linear-gradient(90deg, #00f5d4, #00b4d8);
+                    }
+                }
+
+                @keyframes timerLoss {
+                    0% {
+                        background: #fff;
+                        filter: brightness(2);
+                    }
+
+                    50% {
+                        background: #ff007f;
+                    }
+
+                    100% {
+                        background: linear-gradient(90deg, #ff007f, #f44336);
+                    }
+                }
+
+                @keyframes timerHeartbeat {
+                    0% {
+                        transform: scaleY(1);
+                        filter: drop-shadow(0 0 2px #ff007f);
+                    }
+
+                    100% {
+                        transform: scaleY(1.4);
+                        filter: drop-shadow(0 0 12px #ff007f);
+                    }
+                }
+
+                /* =======================================
            MOBILE RESPONSIVENESS (SMARTPHONES)
            ======================================= */
-        @media (max-width: 768px) {
-            /* Shrink main container padding */
-            .hl-arcade-container { padding: 15px; }
-            
-            /* Squeeze top stats */
-            .hl-stats-header { padding: 10px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; gap: 15px; }
-            .hl-stat-box { flex: 1 1 40%; }
-            .hl-stat-val { font-size: 1.4rem; }
-            .hl-stat-lbl { font-size: 0.65rem; }
-            
-            .hl-timer-container { margin-bottom: 15px; }
+                @media (max-width: 768px) {
 
-            /* Stack cards vertically */
-            .hl-arena { flex-direction: column; gap: 5px; }
-            
-            /* Make cards full width and shorter to save space */
-            .hl-card-wrapper { padding: 15px; width: 100%; box-sizing: border-box; }
-            .hl-card-img { height: 100px; margin-bottom: 10px; }
-            .hl-card-title { font-size: 1rem; min-height: 1.2rem; }
-            .hl-card-count { font-size: 1.3rem; margin-top: 5px; }
-            
-            /* Tighten up the VS text */
-            .hl-vs-badge { font-size: 1.2rem; padding: 0; margin: 0; }
-            
-            /* Scale down overlay text so it doesn't break boundaries */
-            .hl-floating-text { font-size: 1.8rem; }
-            #hlStartScreen h1, #hlGameOverScreen h1 { font-size: 2rem; }
-            #hlStartScreen p { font-size: 0.9rem; padding: 0 10px; }
-            .hl-btn { padding: 12px 30px; font-size: 1rem; max-height: 10%;}
-        }
-    </style>
+                    /* Shrink main container padding */
+                    .hl-arcade-container {
+                        padding: 15px;
+                    }
 
-    <div id="hlArcadeContainer" class="hl-arcade-container">
-        <div class="hl-stats-header">
-            <div class="hl-stat-box">
-                <div id="hlScoreVal" class="hl-stat-val">0</div>
-                <div class="hl-stat-lbl">Score</div>
+                    /* Squeeze top stats */
+                    .hl-stats-header {
+                        padding: 10px;
+                        margin-bottom: 15px;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        gap: 15px;
+                    }
+
+                    .hl-stat-box {
+                        flex: 1 1 40%;
+                    }
+
+                    .hl-stat-val {
+                        font-size: 1.4rem;
+                    }
+
+                    .hl-stat-lbl {
+                        font-size: 0.65rem;
+                    }
+
+                    .hl-timer-container {
+                        margin-bottom: 15px;
+                    }
+
+                    /* Stack cards vertically */
+                    .hl-arena {
+                        flex-direction: column;
+                        gap: 5px;
+                    }
+
+                    /* Make cards full width and shorter to save space */
+                    .hl-card-wrapper {
+                        padding: 15px;
+                        width: 100%;
+                        box-sizing: border-box;
+                    }
+
+                    .hl-card-img {
+                        height: 100px;
+                        margin-bottom: 10px;
+                    }
+
+                    .hl-card-title {
+                        font-size: 1rem;
+                        min-height: 1.2rem;
+                    }
+
+                    .hl-card-count {
+                        font-size: 1.3rem;
+                        margin-top: 5px;
+                    }
+
+                    /* Tighten up the VS text */
+                    .hl-vs-badge {
+                        font-size: 1.2rem;
+                        padding: 0;
+                        margin: 0;
+                    }
+
+                    /* Scale down overlay text so it doesn't break boundaries */
+                    .hl-floating-text {
+                        font-size: 1.8rem;
+                    }
+
+                    #hlStartScreen h1,
+                    #hlGameOverScreen h1 {
+                        font-size: 2rem;
+                    }
+
+                    #hlStartScreen p {
+                        font-size: 0.9rem;
+                        padding: 0 10px;
+                    }
+
+                    .hl-btn {
+                        padding: 12px 30px;
+                        font-size: 1rem;
+                        max-height: 10%;
+                    }
+                }
+            </style>
+
+            <div id="hlArcadeContainer" class="hl-arcade-container">
+                <div class="hl-stats-header">
+                    <div class="hl-stat-box">
+                        <div id="hlScoreVal" class="hl-stat-val">0</div>
+                        <div class="hl-stat-lbl">Score</div>
+                    </div>
+                    <div class="hl-stat-box">
+                        <div id="hlComboVal" class="hl-stat-val">1.0x</div>
+                        <div class="hl-stat-lbl">Combo</div>
+                    </div>
+                    <div class="hl-stat-box">
+                        <div id="hlStreakVal" class="hl-stat-val">0</div>
+                        <div class="hl-stat-lbl">Streak</div>
+                    </div>
+                    <div class="hl-stat-box">
+                        <div id="hlBestVal" class="hl-stat-val">0</div>
+                        <div class="hl-stat-lbl">High Score</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span
+                        style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #8a8f9d; font-weight: bold;">Time
+                        Remaining</span>
+                    <span id="hlTimerText"
+                        style="font-family: monospace; font-size: 1.2rem; font-weight: 900; color: #00f5d4; text-shadow: 0 0 10px rgba(0,245,212,0.4);">60.0s</span>
+                </div>
+                <div class="hl-timer-container">
+                    <div id="hlTimerBar"></div>
+                </div>
+
+                <div class="hl-arena">
+                    <div id="hlCardLeft" class="hl-card-wrapper">
+                        <img id="hlImgLeft" src="" class="hl-card-img" alt="Left Entry">
+                        <div id="hlNameLeft" class="hl-card-title"></div>
+                        <div id="hlCountLeft" class="hl-card-count">-- Decks</div>
+                    </div>
+
+                    <div id="hlVsBadge" class="hl-vs-badge">VS</div>
+
+                    <div id="hlCardRight" class="hl-card-wrapper">
+                        <img id="hlImgRight" src="" class="hl-card-img" alt="Right Entry">
+                        <div id="hlNameRight" class="hl-card-title"></div>
+                        <div id="hlCountRight" class="hl-card-count">??? Decks</div>
+                    </div>
+                </div>
+
+                <p
+                    style="text-align: center; color: #8a8f9d; font-size: 0.9rem; margin-top: 10px; margin-bottom: 10px;">
+                    Which card is used in <strong>MORE</strong> decks? Click your selection fast!
+                </p>
+
+                <div class="hl-controls-footer">
+                    <button id="hlSkipBtn" class="hl-btn-skip">⚡ Skip Matchup (-2s) | <span id="hlSkipCount">3</span>
+                        Left</button>
+                </div>
+
+                <div id="hlStartScreen" class="hl-overlay">
+                    <h1 style="font-size: 2.5rem; margin-bottom: 10px; color: #fff; text-align:center;">SPEED RUNNER
+                    </h1>
+                    <p
+                        style="color: #8a8f9d; margin-bottom: 25px; text-align: center; max-width: 450px; line-height: 1.5;">
+                        60 seconds on the clock. Correct guesses add time and juice your combo.<br>
+                        <span style="color:#ff007f;">Wrong answers burn time.</span>
+                    </p>
+                    <button id="hlStartBtn" class="hl-btn">Start Game</button>
+                </div>
+
+                <div id="hlGameOverScreen" class="hl-overlay" style="display: none;">
+                    <h1 class="hl-gameover-animate"
+                        style="font-size: 2.5rem; color: #ff007f; margin-bottom: 15px; animation-delay: 0s;">TIME OUT!
+                    </h1>
+
+                    <div id="hlFinalSummary" style="color: #fff; margin-bottom: 25px; text-align: center;"></div>
+
+                    <button id="hlRestartBtn" class="hl-btn hl-gameover-animate" style="animation-delay: 1.1s;">Run It
+                        Back</button>
+                </div>
             </div>
-            <div class="hl-stat-box">
-                <div id="hlComboVal" class="hl-stat-val">1.0x</div>
-                <div class="hl-stat-lbl">Combo</div>
-            </div>
-            <div class="hl-stat-box">
-                <div id="hlStreakVal" class="hl-stat-val">0</div>
-                <div class="hl-stat-lbl">Streak</div>
-            </div>
-            <div class="hl-stat-box">
-                <div id="hlBestVal" class="hl-stat-val">0</div>
-                <div class="hl-stat-lbl">High Score</div>
-            </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #8a8f9d; font-weight: bold;">Time Remaining</span>
-    <span id="hlTimerText" style="font-family: monospace; font-size: 1.2rem; font-weight: 900; color: #00f5d4; text-shadow: 0 0 10px rgba(0,245,212,0.4);">60.0s</span>
-</div>
-<div class="hl-timer-container">
-    <div id="hlTimerBar"></div>
-</div>
-
-        <div class="hl-arena">
-            <div id="hlCardLeft" class="hl-card-wrapper">
-                <img id="hlImgLeft" src="" class="hl-card-img" alt="Left Entry">
-                <div id="hlNameLeft" class="hl-card-title"></div>
-                <div id="hlCountLeft" class="hl-card-count">-- Decks</div>
-            </div>
-
-            <div id="hlVsBadge" class="hl-vs-badge">VS</div>
-
-            <div id="hlCardRight" class="hl-card-wrapper">
-                <img id="hlImgRight" src="" class="hl-card-img" alt="Right Entry">
-                <div id="hlNameRight" class="hl-card-title"></div>
-                <div id="hlCountRight" class="hl-card-count">??? Decks</div>
-            </div>
-        </div>
-        
-        <p style="text-align: center; color: #8a8f9d; font-size: 0.9rem; margin-top: 10px; margin-bottom: 10px;">
-            Which card is used in <strong>MORE</strong> decks? Click your selection fast!
-        </p>
-
-        <div class="hl-controls-footer">
-            <button id="hlSkipBtn" class="hl-btn-skip">⚡ Skip Matchup (-2s) | <span id="hlSkipCount">3</span> Left</button>
-        </div>
-
-        <div id="hlStartScreen" class="hl-overlay">
-            <h1 style="font-size: 2.5rem; margin-bottom: 10px; color: #fff; text-align:center;">SPEED RUNNER</h1>
-            <p style="color: #8a8f9d; margin-bottom: 25px; text-align: center; max-width: 450px; line-height: 1.5;">
-                60 seconds on the clock. Correct guesses add time and juice your combo.<br>
-                <span style="color:#ff007f;">Wrong answers burn time.</span>
-            </p>
-            <button id="hlStartBtn" class="hl-btn">Start Game</button>
-        </div>
-
-        <div id="hlGameOverScreen" class="hl-overlay" style="display: none;">
-    <h1 class="hl-gameover-animate" style="font-size: 2.5rem; color: #ff007f; margin-bottom: 15px; animation-delay: 0s;">TIME OUT!</h1>
-    
-    <div id="hlFinalSummary" style="color: #fff; margin-bottom: 25px; text-align: center;"></div>
-    
-    <button id="hlRestartBtn" class="hl-btn hl-gameover-animate" style="animation-delay: 1.1s;">Run It Back</button>
-</div>
-    </div>
-</section>
+        </section>
 
         <section id="synergyView" class="hidden">
             <div id="synergyCanvasContainer"
