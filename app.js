@@ -3040,45 +3040,58 @@ document.addEventListener("click", () => {
         generateDeckBtn.disabled = totalCards >= 40;
 
         if (totalCards >= 40) {
-            const classArray = Array.from(activeClasses).sort();
-            const heroName = heroMap[classArray.join(',')] || `Any ${classArray.join(' / ')} Hero`;
-            const isPlant = currentFaction === "Plant";
-            const aiDeckName = generateDeckName(currentSeeds, isPlant);
+    const classArray = Array.from(activeClasses).sort();
+    let heroName = "";
+    let heroesData = [];
 
-            if (title) {
-                title.classList.remove('hidden');
+    // Handle single vs multiple classes
+    if (classArray.length === 1) {
+        const singleClass = classArray[0];
+        heroName = `Any ${singleClass} Hero`; // Used for clipboard
+        heroesData = [{
+            name: singleClass, // Used for the label under the avatar
+            imgFilename: `${singleClass.toLowerCase().replace(/[\s-]+/g, '_')}.webp`
+        }];
+    } else {
+        heroName = heroMap[classArray.join(',')] || `Any ${classArray.join(' / ')} Hero`;
+        heroesData = heroName.split(/\s*\/\s*/).map(name => ({
+            name: name,
+            imgFilename: `${name.replace(/[\s-]+/g, '_')}.webp`
+        }));
+    }
 
-                // Split shared heroes safely (e.g., "Citron / Beta-Carrotina" -> ["Citron", "Beta-Carrotina"])
-                const heroes = heroName ? heroName.split(/\s*\/\s*/) : [];
+    const isPlant = currentFaction === "Plant";
+    const aiDeckName = generateDeckName(currentSeeds, isPlant);
 
-                const heroBadgesHtml = heroes.map(name => {
-                    // Formats filename to match your image folder structure
-                    const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
-                    return `
+    if (title) {
+        title.classList.remove('hidden');
+
+        const heroBadgesHtml = heroesData.map(hero => {
+            return `
             <div class="title-hero-pill">
-                <img src="hero_images/${imgFilename}" alt="${name}" class="title-hero-avatar">
-                <span class="title-hero-label">${name}</span>
+                <img src="hero_images/${hero.imgFilename}" alt="${hero.name}" class="title-hero-avatar">
+                <span class="title-hero-label">${hero.name}</span>
             </div>
         `;
-                }).join('');
+        }).join('');
 
-                title.innerHTML = `
+        title.innerHTML = `
         <div style="font-size: 1.2em; color: var(--accent); font-style: italic; margin-bottom: 8px; text-align: center;">"${aiDeckName}"</div>
         <div class="title-hero-container">
             ${heroBadgesHtml}
         </div>
     `;
-            }
+    }
 
-            currentClipboardText = `Deck: ${aiDeckName}\nHero: ${heroName}\n\n`;
-            if (actionContainer) {
-                actionContainer.classList.remove('hidden');
-                actionContainer.style.display = 'flex';
-            }
-        } else {
-            if (title) title.classList.add('hidden');
-            if (actionContainer) actionContainer.style.display = 'none';
-        }
+    currentClipboardText = `Deck: ${aiDeckName}\nHero: ${heroName}\n\n`;
+    if (actionContainer) {
+        actionContainer.classList.remove('hidden');
+        actionContainer.style.display = 'flex';
+    }
+} else {
+    if (title) title.classList.add('hidden');
+    if (actionContainer) actionContainer.style.display = 'none';
+}
 
         let displaySeeds = [...currentSeeds].sort((a, b) => {
             const costA = cardDatabase[a.name]?.Cost || 0;
