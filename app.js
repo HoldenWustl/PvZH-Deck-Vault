@@ -1173,6 +1173,248 @@ window.getTop10BudgetDecks = function(customCtx) {
 
     return top10Budget;
 };
+window.synthesizeSuperOriginalSTierDeck = async function(iterations = 50000, customCtx) {
+    const db = typeof fullDatabase !== 'undefined' ? fullDatabase : null;
+    const cardDb = typeof cardDatabase !== 'undefined' ? cardDatabase : null;
+    
+    if (!db || !cardDb) {
+        console.error("Error: Missing database scope.");
+        return;
+    }
+
+    const activeCtx = customCtx || (typeof ctx !== 'undefined' ? ctx : undefined);
+    console.log(`%c[Initialization] Prepping high-speed evolutionary synthesizer for ${iterations} iterations...`, "color: #00ffcc");
+
+    // --- STEP 1: Parse DB for Jaccard baselines ---
+    const allDbSets = [];
+    const seedDecks = [];
+    
+    const parseCardName = (raw) => {
+        const match = raw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+        return match ? match[2].trim() : raw.trim();
+    };
+
+    for (const key in db) {
+        if (!db[key].cards) continue;
+        const cardSet = new Set(db[key].cards.map(c => parseCardName(c).toLowerCase()));
+        allDbSets.push(cardSet);
+
+        try {
+            const verdict = getDeckVerdictFromCards(db[key].cards, key, activeCtx);
+            if (verdict.grade === 'S') seedDecks.push(db[key].cards);
+        } catch (e) {}
+    }
+
+    const getSimilarity = (testSet) => {
+        let maxSim = 0;
+        for (const dbSet of allDbSets) {
+            let intersection = 0;
+            for (const item of testSet) {
+                // LOWERCASE the item before checking the set!
+                if (dbSet.has(item.toLowerCase())) intersection++;
+            }
+            const union = testSet.size + dbSet.size - intersection;
+            const sim = union === 0 ? 0 : intersection / union;
+            if (sim > maxSim) maxSim = sim;
+        }
+        return maxSim;
+    };
+
+    // --- STEP 2: Build Hero Pools ---
+    const classPools = {};
+    for (const key in cardDb) {
+        const card = cardDb[key];
+        if (!classPools[card.Class]) classPools[card.Class] = [];
+        classPools[card.Class].push(card.Name);
+    }
+
+    const HERO_COMBOS = [
+        "Mega-Grow,Smarty", "Kabloom,Solar", "Guardian,Solar", "Mega-Grow,Solar", "Guardian,Kabloom", 
+        "Guardian,Smarty", "Guardian,Mega-Grow", "Kabloom,Smarty", "Kabloom,Mega-Grow", "Smarty,Solar",
+        "Brainy,Sneaky", "Beastly,Hearty", "Crazy,Sneaky", "Brainy,Hearty", "Beastly,Crazy", 
+        "Beastly,Sneaky", "Brainy,Crazy", "Beastly,Brainy", "Crazy,Hearty", "Hearty,Sneaky"
+    ];
+
+    const heroMap = {
+        "Mega-Grow,Smarty": "Green Shadow", "Kabloom,Solar": "Solar Flare",
+        "Guardian,Solar": "Wall-Knight", "Mega-Grow,Solar": "Chompzilla",
+        "Guardian,Kabloom": "Spudow", "Guardian,Smarty": "Citron / Beta-Carrotina",
+        "Guardian,Mega-Grow": "Grass Knuckles", "Kabloom,Smarty": "Nightcap",
+        "Kabloom,Mega-Grow": "Captain Combustible", "Smarty,Solar": "Rose",
+        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus", "Beastly,Hearty": "The Smash",
+        "Crazy,Sneaky": "Impfinity", "Brainy,Hearty": "Rustbolt",
+        "Beastly,Crazy": "Electric Boogaloo", "Beastly,Sneaky": "Brain Freeze",
+        "Brainy,Crazy": "Professor Brainstorm", "Beastly,Brainy": "Immorticia",
+        "Crazy,Hearty": "Z-Mech", "Hearty,Sneaky": "Neptuna"
+    };
+
+    const DISTRIBUTIONS = [
+        [4,4,4,4,4,4,4,4,4,4],                   
+        [4,4,4,4,4,4,4,3,3,3,3],                 
+        [4,4,4,4,3,3,3,3,3,3,3,3],               
+        [4,3,3,3,3,3,3,3,3,3,3,3,3]              
+    ];
+
+    let globalBestDeck = null;
+    let globalBestOriginality = -1; 
+    let globalBestScore = 0;
+    let globalBestHero = "";
+
+    const RUNS = Math.max(5, Math.floor(iterations / 2000));
+    const STEPS_PER_RUN = Math.floor(iterations / RUNS);
+
+    console.log(`%c[Search Config] Running ${RUNS} independent evolutionary branches. (${STEPS_PER_RUN} mutations per branch).`, "color: #ff9900");
+
+    for (let run = 0; run < RUNS; run++) {
+        await new Promise(r => setTimeout(r, 10)); // Keep UI responsive
+
+        const heroCombo = HERO_COMBOS[Math.floor(Math.random() * HERO_COMBOS.length)];
+        const classes = heroCombo.split(',');
+        const validPool = [...new Set([...(classPools[classes[0]] || []), ...(classPools[classes[1]] || [])])];
+        
+        const dist = DISTRIBUTIONS[Math.floor(Math.random() * DISTRIBUTIONS.length)];
+        if (validPool.length < dist.length) {
+            console.log(`[Progress] Branch ${run + 1}/${RUNS} skipped (insufficient card pool)...`);
+            continue;
+        }
+
+        let currentDeckSlots = [];
+        let usedCards = new Set();
+
+        let isSeeded = (Math.random() > 0.5 && seedDecks.length > 0);
+        if (isSeeded) {
+            const seed = seedDecks[Math.floor(Math.random() * seedDecks.length)];
+            const seedUnique = seed.map(c => parseCardName(c));
+            for (let i = 0; i < dist.length; i++) {
+                let cardName = seedUnique[i] && validPool.includes(seedUnique[i]) ? seedUnique[i] : null;
+                if (!cardName || usedCards.has(cardName)) {
+                    const available = validPool.filter(c => !usedCards.has(c));
+                    if (available.length === 0) break;
+                    cardName = available[Math.floor(Math.random() * available.length)];
+                }
+                usedCards.add(cardName);
+                currentDeckSlots.push({ name: cardName, count: dist[i] });
+            }
+        } else {
+            for (let count of dist) {
+                const available = validPool.filter(c => !usedCards.has(c));
+                if (available.length === 0) break;
+                let cardName = available[Math.floor(Math.random() * available.length)];
+                usedCards.add(cardName);
+                currentDeckSlots.push({ name: cardName, count: count });
+            }
+        }
+
+        if (currentDeckSlots.length < dist.length) {
+             console.log(`[Progress] Branch ${run + 1}/${RUNS} failed to build seed, skipping...`);
+             continue; 
+        }
+
+        let currentScore = 0;
+        let isCurrentlySTier = false;
+        let currentOriginality = -1;
+
+        const initialArr = currentDeckSlots.map(s => `x${s.count} ${s.name}`);
+        try {
+            const verdict = getDeckVerdictFromCards(initialArr, "synth", activeCtx);
+            currentScore = verdict.score;
+            isCurrentlySTier = (verdict.grade === 'S');
+            if (isCurrentlySTier) {
+                currentOriginality = 1 - getSimilarity(usedCards);
+            }
+        } catch (e) {}
+
+        // --- The Climbing Loop ---
+        for (let step = 0; step < STEPS_PER_RUN; step++) {
+            if (step % 500 === 0) await new Promise(r => setTimeout(r, 0));
+
+            const availableCards = validPool.filter(c => !usedCards.has(c));
+            if (availableCards.length === 0) break; 
+
+            const swapIndex = Math.floor(Math.random() * currentDeckSlots.length);
+            const oldCard = currentDeckSlots[swapIndex].name;
+            const newCard = availableCards[Math.floor(Math.random() * availableCards.length)];
+
+            currentDeckSlots[swapIndex].name = newCard;
+            usedCards.delete(oldCard);
+            usedCards.add(newCard);
+
+            const testArr = currentDeckSlots.map(s => `x${s.count} ${s.name}`);
+            try {
+                const verdict = getDeckVerdictFromCards(testArr, "synth", activeCtx);
+                const isTestSTier = (verdict.grade === 'S');
+                let keepMutation = false;
+
+                if (!isCurrentlySTier) {
+                    if (verdict.score > currentScore) keepMutation = true;
+                } else {
+                    if (isTestSTier) {
+                        const testOriginality = 1 - getSimilarity(usedCards);
+                        
+                        if (testOriginality > currentOriginality) {
+                            keepMutation = true;
+                        } else if (testOriginality === currentOriginality) {
+                            // The missing logic! Climb score even if originality is maxed out.
+                            if (verdict.score > currentScore) keepMutation = true;
+                            else if (Math.random() < 0.5) keepMutation = true; 
+                        }
+                    }
+                }
+
+                if (keepMutation) {
+                    currentScore = verdict.score;
+                    isCurrentlySTier = isTestSTier;
+                    if (isCurrentlySTier) currentOriginality = 1 - getSimilarity(usedCards);
+
+                    // Check for Global Record (Originality first, then Score tie-breaker)
+                    let isNewRecord = false;
+                    if (isCurrentlySTier) {
+                        if (currentOriginality > globalBestOriginality) {
+                            isNewRecord = true;
+                        } else if (currentOriginality === globalBestOriginality && currentScore > globalBestScore) {
+                            isNewRecord = true;
+                        }
+                    }
+
+                    if (isNewRecord) {
+                        globalBestOriginality = currentOriginality;
+                        globalBestDeck = [...testArr];
+                        globalBestScore = currentScore;
+                        globalBestHero = heroMap[heroCombo];
+                        console.log(`[New Record] Originality: ${(currentOriginality * 100).toFixed(1)}% | Score: ${globalBestScore.toFixed(2)} | Hero: ${globalBestHero}`);
+                    }
+                } else {
+                    currentDeckSlots[swapIndex].name = oldCard;
+                    usedCards.delete(newCard);
+                    usedCards.add(oldCard);
+                }
+            } catch (e) {
+                currentDeckSlots[swapIndex].name = oldCard;
+                usedCards.delete(newCard);
+                usedCards.add(oldCard);
+            }
+        }
+        console.log(`%c[Progress] Branch ${run + 1}/${RUNS} completed.`, "color: #888;");
+    }
+
+    if (!globalBestDeck) {
+        console.error("Failed to synthesize an S-tier deck. Try increasing iterations.");
+        return null;
+    }
+
+    console.log(`%c--- SYNTHESIS COMPLETE ---`, "color: #00ffcc; font-weight: bold; font-size: 14px;");
+    console.log(`%cSUPER ORIGINAL S-TIER DECK FOUND!`, "color: #ffffff; background: #1a2226; padding: 4px; border-left: 4px solid #00ffcc;");
+    console.log(`Originality Score: ${(globalBestOriginality * 100).toFixed(1)}%`);
+    console.log(`Evaluation Score: ${globalBestScore.toFixed(2)}`);
+    console.log(`Hero: ${globalBestHero}`);
+    console.log(`\nDecklist:\n` + globalBestDeck.sort().join('\n'));
+
+    return {
+        cards: globalBestDeck,
+        originalityScore: (globalBestOriginality * 100).toFixed(1),
+        hero: globalBestHero
+    };
+};
     // --- Render Decks Function ---
   
 function pvzBuildAnalyzeDeck(deckInfo) {
@@ -3783,8 +4025,8 @@ const GRADE_CUTOFFS = [
     { letter: 'S', min: 95, label: 'Excellent' },
     { letter: 'A', min: 87.5, label: 'Good' },
     { letter: 'B', min: 75,   label: 'Average' },
-    { letter: 'C', min: 65,   label: 'Bad' },
-    { letter: 'D', min: 50,   label: 'Weak' },
+    { letter: 'C', min: 65,   label: 'Weak' },
+    { letter: 'D', min: 50,   label: 'Bad' },
     { letter: 'F', min: 0,    label: 'Awful' },
 ];
 
