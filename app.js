@@ -1174,213 +1174,373 @@ window.getTop10BudgetDecks = function(customCtx) {
     return top10Budget;
 };
     // --- Render Decks Function ---
-    function renderDecks(data) {
-    const searchInput = document.getElementById('searchInput');
-    const statsBtn = document.getElementById('statsBtn');
-    const loadingIndicator = document.getElementById('loadingIndicator');
+  
+function pvzBuildAnalyzeDeck(deckInfo) {
+  return (deckInfo.cards || []).map(cardRaw => {
+    const raw = String(cardRaw).trim();
 
-    // 1. Show loader and disable controls BEFORE rendering
-    if (loadingIndicator) loadingIndicator.classList.remove('hidden');
-    deckGrid.classList.add('hidden');
-    if (statsBtn) statsBtn.disabled = true;
-    if (guidesBtn) guidesBtn.disabled = true;
-    if (crafterBtn) crafterBtn.disabled = true;
-    if (gamesBtn) gamesBtn.disabled = true;
-    if (tiersBtn) tiersBtn.disabled = true;
+    // Supports: "x4 Card Name", "4x Card Name", "4 Card Name", or just "Card Name"
+    const countMatch = raw.match(/^\s*(?:x(\d+)|(\d+)x|(\d+))\s+/i);
+    const count = countMatch
+      ? Number(countMatch[1] || countMatch[2] || countMatch[3])
+      : 4;
 
-    setTimeout(() => {
-        deckGrid.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        const ctx = getVerdictContext();
+    const cleanName = raw
+      .replace(/^[^a-zA-Z]*(x?\d+|\d+x|\d+)\s*/i, '')
+      .trim();
 
-        // --- FETCH STARRED DECKS FROM LOCAL STORAGE ---
-        const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
+    const underscoreName = cleanName.replace(/\s+/g, '_');
+    const spaceName = cleanName.replace(/_/g, ' ');
 
-        // --- PRE-PROCESS DUPLICATES (unchanged) ---
-        const signatureMap = new Map();
-        for (const [deckKey, deckInfo] of Object.entries(data)) {
-            if (!deckInfo.cards) continue;
-            const signature = deckInfo.cards.map(c => c.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase()).sort().join('|');
-            let dateVal = 0;
-            if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
-                const parsed = Date.parse(deckInfo.upload_date);
-                if (!isNaN(parsed)) dateVal = parsed;
+    let finalName = underscoreName;
+
+    if (cardDatabase[underscoreName]) {
+      finalName = underscoreName;
+    } else if (cardDatabase[cleanName]) {
+      finalName = cleanName;
+    } else if (cardDatabase[spaceName]) {
+      finalName = spaceName;
+    }
+
+    return {
+      name: finalName,
+      count
+    };
+  });
+}
+let pvzDeckCache = {};     // deckKey -> data the sheet needs (rebuilt each render)
+let pvzActiveTile = null;  // the tile we opened from, so we can fly back on close
+
+function renderDecks(data) {
+  const loadingIndicator = document.getElementById('loadingIndicator');
+
+  // show loader + disable controls (same as before)
+  if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+  deckGrid.classList.add('hidden');
+  if (statsBtn)   statsBtn.disabled   = true;
+  if (guidesBtn)  guidesBtn.disabled  = true;
+  if (crafterBtn) crafterBtn.disabled = true;
+  if (gamesBtn)   gamesBtn.disabled   = true;
+  if (tiersBtn)   tiersBtn.disabled   = true;
+
+  setTimeout(() => {
+    deckGrid.innerHTML = '';
+    pvzDeckCache = {};
+    const fragment = document.createDocumentFragment();
+    const ctx = getVerdictContext();
+    const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
+
+    /* ---- duplicate pre-pass (your logic, unchanged) ---- */
+    const signatureMap = new Map();
+    for (const [deckKey, deckInfo] of Object.entries(data)) {
+      if (!deckInfo.cards) continue;
+      const signature = deckInfo.cards.map(c => c.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase()).sort().join('|');
+      let dateVal = 0;
+      if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
+        const parsed = Date.parse(deckInfo.upload_date);
+        if (!isNaN(parsed)) dateVal = parsed;
+      }
+      if (!signatureMap.has(signature)) signatureMap.set(signature, []);
+      signatureMap.get(signature).push({ key: deckKey, dateVal });
+    }
+    const duplicateKeys = new Set();
+    for (const decks of signatureMap.values()) {
+      if (decks.length > 1) {
+        decks.sort((a, b) => b.dateVal - a.dateVal);
+        for (let i = 1; i < decks.length; i++) duplicateKeys.add(decks[i].key);
+      }
+    }
+
+    let cardIndex = 0;
+    for (const [deckKey, deckInfo] of Object.entries(data)) {
+
+      /* ---- faction + classes (your logic, unchanged) ---- */
+      let factionClass = 'plant-deck';
+      const uniqueClasses = new Set();
+      let factionFound = false;
+      if (deckInfo.cards && deckInfo.cards.length) {
+        for (const cardRaw of deckInfo.cards) {
+          const parsed = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
+          const cardData = cardDatabase[parsed.replace(/ /g, '_')] || cardDatabase[parsed.replace(/_/g, ' ')];
+          if (cardData) {
+            const cls = cardData.Class || cardData.class;
+            if (cls) uniqueClasses.add(cls);
+            if (!factionFound && (cardData.Type || cardData.type)) {
+              const t = (cardData.Type || cardData.type).toLowerCase();
+              if (t.includes('zombie'))      { factionClass = 'zombie-deck'; factionFound = true; }
+              else if (t.includes('plant'))  { factionClass = 'plant-deck';  factionFound = true; }
             }
-            if (!signatureMap.has(signature)) {
-                signatureMap.set(signature, []);
-            }
-            signatureMap.get(signature).push({ key: deckKey, dateVal: dateVal });
+          }
         }
+      }
 
-        const duplicateKeys = new Set();
-        for (const decks of signatureMap.values()) {
-            if (decks.length > 1) {
-                decks.sort((a, b) => b.dateVal - a.dateVal);
-                for (let i = 1; i < decks.length; i++) {
-                    duplicateKeys.add(decks[i].key);
-                }
-            }
-        }
-        // -----------------------------------
+      /* ---- heroes -> portraits (your heroMap + hero_images path) ---- */
+let heroes = [];
+if (uniqueClasses.size === 2) {
+  const ca = Array.from(uniqueClasses);
+  const heroName = heroMap[`${ca[0]},${ca[1]}`] || heroMap[`${ca[1]},${ca[0]}`];
+  if (heroName) heroes = heroName.split(/\s*\/\s*/).map(n => ({
+    name: n, 
+    img: `hero_images/${n.replace(/[\s-]+/g, '_')}.webp`
+  }));
+} else if (uniqueClasses.size === 1) {
+  const singleClass = Array.from(uniqueClasses)[0];
+  heroes = [{
+    name: singleClass,
+    img: `hero_images/${singleClass.toLowerCase().replace(/[\s-]+/g, '_')}.webp`
+  }];
+}
 
-        let cardIndex = 0;
+      const verdict   = deckInfo.verdict || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
+      deckInfo.verdict = verdict;
+      const dateStr    = (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") ? deckInfo.upload_date : "Unknown Date";
+      const creditStr  = deckInfo.credit || "Unknown";
+      const creditIcon = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
+      const isDup      = duplicateKeys.has(deckKey);
+      const isStarred  = starredDecks[deckKey] === true;
 
-        for (const [deckKey, deckInfo] of Object.entries(data)) {
-            const cardEl = document.createElement('div');
+      // stash for the sheet
+      pvzDeckCache[deckKey] = { deckInfo, factionClass, heroes, verdict, dateStr, creditStr, creditIcon, isDup };
 
-            // --- FACTION & CLASS EVALUATION LOOP (unchanged) ---
-            let factionClass = 'plant-deck';
-            const uniqueClasses = new Set();
-            let factionFound = false;
+      /* ---- build the TILE (visual, minimal text) ---- */
+      const tile = document.createElement('div');
+      tile.className = `deck-card ${factionClass}`;
+      tile.dataset.deckKey = deckKey;
+      tile.tabIndex = 0;
+      tile.setAttribute('role', 'button');
+      tile.setAttribute('aria-label', `Open ${deckInfo.name}`);
+      tile.style.setProperty('--reveal-delay', `${Math.min(cardIndex * 8, 600)}ms`);
+      cardIndex++;
 
-            if (deckInfo.cards && deckInfo.cards.length > 0) {
-                for (const cardRaw of deckInfo.cards) {
-                    let parsedCardName = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
-                    const nameWithSpaces = parsedCardName.replace(/_/g, ' ');
-                    const nameWithUnderscores = parsedCardName.replace(/ /g, '_');
-                    const cardData = cardDatabase[nameWithUnderscores] || cardDatabase[nameWithSpaces];
+      tile.innerHTML = `
+        <div class="pvz-tile-inner">
+          <div class="pvz-tile-wash"></div>
+          <div class="pvz-tile-heroes ${heroes.length === 2 ? 'two' : ''}">${pvzHeroPortraits(heroes)}</div>
+          <div class="pvz-grade-seal" style="color:${verdict.gradeColor || '#15140d'}">${verdict.grade || '?'}</div>
+          ${isDup ? `<span class="deck-duplicate-badge" title="Older duplicate">Dup</span>` : ''}
+          <button class="deck-star-btn ${isStarred ? 'starred' : ''}" data-deck="${deckKey}" aria-label="Star deck">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </button>
+          <div class="pvz-tile-foot">
+            <p class="pvz-tile-name">${deckInfo.name}</p>
+            <span class="pvz-tile-credit"><img src="${creditIcon}" alt="">${creditStr}</span>
+          </div>
+        </div>`;
+      fragment.appendChild(tile);
+    }
 
-                    if (cardData) {
-                        const cls = cardData.Class || cardData.class;
-                        if (cls) uniqueClasses.add(cls);
+    deckGrid.appendChild(fragment);
 
-                        if (!factionFound && (cardData.Type || cardData.type)) {
-                            const typeString = (cardData.Type || cardData.type).toLowerCase();
-                            if (typeString.includes('zombie')) {
-                                factionClass = 'zombie-deck';
-                                factionFound = true;
-                            } else if (typeString.includes('plant')) {
-                                factionClass = 'plant-deck';
-                                factionFound = true;
-                            }
-                        }
-                    }
-                }
-            }
+    if (loadingIndicator) loadingIndicator.classList.add('hidden');
+    deckGrid.classList.remove('hidden');
+    if (statsBtn)   statsBtn.disabled   = false;
+    if (guidesBtn)  guidesBtn.disabled  = false;
+    if (tiersBtn)   tiersBtn.disabled   = false;
+    if (crafterBtn) crafterBtn.disabled = false;
+    if (gamesBtn)   gamesBtn.disabled   = false;
 
-            cardEl.className = `deck-card ${factionClass}`;
-            cardEl.style.setProperty('--reveal-delay', `${Math.min(cardIndex * 8, 600)}ms`);
-            cardIndex++;
+    pvzBindGrid();
+  }, 50);
+}
 
-            // --- MATCH HERO STAMP (unchanged) ---
-            let heroStampHtml = '';
-            if (uniqueClasses.size === 2) {
-                const classesArray = Array.from(uniqueClasses);
-                const comboA = `${classesArray[0]},${classesArray[1]}`;
-                const comboB = `${classesArray[1]},${classesArray[0]}`;
-                const heroName = heroMap[comboA] || heroMap[comboB];
+function pvzHeroPortraits(heroes) {
+  if (!heroes.length) return `<div class="pvz-hero-portrait" aria-hidden="true">?</div>`;
+  return heroes.map(h => {
+    const initials = h.name.split(/[\s-]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    // <img> sits on top of the initials; if the file is missing it removes itself and the initials show
+    return `<div class="pvz-hero-portrait" title="${h.name}">
+        <img src="${h.img}" alt="${h.name}" onerror="this.remove()">${initials}
+      </div>`;
+  }).join('');
+}
 
-                if (heroName) {
-                    const individualHeroes = heroName.split(/\s*\/\s*/);
-                    const badgesHtml = individualHeroes.map(name => {
-                        const imgFilename = name.replace(/[\s-]+/g, '_') + '.webp';
-                        return `<img src="hero_images/${imgFilename}" alt="${name}" class="hero-badge-img" title="${name}">`;
-                    }).join('');
+/* one delegated handler for opening the sheet — bound once */
+function pvzBindGrid() {
+  const grid = document.getElementById('deckGrid');
+  if (grid.dataset.pvzBound) return;     // don't double-bind on re-render
+  grid.dataset.pvzBound = '1';
 
-                    heroStampHtml = `<div class="deck-hero-stamps-wrapper">${badgesHtml}</div>`;
-                }
-            }
-            // -----------------------------------
+  grid.addEventListener('click', (e) => {
+    // let your existing star handler deal with stars; ignore them here
+    if (e.target.closest('.deck-star-btn')) return;
+    const tile = e.target.closest('.deck-card');
+    if (tile) pvzOpenSheet(tile.dataset.deckKey, tile);
+  });
 
-            const isMobileView = window.matchMedia('(max-width: 600px)').matches;
-            let cardsHtml = `
-                <details class="deck-cards-details"${isMobileView ? '' : ' open'}>
-                    <summary class="deck-cards-summary">View Card List</summary>
-                    <ul class="card-list">`;
-            deckInfo.cards.forEach(card => {
-                const cleanCardName = card.replace(/_/g, ' ');
-                cardsHtml += `<li>${cleanCardName}</li>`;
-            });
-            cardsHtml += '</ul></details>';
+  grid.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.target.closest('.deck-star-btn')) return;
+    const tile = e.target.closest('.deck-card');
+    if (tile) { e.preventDefault(); pvzOpenSheet(tile.dataset.deckKey, tile); }
+  });
+}
 
-            const dateStr = deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE" ? deckInfo.upload_date : "Unknown Date";
-            const creditStr = deckInfo.credit || "Unknown";
-            const videoId = getYouTubeId(deckInfo.youtube_url);
-            const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
-            const creditIconSrc = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
-            const isFryVideo = creditStr === "FryEmUp" && deckInfo.youtube_url;
+/* ---------- OPEN: fly from the tile to center, then the deck unfolds ---------- */
+function pvzOpenSheet(deckKey, tileEl) {
+  const rd = pvzDeckCache[deckKey];
+  if (!rd) return;
+  pvzActiveTile = tileEl;
+  const { deckInfo, factionClass, heroes, verdict, dateStr, creditStr, creditIcon, isDup } = rd;
 
-            const videoControlsHtml = isFryVideo ? `
-                <details class="video-dropdown" ontoggle="this.closest('.deck-card').querySelector('.video-preview').classList.toggle('hidden', !this.open)">
-                    <summary>View Video</summary>
-                </details>` : '';
+  // real card images, using YOUR card_images path + png→webp fallback
+  const cardsHtml = (deckInfo.cards || []).map((cardString, i) => {
+    const m = cardString.trim().match(/^x(\d+)\s+(.+)$/i);
+    let count = 1, raw = cardString;
+    if (m) { count = parseInt(m[1], 10); raw = m[2]; }
+    const display = raw.replace(/_/g, ' ');
+    const db = display.replace(/ /g, '_');
+    return `<div class="pvz-card" style="--i:${i}">
+        <img src="card_images/${db}.png" alt="${display}" title="${display}" loading="lazy"
+             onerror="this.onerror=null;this.src='card_images/${db}.webp'">
+        <span class="pvz-card-qty">x${count}</span>
+      </div>`;
+  }).join('');
 
-            const videoPreviewHtml = isFryVideo ? `
-                <div class="video-preview hidden">
-                    <a href="${deckInfo.youtube_url}" target="_blank" title="${deckInfo.youtube_title}">
-                        <img src="${thumbnailUrl}" alt="Video Thumbnail" loading="lazy">
-                        <div class="video-title-overlay">${deckInfo.youtube_title}</div>
-                    </a>
-                </div>` : '';
+  const videoId = getYouTubeId(deckInfo.youtube_url);
+  const thumb   = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+  const videoHtml = (creditStr === "FryEmUp" && deckInfo.youtube_url && thumb) ? `
+      <a class="pvz-sheet-video" href="${deckInfo.youtube_url}" target="_blank" rel="noopener" title="${deckInfo.youtube_title || ''}">
+        <span class="pvz-video-thumb"><img src="${thumb}" alt=""><span class="pvz-play"></span></span>
+        <span class="pvz-video-title">${deckInfo.youtube_title || 'Watch on YouTube'}</span>
+      </a>` : '';
 
-            const verdict = deckInfo.verdict || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
-            deckInfo.verdict = verdict;
+  const overlay = document.createElement('div');
+  overlay.className = 'pvz-sheet-overlay';
+  overlay.innerHTML = `
+  <div class="pvz-sheet ${factionClass}" role="dialog" aria-modal="true" aria-label="${deckInfo.name}">
+    <button class="pvz-sheet-close" aria-label="Close">&times;</button>
 
-            const duplicateBadgeHtml = duplicateKeys.has(deckKey)
-                ? `<span class="deck-duplicate-badge" title="Older Duplicate Deck" style="background:#ffaa00; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.8em; cursor:help;">Dup</span>`
-                : '';
+    <div class="pvz-sheet-banner">
+      <div class="pvz-sheet-heroes ${heroes.length === 2 ? 'two' : ''}">
+        ${pvzHeroPortraits(heroes)}
+      </div>
 
-            // CHECK STAR STATUS
-            const isStarred = starredDecks[deckKey] === true;
-            const starClass = isStarred ? 'deck-star-btn starred' : 'deck-star-btn';
+      <div class="pvz-sheet-titlewrap">
+        <h2 class="pvz-sheet-title">${deckInfo.name}</h2>
 
-            // ADDED: Star button injected into the deck-header next to the date
-            cardEl.innerHTML = `
-                <div class="deck-card-inner">
-                    <div class="deck-header">
-                        <div class="deck-title-group">
-                            <h3 class="deck-title">${deckInfo.name}</h3>
-                            <div class="deck-badges">
-                                <span class="deck-credit" title="${creditStr}">${creditStr}</span>
-                                <span class="deck-rating deck-rating-${deckInfo.verdict.grade}"
-                                      style="color:${deckInfo.verdict.gradeColor}"
-                                      title="Deck rating">
-                                    ${deckInfo.verdict.grade}
-                                </span>
-                                ${duplicateBadgeHtml}
-                            </div>
-                        </div>
-                        <div class="deck-header-right">
-                            <span class="deck-date">${dateStr}</span>
-                            <button class="${starClass}" data-deck="${deckKey}" aria-label="Star deck">
-                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                   
-                    <div class="deck-controls-wrapper">
-                        ${videoControlsHtml}
-                        <details class="visual-deck-details">
-                            <summary class="view-visual-btn" 
-                                     data-title="${deckInfo.name}" 
-                                     data-cards="${encodeURIComponent(JSON.stringify(deckInfo.cards))}">
-                                View Visual Deck
-                            </summary>
-                        </details>
-                    </div>
+        <div class="pvz-sheet-meta">
+          <span class="pvz-meta-text">
+            <span class="pvz-meta-item">
+              <img class="pvz-meta-credit" src="${creditIcon}" alt="">${creditStr}
+            </span>
+            <span class="pvz-meta-item">${dateStr}</span>
+            ${isDup ? `<span class="pvz-meta-item pvz-meta-dup">older dup</span>` : ''}
+          </span>
+        </div>
+      </div>
+    </div>
 
-                    ${videoPreviewHtml}
-                    ${cardsHtml}
+    <div class="pvz-sheet-body">
+      <div class="pvz-card-grid">${cardsHtml}</div>
 
-                    ${heroStampHtml}
-                    <img class="credit-icon" src="${creditIconSrc}" alt="${creditStr} icon">
-                </div>
-            `;
+      <div class="pvz-deck-side">
+        <div class="pvz-deck-rating" style="color:${verdict.gradeColor || '#fff'}">
+          <span class="pvz-rating-label">Rating</span>
+          <span class="pvz-rating-grade">${verdict.grade || '?'}</span>
+        </div>
 
-            fragment.appendChild(cardEl);
-        }
+        <button id="pvzAnalyzeDeckBtn" class="pvz-analyze-deck-btn" type="button">
+          Analyze Deck
+        </button>
+      </div>
 
-        deckGrid.appendChild(fragment);
+      ${videoHtml}
+    </div>
+  </div>`;
+  const analyzeBtn = overlay.querySelector('#pvzAnalyzeDeckBtn');
 
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
-        deckGrid.classList.remove('hidden');
-        if (statsBtn) statsBtn.disabled = false;
-        if (guidesBtn) guidesBtn.disabled = false;
-        if (tiersBtn) tiersBtn.disabled = false;
-        if (crafterBtn) crafterBtn.disabled = false;
-        if (gamesBtn) gamesBtn.disabled = false;
+if (analyzeBtn) {
+  analyzeBtn.onclick = function (e) {
+    e.stopPropagation();
 
-    }, 50);
+    const deckToAnalyze = pvzBuildAnalyzeDeck(deckInfo);
+    const cardDictionary = Object.keys(cardDatabase).sort();
+
+    const encodedCards = deckToAnalyze.map(card => {
+      const index = cardDictionary.indexOf(card.name);
+
+      if (index === -1) {
+        console.error(`🚨 Could not find card in dictionary: ${card.name}`);
+        return null;
+      }
+
+      const cardIndex = index.toString(36);
+
+      return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
+    });
+
+    if (encodedCards.includes(null)) {
+      alert("Could not analyze this deck because one or more cards could not be found.");
+      return;
+    }
+
+    const minimalDeckString = encodedCards.join('-');
+
+    const analyzeUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}#crafter`;
+
+    console.log("Encoding complete. Target URL:", analyzeUrl);
+
+    window.location.href = analyzeUrl;
+  };
+}
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+
+  const sheet = overlay.querySelector('.pvz-sheet');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduce && tileEl) {
+    const t = tileEl.getBoundingClientRect();
+    const p = sheet.getBoundingClientRect();
+    const dx = (t.left + t.width / 2) - (p.left + p.width / 2);
+    const dy = (t.top + t.height / 2) - (p.top + p.height / 2);
+    const scale = Math.max(t.width / p.width, t.height / p.height);
+    // start AT the tile (inline-important beats any !important in CSS)
+    sheet.style.setProperty('transform', `translate(${dx}px,${dy}px) scale(${scale})`, 'important');
+    sheet.style.setProperty('opacity', '0', 'important');
+    overlay.style.setProperty('opacity', '0', 'important');
+    sheet.getBoundingClientRect(); // reflow
+    requestAnimationFrame(() => {
+      overlay.style.setProperty('transition', 'opacity .3s ease', 'important');
+      overlay.style.setProperty('opacity', '1', 'important');
+      sheet.style.setProperty('transition', 'transform .55s cubic-bezier(.16,1,.3,1), opacity .4s ease', 'important');
+      sheet.style.setProperty('transform', 'translate(0,0) scale(1)', 'important');
+      sheet.style.setProperty('opacity', '1', 'important');
+    });
+  }
+  requestAnimationFrame(() => overlay.classList.add('open')); // staggers the card reveal
+
+  const close = () => pvzCloseSheet(overlay);
+  overlay.querySelector('.pvz-sheet-close').addEventListener('click', close);
+  overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) close(); });
+  overlay._esc = (e) => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', overlay._esc);
+
+  overlay.querySelector('.pvz-sheet-close').focus();
+}
+
+function pvzCloseSheet(overlay) {
+  const sheet = overlay.querySelector('.pvz-sheet');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.removeEventListener('keydown', overlay._esc);
+  const done = () => { overlay.remove(); document.body.style.overflow = ''; };
+
+  if (reduce || !pvzActiveTile || !document.body.contains(pvzActiveTile)) {
+    overlay.style.setProperty('transition', 'opacity .25s ease', 'important');
+    overlay.style.setProperty('opacity', '0', 'important');
+    setTimeout(done, 250); return;
+  }
+  const t = pvzActiveTile.getBoundingClientRect();
+  const p = sheet.getBoundingClientRect();
+  const dx = (t.left + t.width / 2) - (p.left + p.width / 2);
+  const dy = (t.top + t.height / 2) - (p.top + p.height / 2);
+  const scale = Math.max(t.width / p.width, t.height / p.height);
+  overlay.style.setProperty('transition', 'opacity .35s ease', 'important');
+  overlay.style.setProperty('opacity', '0', 'important');
+  sheet.style.setProperty('transition', 'transform .4s cubic-bezier(.16,1,.3,1), opacity .35s ease', 'important');
+  sheet.style.setProperty('transform', `translate(${dx}px,${dy}px) scale(${scale})`, 'important');
+  sheet.style.setProperty('opacity', '0', 'important');
+  setTimeout(done, 400);
 }
 
 // 2. Global Event Listener for Star Buttons (Put this outside renderDecks so it runs once)

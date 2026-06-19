@@ -3519,3 +3519,415 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     font-size: 12px;
     justify-content: center;
 }
+
+
+
+/* =====================================================================
+   PvZ DECKS — VISUAL REDESIGN CSS
+   Paste this at the very END of your style.css.
+   Faction colour carries the meaning; !important so it beats the old
+   .deck-card / .deck-header rules. (The sheet's transform/opacity are
+   driven inline-important from JS, so the open/close animation still wins.)
+   ===================================================================== */
+
+:root {
+  --pvz-gold:#f5c451;
+  --pvz-plant-1:#5ee07e; --pvz-zomb-1:#c084fc;
+  --pvz-ease:cubic-bezier(.16,1,.3,1);
+}
+
+/* ---------- GRID: tighter columns for portrait tiles ---------- */
+#deckGrid.deck-grid{
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr)) !important;
+  gap:18px !important;
+}
+
+/* ---------- TILE ---------- */
+.deck-card{
+  position:relative !important; aspect-ratio:3/4 !important; padding:0 !important;
+  border-radius:20px !important; overflow:hidden !important; cursor:pointer !important;
+  background:#11141b !important; border:1px solid rgba(255,255,255,.08) !important;
+  box-shadow:0 6px 18px rgba(0,0,0,.35) !important;
+  transition:transform .45s var(--pvz-ease), box-shadow .45s var(--pvz-ease), border-color .3s ease !important;
+}
+.pvz-tile-inner{position:absolute !important; inset:0 !important;}
+
+.pvz-tile-wash{position:absolute !important; inset:0 !important; z-index:0 !important;}
+.deck-card.plant-deck .pvz-tile-wash{background:
+  radial-gradient(120% 80% at 50% -10%, var(--pvz-plant-1) 0%, transparent 55%),
+  linear-gradient(180deg,#123a22 0%,#0c2417 70%,#0a1a12 100%) !important;}
+.deck-card.zombie-deck .pvz-tile-wash{background:
+  radial-gradient(120% 80% at 50% -10%, var(--pvz-zomb-1) 0%, transparent 55%),
+  linear-gradient(180deg,#2a1947 0%,#1c1230 70%,#140b22 100%) !important;}
+.pvz-tile-wash::after{content:"" !important; position:absolute !important; inset:0 !important;
+  background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px) !important;
+  background-size:14px 14px !important; mix-blend-mode:overlay !important; opacity:.5 !important;}
+
+/* hero portrait stack — the focal point */
+.pvz-tile-heroes{position:absolute !important; inset:0 0 30% 0 !important; z-index:1 !important;
+  display:flex !important; align-items:center !important; justify-content:center !important;
+  transition:transform .45s var(--pvz-ease) !important;}
+.deck-card:hover .pvz-tile-heroes{transform:translateY(-4px) scale(1.05) !important;}
+.pvz-hero-portrait{position:relative !important; width:62% !important; max-width:120px !important;
+  aspect-ratio:1 !important; border-radius:50% !important; background:#0c0f15 !important;
+  display:grid !important; place-items:center !important; color:#fff !important;
+  font-family:Fredoka,'Segoe UI',sans-serif !important; font-weight:700 !important; font-size:1.7rem !important;
+  border:3px solid rgba(255,255,255,.85) !important; overflow:hidden !important;}
+.deck-card.plant-deck .pvz-hero-portrait{box-shadow:0 0 0 4px rgba(94,224,126,.25),0 8px 22px rgba(0,0,0,.5) !important;}
+.deck-card.zombie-deck .pvz-hero-portrait{box-shadow:0 0 0 4px rgba(192,132,252,.25),0 8px 22px rgba(0,0,0,.5) !important;}
+.pvz-hero-portrait img{position:absolute !important; inset:0 !important; width:100% !important; height:100% !important;
+  object-fit:cover !important; border-radius:50% !important;}
+.pvz-tile-heroes.two .pvz-hero-portrait{width:46% !important;}
+.pvz-tile-heroes.two .pvz-hero-portrait:nth-child(2){margin-left:-22px !important;}
+
+/* name strip */
+.pvz-tile-foot{position:absolute !important; left:0 !important; right:0 !important; bottom:0 !important; z-index:2 !important;
+  padding:30px 12px 12px !important; background:linear-gradient(180deg,transparent,rgba(0,0,0,.78) 60%) !important;}
+.pvz-tile-name{font-family:Fredoka,'Segoe UI',sans-serif !important; font-weight:600 !important;
+  font-size:.92rem !important; line-height:1.15 !important; margin:0 !important; color:#fff !important;
+  display:-webkit-box !important; -webkit-line-clamp:2 !important; -webkit-box-orient:vertical !important; overflow:hidden !important;}
+.pvz-tile-credit{display:inline-flex !important; align-items:center !important; gap:5px !important;
+  margin-top:6px !important; font-size:.72rem !important; color:rgba(255,255,255,.6) !important;}
+.pvz-tile-credit img{width:13px !important; height:13px !important; border-radius:3px !important;}
+
+/* grade seal */
+.pvz-grade-seal{position:absolute !important; top:10px !important; left:10px !important; z-index:3 !important;
+  min-width:30px !important; height:30px !important; padding:0 8px !important; border-radius:9px !important;
+  display:grid !important; place-items:center !important; font-family:Fredoka,'Segoe UI',sans-serif !important;
+  font-weight:700 !important; font-size:1rem !important; line-height:1 !important;
+  background:rgba(8,10,14,.6) !important; backdrop-filter:blur(4px) !important;
+  border:1.5px solid currentColor !important; box-shadow:0 0 12px -4px currentColor !important;}
+
+/* star (your handler still drives .starred) */
+.deck-card .deck-star-btn{position:absolute !important; top:8px !important; right:8px !important; z-index:4 !important;
+  width:34px !important; height:34px !important; border-radius:50% !important; border:none !important; padding:0 !important;
+  background:rgba(8,10,14,.55) !important; backdrop-filter:blur(4px) !important;
+  display:grid !important; place-items:center !important; cursor:pointer !important;}
+.deck-card .deck-star-btn svg{width:18px !important; height:18px !important; fill:transparent !important;
+  stroke:#fff !important; stroke-width:1.6px !important;}
+.deck-card .deck-star-btn.starred svg{fill:var(--pvz-gold) !important; stroke:var(--pvz-gold) !important;}
+
+/* dup flag */
+.deck-card .deck-duplicate-badge{position:absolute !important; top:52px !important; left:10px !important; right:auto !important;
+  bottom:auto !important; z-index:3 !important; background:#ffaa00 !important; color:#1a1200 !important;
+  font-family:Fredoka,'Segoe UI',sans-serif !important; font-weight:700 !important; font-size:.66rem !important;
+  padding:3px 7px !important; border-radius:6px !important;}
+
+/* hover lift */
+.deck-card:hover{transform:translateY(-7px) scale(1.015) !important; border-color:rgba(255,255,255,.18) !important;}
+.deck-card.plant-deck:hover{box-shadow:0 18px 40px rgba(21,128,61,.4),0 0 0 1px rgba(94,224,126,.3) !important;}
+.deck-card.zombie-deck:hover{box-shadow:0 18px 40px rgba(91,33,182,.45),0 0 0 1px rgba(192,132,252,.3) !important;}
+
+/* =====================================================================
+   THE SHEET (opens across the screen). z-index 950 so your existing
+   visual/analyze modal (z-index 1000) layers ON TOP when launched.
+   ===================================================================== */
+.pvz-sheet-overlay{position:fixed !important; inset:0 !important; z-index:950 !important;
+  display:flex !important; align-items:center !important; justify-content:center !important; padding:24px !important;
+  background:rgba(6,7,10,.72) !important; backdrop-filter:blur(6px) !important;}
+
+.pvz-sheet{position:relative !important; width:min(940px,94vw) !important; max-height:90vh !important;
+  border-radius:26px !important; overflow:hidden !important; display:flex !important; flex-direction:column !important;
+  border:1px solid rgba(255,255,255,.1) !important; box-shadow:0 40px 120px rgba(0,0,0,.7) !important;
+  will-change:transform,opacity !important; transform-origin:center center !important;}
+.pvz-sheet.plant-deck{background:linear-gradient(180deg,#0f2b1c 0%,#0b1a12 100%) !important;}
+.pvz-sheet.zombie-deck{background:linear-gradient(180deg,#211238 0%,#130b22 100%) !important;}
+
+.pvz-sheet-banner{position:relative !important; padding:26px 28px 22px !important; overflow:hidden !important;
+  display:flex !important; gap:22px !important; align-items:center !important; flex-shrink:0 !important;}
+.pvz-sheet.plant-deck .pvz-sheet-banner{background:
+  radial-gradient(90% 130% at 12% -20%, var(--pvz-plant-1) 0%, transparent 55%),
+  linear-gradient(120deg,#16472b,#0f2b1c) !important;}
+.pvz-sheet.zombie-deck .pvz-sheet-banner{background:
+  radial-gradient(90% 130% at 12% -20%, var(--pvz-zomb-1) 0%, transparent 55%),
+  linear-gradient(120deg,#3a1f63,#211238) !important;}
+
+.pvz-sheet-heroes{display:flex !important; flex-shrink:0 !important; z-index:1 !important;}
+.pvz-sheet-heroes .pvz-hero-portrait{width:84px !important; height:84px !important; font-size:2rem !important;}
+.pvz-sheet-heroes.two .pvz-hero-portrait:nth-child(2){margin-left:-28px !important;}
+
+.pvz-sheet-titlewrap{z-index:1 !important; min-width:0 !important; flex:1 !important;}
+.pvz-sheet-title{font-family:Fredoka,'Segoe UI',sans-serif !important; font-weight:700 !important; font-size:1.6rem !important;
+  line-height:1.1 !important; margin:0 !important; color:#fff !important; text-shadow:0 2px 8px rgba(0,0,0,.4) !important;}
+.pvz-sheet-meta{display:flex !important; align-items:center !important; gap:12px !important; margin-top:12px !important; flex-wrap:wrap !important;}
+.pvz-deck-rating{align-self:flex-end !important; display:inline-flex !important; align-items:center !important; gap:9px !important; margin-bottom:14px !important;}
+.pvz-rating-label{font-size:.7rem !important; text-transform:uppercase !important; letter-spacing:.14em !important; color:rgba(255,255,255,.45) !important;}
+.pvz-rating-grade{font-family:Fredoka,'Segoe UI',sans-serif !important; font-weight:700 !important; font-size:1.7rem !important; line-height:1 !important; color:currentColor !important;}
+.pvz-meta-text{display:inline-flex !important; align-items:center !important; flex-wrap:wrap !important;
+  font-size:.82rem !important; color:rgba(255,255,255,.7) !important;}
+.pvz-meta-item{display:inline-flex !important; align-items:center !important; gap:6px !important; white-space:nowrap !important;}
+.pvz-meta-item:not(:first-child)::before{content:"·" !important; margin:0 8px !important; opacity:.45 !important; color:#fff !important;}
+.pvz-meta-credit{width:16px !important; height:16px !important; border-radius:50% !important; object-fit:cover !important;}
+.pvz-meta-dup{color:#ffc46b !important;}
+
+.pvz-sheet-close{position:absolute !important; top:18px !important; right:18px !important; z-index:5 !important;
+  width:38px !important; height:38px !important; border-radius:50% !important; border:none !important; cursor:pointer !important;
+  background:rgba(0,0,0,.4) !important; color:#fff !important; font-size:1.3rem !important; line-height:1 !important;
+  display:grid !important; place-items:center !important; transition:transform .2s ease, background .2s ease !important;}
+.pvz-sheet-close:hover{transform:rotate(90deg) scale(1.08) !important; background:rgba(0,0,0,.65) !important;}
+
+.pvz-sheet-body{padding:22px 28px 30px !important; overflow-y:auto !important; display:flex !important; flex-direction:column !important;}
+
+/* card grid — your real card art */
+.pvz-card-grid{display:grid !important; grid-template-columns:repeat(auto-fill,minmax(82px,1fr)) !important; gap:12px !important;}
+.pvz-card{position:relative !important; display:flex !important; align-items:flex-end !important; justify-content:center !important;
+  transform:translateY(10px) scale(.96) !important;}
+.pvz-sheet-overlay.open .pvz-card{animation:pvzCardIn .4s var(--pvz-ease) forwards !important;
+  animation-delay:calc(var(--i,0)*28ms + 120ms) !important;}
+@keyframes pvzCardIn{to{opacity:1; transform:translateY(0) scale(1);}}
+.pvz-card img{width:100% !important; max-height:130px !important; object-fit:contain !important; display:block !important;
+  filter:drop-shadow(2px 4px 6px rgba(0,0,0,.5)) !important; transition:transform .2s var(--pvz-ease) !important;}
+.pvz-card:hover img{transform:scale(1.08) !important;}
+.pvz-card-qty{position:absolute !important; bottom:2px !important; left:2px !important; padding:1px 6px !important;
+  font-size:11px !important; font-weight:900 !important; color:#fff !important; background:rgba(0,0,0,.85) !important;
+  border:1px solid rgba(255,255,255,.2) !important; border-radius:4px !important; pointer-events:none !important;}
+
+/* compact horizontal video chip */
+.pvz-sheet-video{display:inline-flex !important; align-items:center !important; gap:12px !important; margin-top:22px !important;
+  max-width:380px !important; padding:8px !important; border-radius:12px !important; text-decoration:none !important;
+  border:1px solid rgba(255,255,255,.1) !important; background:rgba(0,0,0,.22) !important;
+  transition:background .2s ease, border-color .2s ease, transform .2s var(--pvz-ease) !important;}
+.pvz-sheet-video:hover{background:rgba(0,0,0,.34) !important; border-color:rgba(255,255,255,.2) !important; transform:translateY(-2px) !important;}
+.pvz-video-thumb{position:relative !important; flex:0 0 auto !important; width:128px !important; aspect-ratio:16/9 !important;
+  border-radius:8px !important; overflow:hidden !important;}
+.pvz-video-thumb img{width:100% !important; height:100% !important; object-fit:cover !important; display:block !important;}
+.pvz-video-thumb .pvz-play{position:absolute !important; top:50% !important; left:50% !important; transform:translate(-50%,-50%) !important;
+  width:34px !important; height:34px !important; border-radius:50% !important; background:rgba(255,255,255,.92) !important;}
+.pvz-video-thumb .pvz-play::after{content:"" !important; position:absolute !important; top:50% !important; left:55% !important;
+  transform:translate(-50%,-50%) !important; border-left:11px solid #14161c !important;
+  border-top:7px solid transparent !important; border-bottom:7px solid transparent !important;}
+.pvz-video-title{font-size:.85rem !important; font-weight:500 !important; color:rgba(255,255,255,.9) !important; line-height:1.3 !important;
+  display:-webkit-box !important; -webkit-line-clamp:2 !important; -webkit-box-orient:vertical !important; overflow:hidden !important;}
+
+/* mobile */
+@media (max-width:600px){
+  #deckGrid.deck-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr)) !important; gap:14px !important;}
+  .pvz-sheet-banner{flex-direction:column !important; align-items:flex-start !important;}
+  .pvz-sheet-video{max-width:100% !important;}
+  .pvz-sheet-title{font-size:1.3rem !important;}
+  .pvz-card-grid{grid-template-columns:repeat(auto-fill,minmax(70px,1fr)) !important;}
+}
+
+/* focus + reduced motion */
+.deck-card:focus-visible,.pvz-sheet-close:focus-visible{outline:3px solid var(--pvz-gold) !important; outline-offset:2px !important;}
+@media (prefers-reduced-motion:reduce){
+  .pvz-card,.pvz-sheet-overlay.open .pvz-card{animation:none !important; opacity:1 !important; transform:none !important;}
+  .deck-card,.pvz-tile-heroes{transition-duration:.01ms !important;}
+}
+
+/* =========================================================
+   FIX: opened deck cards max 6-wide + rating beside cards
+   ========================================================= */
+
+/* Make the opened deck body use a side-by-side layout */
+.pvz-sheet-body{
+  display:grid !important;
+  grid-template-columns:minmax(0, 1fr) auto !important;
+  align-items:start !important;
+  column-gap:22px !important;
+}
+
+/* Exactly cap the visible card area at 6 cards wide */
+.pvz-card-grid{
+  grid-template-columns:repeat(6, minmax(70px, 92px)) !important;
+  justify-content:start !important;
+  width:max-content !important;
+  max-width:100% !important;
+}
+
+/* Move rating visually beside the cards instead of floating in the banner */
+.pvz-deck-rating{
+  align-self:start !important;
+  justify-self:start !important;
+  margin:0 !important;
+  padding:10px 14px !important;
+  border-radius:14px !important;
+  background:rgba(0,0,0,.25) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  backdrop-filter:blur(4px) !important;
+}
+
+/* Remove the old "right/above" header behavior */
+.pvz-sheet-banner .pvz-deck-rating{
+  align-self:center !important;
+  margin-bottom:0 !important;
+}
+
+/* If the rating is still inside the banner in your JS/HTML,
+   this prevents it from looking detached in the top-right. */
+.pvz-sheet-meta .pvz-deck-rating{
+  order:99 !important;
+}
+
+/* Tablet/mobile: cards shrink cleanly and rating stacks under/near cards */
+@media (max-width:850px){
+  .pvz-sheet-body{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:16px !important;
+  }
+
+  .pvz-card-grid{
+    grid-template-columns:repeat(4, minmax(64px, 82px)) !important;
+    width:100% !important;
+    justify-content:center !important;
+  }
+
+  .pvz-deck-rating{
+    align-self:center !important;
+  }
+}
+
+@media (max-width:520px){
+  .pvz-card-grid{
+    grid-template-columns:repeat(3, minmax(62px, 76px)) !important;
+  }
+}
+
+/* =========================================================
+   FIX: clean centered close X button
+   ========================================================= */
+
+.pvz-sheet-close{
+  top:16px !important;
+  right:16px !important;
+  width:40px !important;
+  height:40px !important;
+  padding:0 !important;
+  border-radius:999px !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  background:rgba(0,0,0,.42) !important;
+  backdrop-filter:blur(6px) !important;
+  color:transparent !important;
+  font-size:0 !important;
+  line-height:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  transform:none !important;
+}
+
+.pvz-sheet-close::before,
+.pvz-sheet-close::after{
+  content:"" !important;
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  width:17px !important;
+  height:2.5px !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.92) !important;
+  transform-origin:center !important;
+}
+
+.pvz-sheet-close::before{
+  transform:translate(-50%,-50%) rotate(45deg) !important;
+}
+
+.pvz-sheet-close::after{
+  transform:translate(-50%,-50%) rotate(-45deg) !important;
+}
+
+.pvz-sheet-close:hover{
+  transform:scale(1.07) !important;
+  background:rgba(0,0,0,.62) !important;
+}
+
+.pvz-sheet-close:active{
+  transform:scale(.96) !important;
+}
+/* =========================================================
+   Analyze Deck button beside rating
+   ========================================================= */
+
+.pvz-deck-side{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  gap:12px !important;
+  min-width:150px !important;
+}
+
+.pvz-deck-side .pvz-deck-rating{
+  width:100% !important;
+  box-sizing:border-box !important;
+  justify-content:center !important;
+}
+/* =========================================================
+   Analyze Deck button — match PvZ sheet style
+   ========================================================= */
+
+.pvz-analyze-deck-btn{
+  width:100% !important;
+  min-height:42px !important;
+  padding:10px 14px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  background:rgba(0,0,0,.24) !important;
+  color:rgba(255,255,255,.92) !important;
+  font-family:Fredoka,'Segoe UI',sans-serif !important;
+  font-size:.82rem !important;
+  font-weight:700 !important;
+  letter-spacing:.02em !important;
+  line-height:1 !important;
+  cursor:pointer !important;
+  backdrop-filter:blur(5px) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 8px 18px rgba(0,0,0,.22) !important;
+  transition:
+    transform .18s var(--pvz-ease),
+    background .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease !important;
+}
+
+
+
+/* faction-colored glow, matching the opened sheet */
+.pvz-sheet.plant-deck .pvz-analyze-deck-btn{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 8px 18px rgba(0,0,0,.22),
+    0 0 0 1px rgba(94,224,126,.08) !important;
+}
+
+.pvz-sheet.zombie-deck .pvz-analyze-deck-btn{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 8px 18px rgba(0,0,0,.22),
+    0 0 0 1px rgba(192,132,252,.08) !important;
+}
+
+.pvz-sheet.plant-deck .pvz-analyze-deck-btn:hover{
+  background:rgba(94,224,126,.13) !important;
+  border-color:rgba(94,224,126,.35) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 10px 24px rgba(0,0,0,.28),
+    0 0 22px rgba(94,224,126,.18) !important;
+}
+
+.pvz-sheet.zombie-deck .pvz-analyze-deck-btn:hover{
+  background:rgba(192,132,252,.13) !important;
+  border-color:rgba(192,132,252,.35) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 10px 24px rgba(0,0,0,.28),
+    0 0 22px rgba(192,132,252,.2) !important;
+}
+
+.pvz-analyze-deck-btn:hover{
+  transform:translateY(-2px) !important;
+}
+
+.pvz-analyze-deck-btn:active{
+  transform:translateY(0) scale(.98) !important;
+}
+
+.pvz-analyze-deck-btn:focus-visible{
+  outline:3px solid var(--pvz-gold) !important;
+  outline-offset:3px !important;
+}
