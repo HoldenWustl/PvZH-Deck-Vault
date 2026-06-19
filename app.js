@@ -996,6 +996,183 @@ window.getTop10DecksForCard = function(targetCard, customCtx) {
 
     return top10Decks;
 };
+window.getTop10BudgetDecks = function(customCtx) {
+    // Safe lookup for variables not explicitly attached to window
+    const db = typeof fullDatabase !== 'undefined' ? fullDatabase : null;
+    const cardDb = typeof cardDatabase !== 'undefined' ? cardDatabase : null;
+    
+    if (!db) {
+        console.error("Error: 'fullDatabase' could not be found in the accessible scope.");
+        return [];
+    }
+    if (!cardDb) {
+        console.error("Error: 'cardDatabase' could not be found in the accessible scope.");
+        return [];
+    }
+
+    const heroMap = {
+        // Plants
+        "Mega-Grow,Smarty": "Green Shadow",
+        "Kabloom,Solar": "Solar Flare",
+        "Guardian,Solar": "Wall-Knight",
+        "Mega-Grow,Solar": "Chompzilla",
+        "Guardian,Kabloom": "Spudow",
+        "Guardian,Smarty": "Citron / Beta-Carrotina",
+        "Guardian,Mega-Grow": "Grass Knuckles",
+        "Kabloom,Smarty": "Nightcap",
+        "Kabloom,Mega-Grow": "Captain Combustible",
+        "Smarty,Solar": "Rose",
+
+        // Zombies
+        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
+        "Beastly,Hearty": "The Smash",
+        "Crazy,Sneaky": "Impfinity",
+        "Brainy,Hearty": "Rustbolt",
+        "Beastly,Crazy": "Electric Boogaloo",
+        "Beastly,Sneaky": "Brain Freeze",
+        "Brainy,Crazy": "Professor Brainstorm",
+        "Beastly,Brainy": "Immorticia",
+        "Crazy,Hearty": "Z-Mech",
+        "Hearty,Sneaky": "Neptuna"
+    };
+
+    const sparkCosts = {
+        "common": 0,
+        "uncommon": 50,
+        "rare": 250,
+        "super rare": 1000,
+        "super-rare": 1000,
+        "event": 1000,
+        "legendary": 4000
+    };
+
+    const compiledDecks = [];
+    const seenDecks = new Set(); 
+
+    for (const deckKey in db) {
+        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
+        
+        const deck = db[deckKey];
+        if (!deck.cards || !Array.isArray(deck.cards)) continue;
+
+        try {
+            const activeCtx = customCtx || (typeof ctx !== 'undefined' ? ctx : undefined);
+            const uniqueClasses = new Set();
+            let totalSparks = 0;
+
+            for (const cardRaw of deck.cards) {
+                let parsedCardName = cardRaw.trim();
+                let quantity = 1;
+
+                // Robust format checker matching your structural example: "4x", "4", or "x4"
+                const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+                if (match) {
+                    quantity = parseInt(match[1].replace(/x/i, ''), 10) || 1;
+                    parsedCardName = match[2].trim();
+                }
+
+                // Database formatting clean-up keys
+                const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+                const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
+                
+                const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
+                
+                if (cardData) {
+                    if (cardData.Rarity) {
+                        const rarity = cardData.Rarity.toLowerCase().trim();
+                        totalSparks += (sparkCosts[rarity] || 0) * quantity;
+                    }
+                    if (cardData.Class) {
+                        uniqueClasses.add(cardData.Class.trim());
+                    }
+                }
+            }
+
+            // Filter: Enforce budget cutoff limit (< 40000 sparks)
+            if (totalSparks >= 20000) {
+                continue;
+            }
+
+            // Unique deck deduplication signature logic
+            const deckSignature = [...deck.cards]
+                .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
+                .sort()
+                .join('|');
+
+            if (seenDecks.has(deckSignature)) {
+                continue;
+            }
+            seenDecks.add(deckSignature);
+
+            // Determine Hero via Classes mapping
+            const classesArray = Array.from(uniqueClasses).sort();
+            const classesKey = classesArray.join(',');
+            const heroName = heroMap[classesKey] || "Unknown Hero";
+
+            // Evaluate Deck Score
+            let verdict;
+            if (typeof getDeckVerdictFromCards === 'function') {
+                verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+            } else {
+                throw new Error("getDeckVerdictFromCards could not be found in the current scope.");
+            }
+
+            compiledDecks.push({
+                hero: heroName,
+                id: deckKey,
+                name: deck.name || "Unnamed Deck",
+                sparks: totalSparks,
+                score: parseFloat(verdict.score.toFixed(2)),
+                grade: verdict.grade,
+                cost: verdict.costLabel,
+                synergy: verdict.synergyScore,
+                power: verdict.powerScore,
+                consistency: verdict.consistencyScore,
+                date: deck.upload_date || "Unknown Date",
+                author: deck.credit || "Unknown",
+                cards: deck.cards
+            });
+
+        } catch (error) {
+            console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+        }
+    }
+
+    // Sort descending by score
+    compiledDecks.sort((a, b) => b.score - a.score);
+    const top10Budget = compiledDecks.slice(0, 10);
+
+    // Logging output configurations
+    if (top10Budget.length === 0) {
+        console.log("%c No valid budget decks (under 40,000 sparks) found.", "color: #ff9900; font-weight: bold;");
+    } else {
+        console.log(`%c--- TOP ${top10Budget.length} HIGHEST SCORING BUDGET DECKS (ALL TIME) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+        
+        // Clean high-level table rendering
+        console.table(top10Budget.map(d => ({
+            "Hero": d.hero,
+            "Deck Name": d.name,
+            "Sparks": d.sparks,
+            "Score": d.score,
+            "Grade": d.grade,
+            "Synergy": d.synergy,
+            "Power": d.power,
+            "Consistency": d.consistency,
+            "Year": d.date.split(' ').pop() || d.date, 
+            "Author": d.author
+        })));
+
+        // Print raw vertical decklist breakdown lists down the log stack
+        console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
+        
+        top10Budget.forEach((d, index) => {
+            console.log(`%c#${index + 1}: ${d.name} | Hero: ${d.hero} (Sparks: ${d.sparks} | Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
+            console.log(d.cards.join("\n"));
+        });
+    }
+
+    return top10Budget;
+};
     // --- Render Decks Function ---
     function renderDecks(data) {
     const searchInput = document.getElementById('searchInput');
@@ -5566,6 +5743,15 @@ const guidesData = [
     time: "5 min read",
     date: "June 17, 2026",
     icon: "book"
+  },
+  {
+    title: "Top 10 Budget Decks",
+    description: "A roundup of the highest-scoring, low-spark decks for players on a budget.",
+    href: "/best-budget-decks",
+    badge: "Budget Guide",
+    time: "5 min read",
+    date: "June 19, 2026",
+    icon: "budget"
   }
 ];
 
