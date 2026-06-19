@@ -1210,129 +1210,261 @@ function pvzBuildAnalyzeDeck(deckInfo) {
 }
 let pvzDeckCache = {};     // deckKey -> data the sheet needs (rebuilt each render)
 let pvzActiveTile = null;  // the tile we opened from, so we can fly back on close
+const PVZ_TOUCH_DEVICE = window.matchMedia('(hover:none), (pointer:coarse)').matches;
+const PVZ_RENDER_BATCH_SIZE = PVZ_TOUCH_DEVICE ? 70 : 220;
+const PVZ_REVEAL_LIMIT = PVZ_TOUCH_DEVICE ? 48 : 120;
 
+let pvzRenderToken = 0;
+const pvzDeckRenderMetaCache = new Map();
+
+function pvzWaitFrame() {
+  return new Promise(resolve => requestAnimationFrame(resolve));
+}
+
+function pvzCleanCardName(cardRaw) {
+  return cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
+}
+
+function pvzDeckMetaCacheKey(deckInfo) {
+  return [
+    (deckInfo.cards || []).join('\u0001'),
+    deckInfo.upload_date || '',
+    deckInfo.credit || '',
+    deckInfo.name || ''
+  ].join('\u0002');
+}
+
+function pvzGetCachedDeckMeta(deckKey, deckInfo, ctx) {
+  const cacheKey = pvzDeckMetaCacheKey(deckInfo);
+  const cached = pvzDeckRenderMetaCache.get(deckKey);
+
+  if (cached && cached.cacheKey === cacheKey) {
+    return cached.meta;
+  }
+
+  const cards = deckInfo.cards || [];
+
+  let factionClass = 'plant-deck';
+  const uniqueClasses = new Set();
+  let factionFound = false;
+
+  for (const cardRaw of cards) {
+    const parsed = pvzCleanCardName(cardRaw);
+    const cardData =
+      cardDatabase[parsed.replace(/ /g, '_')] ||
+      cardDatabase[parsed.replace(/_/g, ' ')];
+
+    if (!cardData) continue;
+
+    const cls = cardData.Class || cardData.class;
+    if (cls) uniqueClasses.add(cls);
+
+    if (!factionFound && (cardData.Type || cardData.type)) {
+      const t = (cardData.Type || cardData.type).toLowerCase();
+
+      if (t.includes('zombie')) {
+        factionClass = 'zombie-deck';
+        factionFound = true;
+      } else if (t.includes('plant')) {
+        factionClass = 'plant-deck';
+        factionFound = true;
+      }
+    }
+  }
+
+  let heroes = [];
+
+  if (uniqueClasses.size === 2) {
+    const ca = Array.from(uniqueClasses);
+    const heroName = heroMap[`${ca[0]},${ca[1]}`] || heroMap[`${ca[1]},${ca[0]}`];
+
+    if (heroName) {
+      heroes = heroName.split(/\s*\/\s*/).map(n => ({
+        name: n,
+        img: `hero_images/${n.replace(/[\s-]+/g, '_')}.webp`
+      }));
+    }
+  } else if (uniqueClasses.size === 1) {
+    const singleClass = Array.from(uniqueClasses)[0];
+
+    heroes = [{
+      name: singleClass,
+      img: `hero_images/${singleClass.toLowerCase().replace(/[\s-]+/g, '_')}.webp`
+    }];
+  }
+
+  const verdict =
+    deckInfo.verdict ||
+    (deckInfo.verdict = getDeckVerdictFromCards(cards, deckKey, ctx));
+
+  deckInfo.verdict = verdict;
+
+  const dateStr =
+    deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
+      ? deckInfo.upload_date
+      : "Unknown Date";
+
+  const creditStr = deckInfo.credit || "Unknown";
+  const creditIcon = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
+
+  let dateVal = 0;
+  if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
+    const parsed = Date.parse(deckInfo.upload_date);
+    if (!isNaN(parsed)) dateVal = parsed;
+  }
+
+  const signature = cards
+    .map(c => c.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase())
+    .sort()
+    .join('|');
+
+  const meta = {
+    deckInfo,
+    factionClass,
+    heroes,
+    verdict,
+    dateStr,
+    creditStr,
+    creditIcon,
+    dateVal,
+    signature
+  };
+
+  pvzDeckRenderMetaCache.set(deckKey, { cacheKey, meta });
+  return meta;
+}
+
+function pvzCreateDeckTile(deckKey, rd, isDup, isStarred, cardIndex) {
+  const { deckInfo, factionClass, heroes, verdict, creditStr, creditIcon } = rd;
+
+  const tile = document.createElement('div');
+  tile.className = `deck-card ${factionClass}`;
+  tile.dataset.deckKey = deckKey;
+  tile.tabIndex = 0;
+  tile.setAttribute('role', 'button');
+  tile.setAttribute('aria-label', `Open ${deckInfo.name}`);
+
+  const revealDelay = cardIndex < PVZ_REVEAL_LIMIT
+    ? Math.min(cardIndex * 8, 600)
+    : 0;
+
+  tile.style.setProperty('--reveal-delay', `${revealDelay}ms`);
+
+  tile.innerHTML = `
+    <div class="pvz-tile-inner">
+      <div class="pvz-tile-wash"></div>
+      <div class="pvz-tile-heroes ${heroes.length === 2 ? 'two' : ''}">
+        ${pvzHeroPortraits(heroes)}
+      </div>
+      <div class="pvz-grade-seal" style="color:${verdict.gradeColor || '#15140d'}">
+        ${verdict.grade || '?'}
+      </div>
+      ${isDup ? `<span class="deck-duplicate-badge" title="Older duplicate">Dup</span>` : ''}
+      <button class="deck-star-btn ${isStarred ? 'starred' : ''}" data-deck="${deckKey}" aria-label="Star deck">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </button>
+      <div class="pvz-tile-foot">
+        <p class="pvz-tile-name">${deckInfo.name}</p>
+        <span class="pvz-tile-credit">
+          <img src="${creditIcon}" alt="" loading="lazy" decoding="async" fetchpriority="low">${creditStr}
+        </span>
+      </div>
+    </div>`;
+
+  return tile;
+}
 function renderDecks(data) {
   const loadingIndicator = document.getElementById('loadingIndicator');
+  const thisRenderToken = ++pvzRenderToken;
 
-  // show loader + disable controls (same as before)
   if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+
   deckGrid.classList.add('hidden');
+
   if (statsBtn)   statsBtn.disabled   = true;
   if (guidesBtn)  guidesBtn.disabled  = true;
   if (crafterBtn) crafterBtn.disabled = true;
   if (gamesBtn)   gamesBtn.disabled   = true;
   if (tiersBtn)   tiersBtn.disabled   = true;
 
-  setTimeout(() => {
+  setTimeout(async () => {
+    if (thisRenderToken !== pvzRenderToken) return;
+
     deckGrid.innerHTML = '';
     pvzDeckCache = {};
-    const fragment = document.createDocumentFragment();
+
     const ctx = getVerdictContext();
     const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
 
-    /* ---- duplicate pre-pass (your logic, unchanged) ---- */
+    const entries = Object.entries(data);
+    const prepared = [];
+
     const signatureMap = new Map();
-    for (const [deckKey, deckInfo] of Object.entries(data)) {
-      if (!deckInfo.cards) continue;
-      const signature = deckInfo.cards.map(c => c.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase()).sort().join('|');
-      let dateVal = 0;
-      if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
-        const parsed = Date.parse(deckInfo.upload_date);
-        if (!isNaN(parsed)) dateVal = parsed;
+
+    for (const [deckKey, deckInfo] of entries) {
+      const rd = pvzGetCachedDeckMeta(deckKey, deckInfo, ctx);
+      prepared.push([deckKey, rd]);
+
+      if (!signatureMap.has(rd.signature)) {
+        signatureMap.set(rd.signature, []);
       }
-      if (!signatureMap.has(signature)) signatureMap.set(signature, []);
-      signatureMap.get(signature).push({ key: deckKey, dateVal });
+
+      signatureMap.get(rd.signature).push({
+        key: deckKey,
+        dateVal: rd.dateVal
+      });
     }
+
     const duplicateKeys = new Set();
+
     for (const decks of signatureMap.values()) {
       if (decks.length > 1) {
         decks.sort((a, b) => b.dateVal - a.dateVal);
-        for (let i = 1; i < decks.length; i++) duplicateKeys.add(decks[i].key);
+
+        for (let i = 1; i < decks.length; i++) {
+          duplicateKeys.add(decks[i].key);
+        }
       }
     }
 
     let cardIndex = 0;
-    for (const [deckKey, deckInfo] of Object.entries(data)) {
 
-      /* ---- faction + classes (your logic, unchanged) ---- */
-      let factionClass = 'plant-deck';
-      const uniqueClasses = new Set();
-      let factionFound = false;
-      if (deckInfo.cards && deckInfo.cards.length) {
-        for (const cardRaw of deckInfo.cards) {
-          const parsed = cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
-          const cardData = cardDatabase[parsed.replace(/ /g, '_')] || cardDatabase[parsed.replace(/_/g, ' ')];
-          if (cardData) {
-            const cls = cardData.Class || cardData.class;
-            if (cls) uniqueClasses.add(cls);
-            if (!factionFound && (cardData.Type || cardData.type)) {
-              const t = (cardData.Type || cardData.type).toLowerCase();
-              if (t.includes('zombie'))      { factionClass = 'zombie-deck'; factionFound = true; }
-              else if (t.includes('plant'))  { factionClass = 'plant-deck';  factionFound = true; }
-            }
-          }
-        }
+    for (let start = 0; start < prepared.length; start += PVZ_RENDER_BATCH_SIZE) {
+      if (thisRenderToken !== pvzRenderToken) return;
+
+      const fragment = document.createDocumentFragment();
+      const end = Math.min(start + PVZ_RENDER_BATCH_SIZE, prepared.length);
+
+      for (let i = start; i < end; i++) {
+        const [deckKey, rd] = prepared[i];
+
+        const isDup = duplicateKeys.has(deckKey);
+        const isStarred = starredDecks[deckKey] === true;
+
+        pvzDeckCache[deckKey] = {
+          ...rd,
+          isDup
+        };
+
+        fragment.appendChild(
+          pvzCreateDeckTile(deckKey, rd, isDup, isStarred, cardIndex)
+        );
+
+        cardIndex++;
       }
 
-      /* ---- heroes -> portraits (your heroMap + hero_images path) ---- */
-let heroes = [];
-if (uniqueClasses.size === 2) {
-  const ca = Array.from(uniqueClasses);
-  const heroName = heroMap[`${ca[0]},${ca[1]}`] || heroMap[`${ca[1]},${ca[0]}`];
-  if (heroName) heroes = heroName.split(/\s*\/\s*/).map(n => ({
-    name: n, 
-    img: `hero_images/${n.replace(/[\s-]+/g, '_')}.webp`
-  }));
-} else if (uniqueClasses.size === 1) {
-  const singleClass = Array.from(uniqueClasses)[0];
-  heroes = [{
-    name: singleClass,
-    img: `hero_images/${singleClass.toLowerCase().replace(/[\s-]+/g, '_')}.webp`
-  }];
-}
+      deckGrid.appendChild(fragment);
 
-      const verdict   = deckInfo.verdict || (deckInfo.verdict = getDeckVerdictFromCards(deckInfo.cards || [], deckKey, ctx));
-      deckInfo.verdict = verdict;
-      const dateStr    = (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") ? deckInfo.upload_date : "Unknown Date";
-      const creditStr  = deckInfo.credit || "Unknown";
-      const creditIcon = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
-      const isDup      = duplicateKeys.has(deckKey);
-      const isStarred  = starredDecks[deckKey] === true;
-
-      // stash for the sheet
-      pvzDeckCache[deckKey] = { deckInfo, factionClass, heroes, verdict, dateStr, creditStr, creditIcon, isDup };
-
-      /* ---- build the TILE (visual, minimal text) ---- */
-      const tile = document.createElement('div');
-      tile.className = `deck-card ${factionClass}`;
-      tile.dataset.deckKey = deckKey;
-      tile.tabIndex = 0;
-      tile.setAttribute('role', 'button');
-      tile.setAttribute('aria-label', `Open ${deckInfo.name}`);
-      tile.style.setProperty('--reveal-delay', `${Math.min(cardIndex * 8, 600)}ms`);
-      cardIndex++;
-
-      tile.innerHTML = `
-        <div class="pvz-tile-inner">
-          <div class="pvz-tile-wash"></div>
-          <div class="pvz-tile-heroes ${heroes.length === 2 ? 'two' : ''}">${pvzHeroPortraits(heroes)}</div>
-          <div class="pvz-grade-seal" style="color:${verdict.gradeColor || '#15140d'}">${verdict.grade || '?'}</div>
-          ${isDup ? `<span class="deck-duplicate-badge" title="Older duplicate">Dup</span>` : ''}
-          <button class="deck-star-btn ${isStarred ? 'starred' : ''}" data-deck="${deckKey}" aria-label="Star deck">
-            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          </button>
-          <div class="pvz-tile-foot">
-            <p class="pvz-tile-name">${deckInfo.name}</p>
-            <span class="pvz-tile-credit"><img src="${creditIcon}" alt="">${creditStr}</span>
-          </div>
-        </div>`;
-      fragment.appendChild(tile);
+      // Yield to the browser so phones do not freeze during huge renders.
+      await pvzWaitFrame();
     }
 
-    deckGrid.appendChild(fragment);
+    if (thisRenderToken !== pvzRenderToken) return;
 
     if (loadingIndicator) loadingIndicator.classList.add('hidden');
+
     deckGrid.classList.remove('hidden');
+
     if (statsBtn)   statsBtn.disabled   = false;
     if (guidesBtn)  guidesBtn.disabled  = false;
     if (tiersBtn)   tiersBtn.disabled   = false;
@@ -1343,13 +1475,24 @@ if (uniqueClasses.size === 2) {
   }, 50);
 }
 
-function pvzHeroPortraits(heroes) {
-  if (!heroes.length) return `<div class="pvz-hero-portrait" aria-hidden="true">?</div>`;
+function pvzHeroPortraits(heroes, eager = false) {
+  if (!heroes.length) {
+    return `<div class="pvz-hero-portrait" aria-hidden="true">?</div>`;
+  }
+
+  const loading = eager ? 'eager' : 'lazy';
+  const priority = eager ? 'high' : 'low';
+
   return heroes.map(h => {
-    const initials = h.name.split(/[\s-]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
-    // <img> sits on top of the initials; if the file is missing it removes itself and the initials show
+    const initials = h.name
+      .split(/[\s-]+/)
+      .map(w => w[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+
     return `<div class="pvz-hero-portrait" title="${h.name}">
-        <img src="${h.img}" alt="${h.name}" onerror="this.remove()">${initials}
+        <img src="${h.img}" alt="${h.name}" loading="${loading}" decoding="async" fetchpriority="${priority}" onerror="this.remove()">${initials}
       </div>`;
   }).join('');
 }
@@ -1390,8 +1533,8 @@ function pvzOpenSheet(deckKey, tileEl) {
     const display = raw.replace(/_/g, ' ');
     const db = display.replace(/ /g, '_');
     return `<div class="pvz-card" style="--i:${i}">
-        <img src="card_images/${db}.png" alt="${display}" title="${display}" loading="lazy"
-             onerror="this.onerror=null;this.src='card_images/${db}.webp'">
+        <img src="card_images/${db}.png" alt="${display}" title="${display}" loading="lazy" decoding="async" fetchpriority="low"
+     onerror="this.onerror=null;this.src='card_images/${db}.webp'">
         <span class="pvz-card-qty">x${count}</span>
       </div>`;
   }).join('');
@@ -1400,7 +1543,7 @@ function pvzOpenSheet(deckKey, tileEl) {
   const thumb   = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
   const videoHtml = (creditStr === "FryEmUp" && deckInfo.youtube_url && thumb) ? `
       <a class="pvz-sheet-video" href="${deckInfo.youtube_url}" target="_blank" rel="noopener" title="${deckInfo.youtube_title || ''}">
-        <span class="pvz-video-thumb"><img src="${thumb}" alt=""><span class="pvz-play"></span></span>
+        <span class="pvz-video-thumb"><img src="${thumb}" alt="" loading="lazy" decoding="async" fetchpriority="low"><span class="pvz-play"></span></span>
         <span class="pvz-video-title">${deckInfo.youtube_title || 'Watch on YouTube'}</span>
       </a>` : '';
 
@@ -1412,7 +1555,7 @@ function pvzOpenSheet(deckKey, tileEl) {
 
     <div class="pvz-sheet-banner">
       <div class="pvz-sheet-heroes ${heroes.length === 2 ? 'two' : ''}">
-        ${pvzHeroPortraits(heroes)}
+        ${pvzHeroPortraits(heroes, true)}
       </div>
 
       <div class="pvz-sheet-titlewrap">

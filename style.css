@@ -2483,17 +2483,6 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
   outline: 2px solid #ffd75c;
   outline-offset: 3px;
 }
-/* ============================================================
-   FOCUSED HEADER v2 — REPLACES the previous header-focus block.
-   Append to the very END of style.css.
-
-   This version uses high-specificity selectors + !important on
-   layout-critical properties so it beats your old header rules
-   (.controls-container row layout, old #crafterBtn/#tiersBtn
-   button styles, etc.). Once it looks right, you can delete the
-   old rules for #topControls, #searchWrapper, and the per-button
-   ID styles, then strip the !importants at your leisure.
-============================================================ */
 
 /* ---------- Layout: force a vertical, centered stack ---------- */
 
@@ -3522,13 +3511,6 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
 
-/* =====================================================================
-   PvZ DECKS — VISUAL REDESIGN CSS
-   Paste this at the very END of your style.css.
-   Faction colour carries the meaning; !important so it beats the old
-   .deck-card / .deck-header rules. (The sheet's transform/opacity are
-   driven inline-important from JS, so the open/close animation still wins.)
-   ===================================================================== */
 
 :root {
   --pvz-gold:#f5c451;
@@ -3930,4 +3912,45 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 .pvz-analyze-deck-btn:focus-visible{
   outline:3px solid var(--pvz-gold) !important;
   outline-offset:3px !important;
+}
+
+/* =========================================================
+   Mobile performance: keep same visuals, skip offscreen work
+   ========================================================= */
+
+.deck-card{
+  content-visibility:auto !important;
+  contain-intrinsic-size:190px 253px !important;
+  contain:layout paint style !important;
+}
+
+@media (max-width:600px){
+  .deck-card{
+    contain-intrinsic-size:150px 200px !important;
+  }
+}
+
+/* Phones do not have real hover, so do not make mobile track hover animations */
+@media (hover:none), (pointer:coarse){
+  .deck-card,
+  .pvz-tile-heroes{
+    transition:none !important;
+  }
+
+  .deck-card:hover,
+  .deck-card:hover .pvz-tile-heroes{
+    transform:none !important;
+  }
+
+  .deck-card.plant-deck:hover,
+  .deck-card.zombie-deck:hover{
+    box-shadow:0 6px 18px rgba(0,0,0,.35) !important;
+    border-color:rgba(255,255,255,.08) !important;
+  }
+}
+
+/* Slightly cheaper image rendering on huge scrolling grids */
+.pvz-hero-portrait img,
+.pvz-tile-credit img{
+  decoding:async !important;
 }
