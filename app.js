@@ -672,12 +672,7 @@ if (totalCards > 0 && seeds.length > 1) {
 
     return top10;
 };
-window.getTop10DecksForHero2025 = function(targetHero, customCtx) {
-    if (!targetHero || typeof targetHero !== 'string') {
-        console.error("Error: Please provide a target hero name as the first parameter (e.g., 'Solar Flare').");
-        return [];
-    }
-
+window.getTopDeckForAllHeroes = function(customCtx) {
     // Fallback lookups for databases in global scope
     const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
     const cardDb = window.cardDatabase || (typeof cardDatabase !== 'undefined' ? cardDatabase : null);
@@ -717,8 +712,7 @@ window.getTop10DecksForHero2025 = function(targetHero, customCtx) {
         "Hearty,Sneaky": "Neptuna"
     };
 
-    const yearRegex = /\s+2025$/i;
-    const heroDecks = [];
+    const bestDecks = {}; // Tracks the highest scoring deck for each hero
     const seenDecks = new Set(); // Tracks unique deck compositions
 
     for (const deckKey in db) {
@@ -727,93 +721,88 @@ window.getTop10DecksForHero2025 = function(targetHero, customCtx) {
         const deck = db[deckKey];
         if (!deck.upload_date || !deck.cards) continue;
 
-        // Filter strictly for 2025 uploads
-        if (yearRegex.test(deck.upload_date.trim())) {
-            try {
-                const activeCtx = customCtx || window.ctx || undefined;
+        try {
+            const activeCtx = customCtx || window.ctx || undefined;
+            
+            // Track unique classes found within this specific deck
+            const uniqueClasses = new Set();
+            
+            for (const cardRaw of deck.cards) {
+                let parsedCardName = cardRaw.trim();
                 
-                // Track unique classes found within this specific deck
-                const uniqueClasses = new Set();
-                
-                for (const cardRaw of deck.cards) {
-                    let parsedCardName = cardRaw.trim();
-                    
-                    // Strip quantity prefix (e.g., "4x " or "x4 ")
-                    const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
-                    if (match) {
-                        parsedCardName = match[2].trim();
-                    }
-                    
-                    // Create space and underscore variants to guarantee database hits
-                    const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
-                    const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
-                    
-                    const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
-                    if (cardData && cardData.Class) {
-                        uniqueClasses.add(cardData.Class.trim());
-                    }
+                // Strip quantity prefix (e.g., "4x " or "x4 ")
+                const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+                if (match) {
+                    parsedCardName = match[2].trim();
                 }
-
-                // Alphabetize the unique classes found to flawlessly align with heroMap keys
-                const classesArray = Array.from(uniqueClasses).sort();
-                const classesKey = classesArray.join(',');
                 
-                const heroName = heroMap[classesKey] || "Unknown Hero";
+                // Create space and underscore variants to guarantee database hits
+                const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+                const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
                 
-                // Check if this deck belongs to the requested hero
-                if (heroName.toLowerCase().includes(targetHero.toLowerCase())) {
-                    
-                    // Create a unique signature for the deck based on its cards
-                    // Normalizes casing, trims spaces, sorts alphabetically, and joins into a string
-                    const deckSignature = [...deck.cards]
-                        .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
-                        .sort()
-                        .join('|');
-
-                    // If we have already seen this exact combination of cards, skip it to prevent duplicates
-                    if (seenDecks.has(deckSignature)) {
-                        continue;
-                    }
-
-                    // Mark this deck signature as seen
-                    seenDecks.add(deckSignature);
-
-                    // Run existing scoring function only for the target hero to save processing time
-                    const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
-                    const currentScore = verdict.score;
-
-                    heroDecks.push({
-                        hero: heroName,
-                        id: deckKey,
-                        name: deck.name,
-                        score: parseFloat(currentScore.toFixed(2)),
-                        grade: verdict.grade,
-                        cost: verdict.costLabel,
-                        synergy: verdict.synergyScore,
-                        power: verdict.powerScore,
-                        consistency: verdict.consistencyScore,
-                        date: deck.upload_date,
-                        author: deck.credit || "Unknown",
-                        cards: deck.cards // Save the raw array for detailed logging
-                    });
+                const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
+                if (cardData && cardData.Class) {
+                    uniqueClasses.add(cardData.Class.trim());
                 }
-            } catch (error) {
-                console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
             }
+
+            // Alphabetize the unique classes found to flawlessly align with heroMap keys
+            const classesArray = Array.from(uniqueClasses).sort();
+            const classesKey = classesArray.join(',');
+            
+            const heroName = heroMap[classesKey];
+            
+            // If it doesn't match a valid two-class combo, skip it
+            if (!heroName) continue;
+            
+            // Create a unique signature for the deck based on its cards
+            const deckSignature = [...deck.cards]
+                .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
+                .sort()
+                .join('|');
+
+            // Prevent duplicate deck compositions from being evaluated
+            if (seenDecks.has(deckSignature)) {
+                continue;
+            }
+            seenDecks.add(deckSignature);
+
+            const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+            const currentScore = parseFloat(verdict.score.toFixed(2));
+
+            // If we don't have a deck for this hero yet, OR if this deck scores higher, update it
+            if (!bestDecks[heroName] || currentScore > bestDecks[heroName].score) {
+                bestDecks[heroName] = {
+                    hero: heroName,
+                    id: deckKey,
+                    name: deck.name,
+                    score: currentScore,
+                    grade: verdict.grade,
+                    cost: verdict.costLabel,
+                    synergy: verdict.synergyScore,
+                    power: verdict.powerScore,
+                    consistency: verdict.consistencyScore,
+                    date: deck.upload_date,
+                    author: deck.credit || "Unknown",
+                    cards: deck.cards
+                };
+            }
+        } catch (error) {
+            console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
         }
     }
 
-    // Sort descending by overall performance score and slice the top 10
-    heroDecks.sort((a, b) => b.score - a.score);
-    const top10Decks = heroDecks.slice(0, 10);
+    // Convert the dictionary to an array and sort descending by score
+    const topDecksArray = Object.values(bestDecks).sort((a, b) => b.score - a.score);
 
-    if (top10Decks.length === 0) {
-        console.log(`%c No valid 2025 decks found for the hero "${targetHero}".`, "color: #ff9900; font-weight: bold;");
+    if (topDecksArray.length === 0) {
+        console.log(`%c No valid decks found in the database.`, "color: #ff9900; font-weight: bold;");
     } else {
-        console.log(`%c--- TOP ${top10Decks.length} DECKS FOR ${top10Decks[0].hero.toUpperCase()} (2025) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+        console.log(`%c--- BEST DECK FOR EACH HERO (ALL-TIME) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
         
-        // Map elements for console.table
-        console.table(top10Decks.map(d => ({
+        // Map elements for console.table to include the Hero name now
+        console.table(topDecksArray.map(d => ({
+            Hero: d.hero,
             "Deck Name": d.name,
             Score: d.score,
             Grade: d.grade,
@@ -826,13 +815,13 @@ window.getTop10DecksForHero2025 = function(targetHero, customCtx) {
         // Log out the full decklists with clean text separation
         console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
         
-        top10Decks.forEach((d, index) => {
-            console.log(`%c#${index + 1}: ${d.name} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
+        topDecksArray.forEach((d) => {
+            console.log(`%c${d.hero}: ${d.name} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
             console.log(d.cards.join("\n"));
         });
     }
 
-    return top10Decks;
+    return topDecksArray;
 };
 window.getTop10DecksForCard = function(targetCard, customCtx) {
     if (!targetCard || typeof targetCard !== 'string') {
@@ -6310,7 +6299,16 @@ const guidesData = [
     time: "5 min read",
     date: "June 19, 2026",
     icon: "budget"
-  }
+  },
+  {
+  title: "Best Decks for Every Hero in PvZH",
+  description: "A complete hero-by-hero guide to the best Plant and Zombie decks, including budget and maxed options.",
+  href: "/best-decks-for-every-hero",
+  badge: "Mega Guide",
+  time: "12 min read",
+  date: "June 20, 2026",
+  icon: "tiers"
+},
 ];
 
 function guideIconSvg(type) {
