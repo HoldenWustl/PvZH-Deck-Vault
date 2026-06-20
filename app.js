@@ -1922,7 +1922,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
         overlay.querySelector('.pvz-sheet-close').focus();
     }
+    window.calculateDeckSparkStats = function() {
+  if (typeof pvzDeckCache === 'undefined' || typeof cardDatabase === 'undefined') {
+    console.error("🚨 pvzDeckCache or cardDatabase is not available.");
+    return null;
+  }
 
+  const rarityCosts = {
+    'common': 0,
+    'basic': 0,
+    'uncommon': 50,
+    'rare': 250,
+    'super rare': 1000,
+    'super-rare': 1000,
+    'event': 1000,
+    'legendary': 4000
+  };
+
+  const sparkTotals = [];
+
+  // 1. Calculate sparks for every deck in the cache
+  for (const rd of Object.values(pvzDeckCache)) {
+    if (!rd.deckInfo || !rd.deckInfo.cards) continue;
+
+    let totalSparks = 0;
+    
+    for (const cardString of rd.deckInfo.cards) {
+      const m = cardString.trim().match(/^x(\d+)\s+(.+)$/i);
+      let count = 1, raw = cardString;
+      if (m) { count = parseInt(m[1], 10); raw = m[2]; }
+      const db = raw.replace(/ /g, '_');
+
+      if (cardDatabase[db]) {
+        const rarity = (cardDatabase[db].Rarity || '').toLowerCase();
+        totalSparks += (rarityCosts[rarity] || 0) * count;
+      }
+    }
+    
+    sparkTotals.push(totalSparks);
+  }
+
+  if (sparkTotals.length === 0) {
+    console.warn("No decks found to calculate.");
+    return null;
+  }
+
+  // 2. Sort the array numerically to calculate stats
+  sparkTotals.sort((a, b) => a - b);
+
+  // Helper function to find the median of an array
+  const getMedian = (arr) => {
+    if (arr.length === 0) return 0;
+    const mid = Math.floor(arr.length / 2);
+    return arr.length % 2 !== 0 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
+  };
+
+  // 3. Calculate statistics
+  const totalDecks = sparkTotals.length;
+  const mean = sparkTotals.reduce((sum, val) => sum + val, 0) / totalDecks;
+  const median = getMedian(sparkTotals);
+  
+  // To find Q1 and Q3, split the array in half
+  const midIndex = Math.floor(totalDecks / 2);
+  const lowerHalf = sparkTotals.slice(0, midIndex);
+  
+  // If odd, exclude the exact middle value from both halves
+  const upperHalf = totalDecks % 2 === 0 
+    ? sparkTotals.slice(midIndex) 
+    : sparkTotals.slice(midIndex + 1);
+
+  const q1 = getMedian(lowerHalf);
+  const q3 = getMedian(upperHalf);
+
+  // 4. Format the final output
+  const stats = {
+    "Total Decks": totalDecks,
+    "Min Sparks": sparkTotals[0],
+    "Q1 (25th %)": q1,
+    "Median (50th %)": median,
+    "Mean (Average)": Math.round(mean),
+    "Q3 (75th %)": q3,
+    "Max Sparks": sparkTotals[totalDecks - 1]
+  };
+
+  // Log as a clean visual table in the console
+  console.table(stats);
+
+  return stats;
+};
     function pvzCloseSheet(overlay) {
         const sheet = overlay.querySelector('.pvz-sheet');
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2195,6 +2282,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let lightestDeck = null;
         let numDecks = Object.keys(fullDatabase).length;
         let totalUniqueCardSlots = 0;
+        const allSparkCosts = [];
+        const allAvgCosts = [];
 
         // --- NEW: Trending Data Variables ---
         const RECENT_DECK_COUNT = 100;
@@ -2349,8 +2438,9 @@ document.addEventListener('DOMContentLoaded', () => {
             heroCounts[heroName] = (heroCounts[heroName] || 0) + 1;
 
             totalUniqueCardSlots += uniqueInThisDeck;
+            allSparkCosts.push(currentDeckSparkCost);
 
-            if (currentDeckSparkCost > 0) {
+            if (currentDeckSparkCost >= 0) {
                 if (currentDeckSparkCost > maxSparkCost) {
                     maxSparkCost = currentDeckSparkCost;
                     mostExpensiveDeck = deck;
@@ -2363,6 +2453,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentDeckTotalMana > 0) {
                 // Since decks are strictly 40 cards, we can hardcode the divisor
                 const avgCost = currentDeckTotalMana / 40;
+                allAvgCosts.push(avgCost);
 
                 if (avgCost > maxAvgCost) {
                     maxAvgCost = avgCost;
@@ -2443,55 +2534,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imgEl.alt = `${deck.name || deck.youtube_title || 'Deck'} thumbnail`;
             linkEl.href = deck.youtube_url || "#";
         }
-        if (document.getElementById('mostP2wDeck') && mostExpensiveDeck && leastExpensiveDeck) {
-            const mostId = getYouTubeId(mostExpensiveDeck.youtube_url);
-            const leastId = getYouTubeId(leastExpensiveDeck.youtube_url);
-
-            setExtremeCard({
-                linkId: 'mostP2wLink',
-                imgId: 'mostP2wImg',
-                nameId: 'mostP2wDeck',
-                costId: 'mostP2wCost',
-                deck: mostExpensiveDeck,
-                costText: maxSparkCost.toLocaleString() + ' Sparks',
-                youtubeId: mostId
-            });
-
-            setExtremeCard({
-                linkId: 'leastP2wLink',
-                imgId: 'leastP2wImg',
-                nameId: 'leastP2wDeck',
-                costId: 'leastP2wCost',
-                deck: leastExpensiveDeck,
-                costText: minSparkCost.toLocaleString() + ' Sparks',
-                youtubeId: leastId
-            });
-
-            if (heaviestDeck && lightestDeck) {
-                const heaviestId = getYouTubeId(heaviestDeck.youtube_url);
-                const lightestId = getYouTubeId(lightestDeck.youtube_url);
-
-                setExtremeCard({
-                    linkId: 'heaviestLink',
-                    imgId: 'heaviestImg',
-                    nameId: 'heaviestDeck',
-                    costId: 'heaviestCost',
-                    deck: heaviestDeck,
-                    costText: maxAvgCost.toFixed(2) + ' Avg Cost',
-                    youtubeId: heaviestId
-                });
-
-                setExtremeCard({
-                    linkId: 'lightestLink',
-                    imgId: 'lightestImg',
-                    nameId: 'lightestDeck',
-                    costId: 'lightestCost',
-                    deck: lightestDeck,
-                    costText: minAvgCost.toFixed(2) + ' Avg Cost',
-                    youtubeId: lightestId
-                });
-            }
-        }
+        
 
         // Prepare Data for Charts 
         const topCopied = Object.entries(cardCopies).sort((a, b) => b[1] - a[1]);
@@ -3021,6 +3064,212 @@ document.addEventListener('DOMContentLoaded', () => {
             options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, ticks: { color: textColor } }, y: { grid: { color: gridColor }, ticks: { color: textColor } } }, plugins: { legend: { display: false } } }
         });
 
+        // --- Spark Cost Distribution (smooth KDE over all decks) ---
+        const sparkCanvas = document.getElementById('sparkDistributionChart');
+        if (sparkCanvas && allSparkCosts.length > 1) {
+            const data = allSparkCosts;
+            const n = data.length;
+            const minVal = Math.min(...data);
+            const maxVal = Math.max(...data);
+
+            // Spread stats for an automatic bandwidth (Silverman's rule of thumb)
+            const mean = data.reduce((a, b) => a + b, 0) / n;
+            const std = Math.sqrt(data.reduce((a, b) => a + (b - mean) ** 2, 0) / n);
+
+            const sorted = [...data].sort((a, b) => a - b);
+            const quantile = (q) => {
+                const pos = (sorted.length - 1) * q;
+                const base = Math.floor(pos);
+                const rest = pos - base;
+                return sorted[base + 1] !== undefined
+                    ? sorted[base] + rest * (sorted[base + 1] - sorted[base])
+                    : sorted[base];
+            };
+            const iqr = quantile(0.75) - quantile(0.25);
+
+            const spread = iqr > 0 ? Math.min(std, iqr / 1.34) : std;
+            let bandwidth = 1.06 * spread * Math.pow(n, -1 / 5);
+            if (!bandwidth || bandwidth <= 0) bandwidth = (maxVal - minVal) / 20 || 50;
+
+            // Reference window keeps the y-axis on the same "# of decks" scale as before
+            const refWindow = Math.max(50, Math.round(bandwidth / 50) * 50);
+            const invH = 1 / bandwidth;
+
+            // Evaluate the curve across a fine grid (200 points = visually smooth)
+            const STEPS = 200;
+            const pad = bandwidth * 3;
+            const lo = Math.max(0, minVal - pad);
+            const hi = maxVal + pad;
+            const step = (hi - lo) / STEPS;
+
+            const sparkPoints = [];
+            for (let i = 0; i <= STEPS; i++) {
+                const x = lo + i * step;
+                let sum = 0;
+                for (let j = 0; j < n; j++) {
+                    const u = (x - data[j]) * invH;
+                    sum += Math.exp(-0.5 * u * u);
+                }
+                // density * N * window  ≈  expected # of decks in a window that wide
+                const y = (sum / n) / (Math.sqrt(2 * Math.PI) * bandwidth) * n * refWindow;
+                sparkPoints.push({ x, y });
+            }
+
+            const avgSpark = mean;
+
+            charts.sparkDistribution = new Chart(sparkCanvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Decks',
+                        data: sparkPoints,
+                        borderColor: '#d2a8ff',
+                        backgroundColor: 'rgba(210, 168, 255, 0.2)',
+                        borderWidth: 3,
+                        tension: 0,        // points are dense, so straight segments already look smooth
+                        fill: true,
+                        pointRadius: 0,    // no dots — it's a continuous curve now
+                        pointHoverRadius: 4,
+                        pointHoverBackgroundColor: '#a371f7'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                maxTicksLimit: 8,
+                                callback: (value) => Math.round(value).toLocaleString()
+                            },
+                            title: { display: true, text: 'Total Spark Cost', color: textColor }
+                        },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, precision: 0 },
+                            beginAtZero: true,
+                            title: { display: true, text: '# of Decks', color: textColor }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => `${Math.round(items[0].parsed.x).toLocaleString()} Sparks`,
+                                label: (ctx) => ` ~${Math.round(ctx.parsed.y)} decks nearby`,
+                                footer: () => `Avg: ${Math.round(avgSpark).toLocaleString()} Sparks`
+                            }
+                        }
+                    }
+                }
+            });
+            // --- Mana Cost Distribution (smooth KDE over all decks) ---
+        const manaCanvas = document.getElementById('manaDistributionChart');
+        if (manaCanvas && allAvgCosts.length > 1) {
+            const data = allAvgCosts;
+            const n = data.length;
+            const minVal = Math.min(...data);
+            const maxVal = Math.max(...data);
+
+            const mean = data.reduce((a, b) => a + b, 0) / n;
+            const std = Math.sqrt(data.reduce((a, b) => a + (b - mean) ** 2, 0) / n);
+
+            const sorted = [...data].sort((a, b) => a - b);
+            const quantile = (q) => {
+                const pos = (sorted.length - 1) * q;
+                const base = Math.floor(pos);
+                const rest = pos - base;
+                return sorted[base + 1] !== undefined
+                    ? sorted[base] + rest * (sorted[base + 1] - sorted[base])
+                    : sorted[base];
+            };
+            const iqr = quantile(0.75) - quantile(0.25);
+
+            const spread = iqr > 0 ? Math.min(std, iqr / 1.34) : std;
+            let bandwidth = 1.06 * spread * Math.pow(n, -1 / 5);
+            if (!bandwidth || bandwidth <= 0) bandwidth = (maxVal - minVal) / 20 || 0.1;
+
+            // Reference window = histogram-style bin width (scale-independent → clean "# of decks" axis)
+            const numBins = Math.min(30, Math.max(10, Math.round(Math.sqrt(n))));
+            const refWindow = (maxVal - minVal) > 0 ? (maxVal - minVal) / numBins : bandwidth;
+            const invH = 1 / bandwidth;
+
+            const STEPS = 200;
+            const pad = bandwidth * 3;
+            const lo = Math.max(0, minVal - pad);
+            const hi = maxVal + pad;
+            const step = (hi - lo) / STEPS;
+
+            const manaPoints = [];
+            for (let i = 0; i <= STEPS; i++) {
+                const x = lo + i * step;
+                let sum = 0;
+                for (let j = 0; j < n; j++) {
+                    const u = (x - data[j]) * invH;
+                    sum += Math.exp(-0.5 * u * u);
+                }
+                const y = (sum / n) / (Math.sqrt(2 * Math.PI) * bandwidth) * n * refWindow;
+                manaPoints.push({ x, y });
+            }
+
+            const avgMana = mean;
+
+            charts.manaDistribution = new Chart(manaCanvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Decks',
+                        data: manaPoints,
+                        borderColor: '#3fb950',
+                        backgroundColor: 'rgba(63, 185, 80, 0.2)',
+                        borderWidth: 3,
+                        tension: 0,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        pointHoverBackgroundColor: '#2ea043'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                maxTicksLimit: 8,
+                                callback: (value) => value.toFixed(2)
+                            },
+                            title: { display: true, text: 'Average Mana Cost', color: textColor }
+                        },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, precision: 0 },
+                            beginAtZero: true,
+                            title: { display: true, text: '# of Decks', color: textColor }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => `${items[0].parsed.x.toFixed(2)} avg mana`,
+                                label: (ctx) => ` ~${Math.round(ctx.parsed.y)} decks nearby`,
+                                footer: () => `Avg: ${avgMana.toFixed(2)} mana`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        }
         // --- CHART 6.5: Hot & Cold Trending Cards ---
         const trendingCanvas = document.getElementById('trendingCardsChart');
         const trendingEmptyMsg = document.getElementById('trendingEmptyMsg');

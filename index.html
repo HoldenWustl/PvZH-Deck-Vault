@@ -48,8 +48,8 @@
                     Top 10 Budget Decks <span>(Budget Guide)</span>
                 </a>
                 <a class="featured-decks-link" href="https://pvzhvault.com/best-decks-for-every-hero/">
-        Best Decks for Every Hero <span>(Mega Guide)</span>
-    </a>
+                    Best Decks for Every Hero <span>(Mega Guide)</span>
+                </a>
             </div>
 
             <div id="controls" class="controls-container">
@@ -428,50 +428,21 @@
                         </div>
                     </div>
 
-                    <div class="chart-box extremes-box">
-                        <h3>The Deck Extremes</h3>
-                        <p class="chart-subtitle">Most extreme decks by Spark cost and Mana curve. Click to watch!</p>
-
-                        <div class="extremes-grid">
-
-                            <div class="extreme-card whale-card">
-                                <h4 class="extreme-title">Ultimate Whale Deck</h4>
-                                <a id="mostP2wLink" href="#" target="_blank" class="video-preview extreme-preview">
-                                    <img id="mostP2wImg" src="" alt="Whale Deck Thumbnail" loading="lazy">
-                                    <div id="mostP2wDeck" class="video-title-overlay">-</div>
-                                </a>
-                                <p id="mostP2wCost" class="extreme-cost">- Sparks</p>
-                            </div>
-
-                            <div class="extreme-card f2p-card">
-                                <h4 class="extreme-title">F2P Champion</h4>
-                                <a id="leastP2wLink" href="#" target="_blank" class="video-preview extreme-preview">
-                                    <img id="leastP2wImg" src="" alt="F2P Deck Thumbnail" loading="lazy">
-                                    <div id="leastP2wDeck" class="video-title-overlay">-</div>
-                                </a>
-                                <p id="leastP2wCost" class="extreme-cost">- Sparks</p>
-                            </div>
-
-                            <div class="extreme-card heavy-card">
-                                <h4 class="extreme-title">Heaviest Curve</h4>
-                                <a id="heaviestLink" href="#" target="_blank" class="video-preview extreme-preview">
-                                    <img id="heaviestImg" src="" alt="Heaviest Deck Thumbnail" loading="lazy">
-                                    <div id="heaviestDeck" class="video-title-overlay">-</div>
-                                </a>
-                                <p id="heaviestCost" class="extreme-cost">- Avg Cost</p>
-                            </div>
-
-                            <div class="extreme-card light-card">
-                                <h4 class="extreme-title">Lightest Curve</h4>
-                                <a id="lightestLink" href="#" target="_blank" class="video-preview extreme-preview">
-                                    <img id="lightestImg" src="" alt="Lightest Deck Thumbnail" loading="lazy">
-                                    <div id="lightestDeck" class="video-title-overlay">-</div>
-                                </a>
-                                <p id="lightestCost" class="extreme-cost">- Avg Cost</p>
-                            </div>
-
+                    <div class="chart-box">
+                        <h3>Spark Cost Distribution</h3>
+                        <p class="chart-subtitle">Where every deck lands by total Spark cost. The peak is where most
+                            decks cluster.</p>
+                        <div class="chart-container" style="position: relative; height: 350px;">
+                            <canvas id="sparkDistributionChart"></canvas>
                         </div>
                     </div>
+                    <div class="chart-box">
+    <h3>Average Mana Cost Distribution</h3>
+    <p class="chart-subtitle">Where every deck lands by average mana cost. The peak is the most common curve.</p>
+    <div class="chart-container" style="position: relative; height: 350px;">
+        <canvas id="manaDistributionChart"></canvas>
+    </div>
+</div>
 
                 </div>
             </div>
