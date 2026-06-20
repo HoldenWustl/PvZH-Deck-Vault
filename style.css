@@ -3969,3 +3969,8 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     content: "★ " !important;
     color: #ffd95a !important;
 }
+@media (max-width: 600px) {
+    #infoBtn {
+        display: none !important;
+    }
+}
