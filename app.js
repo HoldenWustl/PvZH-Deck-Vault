@@ -142,95 +142,95 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     const gradeFilter = document.getElementById('gradeFilter');
     function handleRouting() {
-    // IMPORTANT: If the data hasn't finished downloading yet, stop right here!
-    if (!isDataLoaded) return;
+        // IMPORTANT: If the data hasn't finished downloading yet, stop right here!
+        if (!isDataLoaded) return;
 
-    const hash = window.location.hash || '#home';
+        const hash = window.location.hash || '#home';
 
-    // 1. Hide absolutely everything first
-    if (moreMenu) moreMenu.classList.add('hidden');
-    gradeFilter.classList.add('hidden');
-    deckView.classList.add('hidden');
-    statsView.classList.add('hidden');
-    tiersView.classList.add('hidden');
-    guidesView.classList.add('hidden');
-    crafterView.classList.add('hidden');
-    gamesView.classList.add('hidden');
-    searchWrapper.classList.add('hidden');
-    statsBtn.classList.add('hidden');
-    guidesBtn.classList.add('hidden');
-    crafterBtn.classList.add('hidden');
-    gamesBtn.classList.add('hidden');
-    tiersBtn.classList.add('hidden');
-    synergyView.classList.add('hidden');
+        // 1. Hide absolutely everything first
+        if (moreMenu) moreMenu.classList.add('hidden');
+        gradeFilter.classList.add('hidden');
+        deckView.classList.add('hidden');
+        statsView.classList.add('hidden');
+        tiersView.classList.add('hidden');
+        guidesView.classList.add('hidden');
+        crafterView.classList.add('hidden');
+        gamesView.classList.add('hidden');
+        searchWrapper.classList.add('hidden');
+        statsBtn.classList.add('hidden');
+        guidesBtn.classList.add('hidden');
+        crafterBtn.classList.add('hidden');
+        gamesBtn.classList.add('hidden');
+        tiersBtn.classList.add('hidden');
+        synergyView.classList.add('hidden');
 
-    if (typeof backBtn !== 'undefined') backBtn.classList.add('hidden');
+        if (typeof backBtn !== 'undefined') backBtn.classList.add('hidden');
 
-    // 2. Determine what to show based on the hash & Update Titles
-    if (hash === '#stats') {
-        statsView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-        
-        const currentLimit = document.getElementById('deckLimitFilter') ? document.getElementById('deckLimitFilter').value : 'all';
-        if (typeof renderStatsChart === 'function') renderStatsChart(currentLimit);
+        // 2. Determine what to show based on the hash & Update Titles
+        if (hash === '#stats') {
+            statsView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
 
-    } else if (hash === '#crafter') {
-        crafterView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+            const currentLimit = document.getElementById('deckLimitFilter') ? document.getElementById('deckLimitFilter').value : 'all';
+            if (typeof renderStatsChart === 'function') renderStatsChart(currentLimit);
 
-    } else if (hash === '#games') {
-        gamesView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-        if (typeof renderGames === 'function') renderGames();
+        } else if (hash === '#crafter') {
+            crafterView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
 
-    } else if (hash === '#synergy') {
-        synergyView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-        if (typeof renderSynergyWeb === 'function') renderSynergyWeb();
+        } else if (hash === '#games') {
+            gamesView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+            if (typeof renderGames === 'function') renderGames();
 
-    } else if (hash === '#tiers') {
-        tiersView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-        if (typeof renderTiers === 'function') renderTiers();
-        
-    } else if (hash === '#guides') {
-        guidesView.classList.remove('hidden');
-        if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
-    } else {
-        // Default Home UI
-        deckView.classList.remove('hidden');
-        searchWrapper.classList.remove('hidden');
-        statsBtn.classList.remove('hidden');
-        guidesBtn.classList.remove('hidden');
-        tiersBtn.classList.remove('hidden');
-        crafterBtn.classList.remove('hidden');
-        gamesBtn.classList.remove('hidden');
-        gradeFilter.classList.remove('hidden');
-        if (moreMenu) moreMenu.classList.remove('hidden');
-    
+        } else if (hash === '#synergy') {
+            synergyView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+            if (typeof renderSynergyWeb === 'function') renderSynergyWeb();
+
+        } else if (hash === '#tiers') {
+            tiersView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+            if (typeof renderTiers === 'function') renderTiers();
+
+        } else if (hash === '#guides') {
+            guidesView.classList.remove('hidden');
+            if (typeof backBtn !== 'undefined') backBtn.classList.remove('hidden');
+        } else {
+            // Default Home UI
+            deckView.classList.remove('hidden');
+            searchWrapper.classList.remove('hidden');
+            statsBtn.classList.remove('hidden');
+            guidesBtn.classList.remove('hidden');
+            tiersBtn.classList.remove('hidden');
+            crafterBtn.classList.remove('hidden');
+            gamesBtn.classList.remove('hidden');
+            gradeFilter.classList.remove('hidden');
+            if (moreMenu) moreMenu.classList.remove('hidden');
+
+        }
+
+        // 3. CRITICAL CHANGE: Track the page view AFTER the DOM and titles have updated
+        trackPageView(hash);
     }
 
-    // 3. CRITICAL CHANGE: Track the page view AFTER the DOM and titles have updated
-    trackPageView(hash);
-}
+    function trackPageView(hash) {
+        if (!window.gtag) return;
 
-function trackPageView(hash) {
-    if (!window.gtag) return;
+        const pageSlug = (hash || '#home').replace('#', '');
+        const cleanPath = '/' + pageSlug;
 
-    const pageSlug = (hash || '#home').replace('#', '');
-    const cleanPath = '/' + pageSlug;
+        // Construct a flawless virtual URL structure using the URL API
+        const virtualLocation = new URL(window.location.href);
+        virtualLocation.pathname = cleanPath; // Replaces the root path with the virtual one (e.g., /stats)
+        virtualLocation.hash = '';            // Strips the hash entirely so GA4 doesn't get confused
 
-    // Construct a flawless virtual URL structure using the URL API
-    const virtualLocation = new URL(window.location.href);
-    virtualLocation.pathname = cleanPath; // Replaces the root path with the virtual one (e.g., /stats)
-    virtualLocation.hash = '';            // Strips the hash entirely so GA4 doesn't get confused
-
-    gtag('event', 'page_view', {
-        page_path: cleanPath,
-        page_title: document.title,
-        page_location: virtualLocation.href // Sends: https://yourdomain.com/stats
-    });
-}
+        gtag('event', 'page_view', {
+            page_path: cleanPath,
+            page_title: document.title,
+            page_location: virtualLocation.href // Sends: https://yourdomain.com/stats
+        });
+    }
     // --- Helper Functions ---
     function getYouTubeId(url) {
         if (!url) return null;
@@ -281,7 +281,7 @@ function trackPageView(hash) {
         const now = Date.now();
         // Set your half-life here (in days). 
         // 365 means a deck from 1 year ago is worth half as much "Power" as a deck uploaded today.
-        const HALF_LIFE_DAYS = 365; 
+        const HALF_LIFE_DAYS = 365;
 
         for (const deckKey in fullDatabase) {
             const dbDeck = fullDatabase[deckKey];
@@ -307,14 +307,14 @@ function trackPageView(hash) {
                 const parts = (cardString || "").split(" ");
                 if (parts.length < 2) continue;
 
-                const count = parseInt(parts[0].replace('x', '')) || 0; 
-                const copiesPower = parseInt(parts[0].replace('x', '')) || 1; 
+                const count = parseInt(parts[0].replace('x', '')) || 0;
+                const copiesPower = parseInt(parts[0].replace('x', '')) || 1;
                 const rawName = parts.slice(1).join(" ");
                 const cleanName = rawName.replace(/_/g, ' ');
 
                 seedCounts.set(cleanName, (seedCounts.get(cleanName) || 0) + count);
                 dbTotalCards += count;
-                
+
                 // Multiply the raw copies by the timeWeight so old decks have less impact on the meta
                 ctx.cardPopularity[cleanName] = (ctx.cardPopularity[cleanName] || 0) + (copiesPower * timeWeight);
 
@@ -404,43 +404,43 @@ function trackPageView(hash) {
 
             const freqA = cardFrequencies?.[seedA.key] || 1;
 
-const partnerScores = [];
-seeds.forEach(seedB => {
-    if (seedA.key === seedB.key) return;
+            const partnerScores = [];
+            seeds.forEach(seedB => {
+                if (seedA.key === seedB.key) return;
 
-    const coOccurrences = synergyMatrix?.[seedA.key]?.[seedB.key] || 0;
-    const freqB = cardFrequencies?.[seedB.key] || 1;
-    const cs = coOccurrences / Math.sqrt(freqA * freqB);
+                const coOccurrences = synergyMatrix?.[seedA.key]?.[seedB.key] || 0;
+                const freqB = cardFrequencies?.[seedB.key] || 1;
+                const cs = coOccurrences / Math.sqrt(freqA * freqB);
 
-    partnerScores.push({ key: seedB.key, cs });
-});
+                partnerScores.push({ key: seedB.key, cs });
+            });
 
-partnerScores.sort((a, b) => b.cs - a.cs);
+            partnerScores.sort((a, b) => b.cs - a.cs);
 
-const best = partnerScores[0]?.cs || 0;
-const second = partnerScores[1]?.cs || 0;
+            const best = partnerScores[0]?.cs || 0;
+            const second = partnerScores[1]?.cs || 0;
 
-// tiny 3-card bonus
-let triadBonus = 0;
-if (partnerScores.length >= 2) {
-    const k1 = partnerScores[0].key;
-    const k2 = partnerScores[1].key;
+            // tiny 3-card bonus
+            let triadBonus = 0;
+            if (partnerScores.length >= 2) {
+                const k1 = partnerScores[0].key;
+                const k2 = partnerScores[1].key;
 
-    const f1 = cardFrequencies?.[k1] || 1;
-    const f2 = cardFrequencies?.[k2] || 1;
-    const co12 = synergyMatrix?.[k1]?.[k2] || 0;
-    const cs12 = co12 / Math.sqrt(f1 * f2);
+                const f1 = cardFrequencies?.[k1] || 1;
+                const f2 = cardFrequencies?.[k2] || 1;
+                const co12 = synergyMatrix?.[k1]?.[k2] || 0;
+                const cs12 = co12 / Math.sqrt(f1 * f2);
 
-    triadBonus = 0.15 * Math.min(best, second, cs12);
-}
+                triadBonus = 0.15 * Math.min(best, second, cs12);
+            }
 
-// weighted local cluster score
-const localClusterScore = (0.7 * best) + (0.25 * second) + triadBonus;
-totalConnection += localClusterScore * seedA.count;
+            // weighted local cluster score
+            const localClusterScore = (0.7 * best) + (0.25 * second) + triadBonus;
+            totalConnection += localClusterScore * seedA.count;
 
-// track how much the 2nd partner supports the 1st
-const depthRatio = best > 0 ? Math.min(1, second / best) : 0;
-totalDepth += depthRatio * seedA.count;
+            // track how much the 2nd partner supports the 1st
+            const depthRatio = best > 0 ? Math.min(1, second / best) : 0;
+            totalDepth += depthRatio * seedA.count;
         });
 
         const avgCost = totalCards > 0 ? totalCost / totalCards : 0;
@@ -454,27 +454,27 @@ totalDepth += depthRatio * seedA.count;
 
         // --- Synergy ---
         let synergyScore = 0;
-if (totalCards > 0 && seeds.length > 1) {
-    const rawAvg = totalConnection / totalCards;
-    const depthAvg = totalDepth / totalCards;
+        if (totalCards > 0 && seeds.length > 1) {
+            const rawAvg = totalConnection / totalCards;
+            const depthAvg = totalDepth / totalCards;
 
-    synergyScore = Math.min(100, Math.round(rawAvg * 100));
+            synergyScore = Math.min(100, Math.round(rawAvg * 100));
 
-    // Only the very top end is harder now
-    // 100 requires stronger 2-level support
-    if (synergyScore >= 98) {
-        if (depthAvg < 0.55) synergyScore = 97;
-        else if (depthAvg < 0.70) synergyScore = 98;
-        else if (depthAvg < 0.85) synergyScore = 99;
-        else synergyScore = 100;
-    }
+            // Only the very top end is harder now
+            // 100 requires stronger 2-level support
+            if (synergyScore >= 98) {
+                if (depthAvg < 0.55) synergyScore = 97;
+                else if (depthAvg < 0.70) synergyScore = 98;
+                else if (depthAvg < 0.85) synergyScore = 99;
+                else synergyScore = 100;
+            }
 
-    if (totalCards < 6) {
-        synergyScore = Math.round(synergyScore * (totalCards / 6));
-    }
-} else if (totalCards === 1) {
-    synergyScore = 5;
-}
+            if (totalCards < 6) {
+                synergyScore = Math.round(synergyScore * (totalCards / 6));
+            }
+        } else if (totalCards === 1) {
+            synergyScore = 5;
+        }
 
         // --- Consistency ---
         let consistencyScore = 0;
@@ -591,997 +591,997 @@ if (totalCards > 0 && seeds.length > 1) {
         const { grade, gradeColor } = getVerdictGrade(overallPercent, allTopTier, totalCards);
         return { grade, gradeColor, score: overallPercent, costLabel, synergyScore, consistencyScore, powerScore, avgCost, curveHealthText, curve, avgSparks, curveNumeric };
     }
-    window.getTopDecksByMonth = function(monthNumber, customCtx) {
-    // Fallback to find fullDatabase in global scope if not explicitly passed
-    const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
-    
-    if (!db) {
-        console.error("Error: 'fullDatabase' could not be found in the global scope. Please make sure it is defined.");
-        return;
-    }
+    window.getTopDecksByMonth = function (monthNumber, customCtx) {
+        // Fallback to find fullDatabase in global scope if not explicitly passed
+        const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
 
-    // Maps for dynamic logging and flexible regex generation
-    const monthNames = {
-        1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
-        7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
+        if (!db) {
+            console.error("Error: 'fullDatabase' could not be found in the global scope. Please make sure it is defined.");
+            return;
+        }
+
+        // Maps for dynamic logging and flexible regex generation
+        const monthNames = {
+            1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
+            7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
+        };
+
+        const monthPatterns = {
+            1: "jan(uary)?", 2: "feb(ruary)?", 3: "mar(ch)?", 4: "apr(il)?",
+            5: "may", 6: "jun(e)?", 7: "jul(y)?", 8: "aug(ust)?",
+            9: "sep(t(ember)?)?", 10: "oct(ober)?", 11: "nov(ember)?", 12: "dec(ember)?"
+        };
+
+        const targetMonthName = monthNames[monthNumber];
+        const patternStr = monthPatterns[monthNumber];
+
+        if (!targetMonthName) {
+            console.error("Error: Invalid month number. Please provide a number between 1 (January) and 12 (December).");
+            return;
+        }
+
+        // Dynamically construct the regex for the given month in 2026
+        const dateRegex = new RegExp(`^${patternStr}\\s+\\d+,\\s+2026$`, "i");
+        const compiledDecks = [];
+
+        for (const deckKey in db) {
+            if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
+
+            const deck = db[deckKey];
+            if (!deck.upload_date || !deck.cards) continue;
+
+            // Filter strictly for the chosen month in 2026
+            if (dateRegex.test(deck.upload_date.trim())) {
+                try {
+                    const activeCtx = customCtx || window.ctx || undefined;
+
+                    // Run your scoring function
+                    const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+
+                    compiledDecks.push({
+                        id: deckKey,
+                        name: deck.name,
+                        score: parseFloat(verdict.score.toFixed(2)),
+                        grade: verdict.grade,
+                        cost: verdict.costLabel,
+                        synergy: verdict.synergyScore,
+                        power: verdict.powerScore,
+                        consistency: verdict.consistencyScore,
+                        date: deck.upload_date,
+                        author: deck.credit || "Unknown"
+                    });
+                } catch (error) {
+                    console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+                }
+            }
+        }
+
+        // Sort descending by score
+        compiledDecks.sort((a, b) => b.score - a.score);
+
+        // Slice top 10
+        const top10 = compiledDecks.slice(0, 10);
+
+        // Display Results dynamically in console
+        if (top10.length === 0) {
+            console.log(`%c No decks found for ${targetMonthName} 2026.`, "color: #ff9900; font-weight: bold;");
+        } else {
+            console.log(`%c--- TOP 10 HIGHEST SCORING DECKS (${targetMonthName.toUpperCase()} 2026) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+            console.table(top10);
+        }
+
+        return top10;
     };
+    window.getTopDeckForAllHeroes = function (customCtx) {
+        // Fallback lookups for databases in global scope
+        const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
+        const cardDb = window.cardDatabase || (typeof cardDatabase !== 'undefined' ? cardDatabase : null);
 
-    const monthPatterns = {
-        1: "jan(uary)?", 2: "feb(ruary)?", 3: "mar(ch)?", 4: "apr(il)?",
-        5: "may",        6: "jun(e)?",     7: "jul(y)?",     8: "aug(ust)?",
-        9: "sep(t(ember)?)?", 10: "oct(ober)?", 11: "nov(ember)?", 12: "dec(ember)?"
-    };
+        if (!db) {
+            console.error("Error: 'fullDatabase' could not be found in the global scope.");
+            return [];
+        }
+        if (!cardDb) {
+            console.error("Error: 'cardDatabase' could not be found in the global scope.");
+            return [];
+        }
 
-    const targetMonthName = monthNames[monthNumber];
-    const patternStr = monthPatterns[monthNumber];
+        const heroMap = {
+            // Plants
+            "Mega-Grow,Smarty": "Green Shadow",
+            "Kabloom,Solar": "Solar Flare",
+            "Guardian,Solar": "Wall-Knight",
+            "Mega-Grow,Solar": "Chompzilla",
+            "Guardian,Kabloom": "Spudow",
+            "Guardian,Smarty": "Citron / Beta-Carrotina",
+            "Guardian,Mega-Grow": "Grass Knuckles",
+            "Kabloom,Smarty": "Nightcap",
+            "Kabloom,Mega-Grow": "Captain Combustible",
+            "Smarty,Solar": "Rose",
 
-    if (!targetMonthName) {
-        console.error("Error: Invalid month number. Please provide a number between 1 (January) and 12 (December).");
-        return;
-    }
+            // Zombies
+            "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
+            "Beastly,Hearty": "The Smash",
+            "Crazy,Sneaky": "Impfinity",
+            "Brainy,Hearty": "Rustbolt",
+            "Beastly,Crazy": "Electric Boogaloo",
+            "Beastly,Sneaky": "Brain Freeze",
+            "Brainy,Crazy": "Professor Brainstorm",
+            "Beastly,Brainy": "Immorticia",
+            "Crazy,Hearty": "Z-Mech",
+            "Hearty,Sneaky": "Neptuna"
+        };
 
-    // Dynamically construct the regex for the given month in 2026
-    const dateRegex = new RegExp(`^${patternStr}\\s+\\d+,\\s+2026$`, "i");
-    const compiledDecks = [];
+        const bestDecks = {}; // Tracks the highest scoring deck for each hero
+        const seenDecks = new Set(); // Tracks unique deck compositions
 
-    for (const deckKey in db) {
-        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
-        
-        const deck = db[deckKey];
-        if (!deck.upload_date || !deck.cards) continue;
+        for (const deckKey in db) {
+            if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
 
-        // Filter strictly for the chosen month in 2026
-        if (dateRegex.test(deck.upload_date.trim())) {
+            const deck = db[deckKey];
+            if (!deck.upload_date || !deck.cards) continue;
+
             try {
                 const activeCtx = customCtx || window.ctx || undefined;
-                
-                // Run your scoring function
+
+                // Track unique classes found within this specific deck
+                const uniqueClasses = new Set();
+
+                for (const cardRaw of deck.cards) {
+                    let parsedCardName = cardRaw.trim();
+
+                    // Strip quantity prefix (e.g., "4x " or "x4 ")
+                    const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+                    if (match) {
+                        parsedCardName = match[2].trim();
+                    }
+
+                    // Create space and underscore variants to guarantee database hits
+                    const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+                    const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
+
+                    const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
+                    if (cardData && cardData.Class) {
+                        uniqueClasses.add(cardData.Class.trim());
+                    }
+                }
+
+                // Alphabetize the unique classes found to flawlessly align with heroMap keys
+                const classesArray = Array.from(uniqueClasses).sort();
+                const classesKey = classesArray.join(',');
+
+                const heroName = heroMap[classesKey];
+
+                // If it doesn't match a valid two-class combo, skip it
+                if (!heroName) continue;
+
+                // Create a unique signature for the deck based on its cards
+                const deckSignature = [...deck.cards]
+                    .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
+                    .sort()
+                    .join('|');
+
+                // Prevent duplicate deck compositions from being evaluated
+                if (seenDecks.has(deckSignature)) {
+                    continue;
+                }
+                seenDecks.add(deckSignature);
+
                 const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
-                
-                compiledDecks.push({
+                const currentScore = parseFloat(verdict.score.toFixed(2));
+
+                // If we don't have a deck for this hero yet, OR if this deck scores higher, update it
+                if (!bestDecks[heroName] || currentScore > bestDecks[heroName].score) {
+                    bestDecks[heroName] = {
+                        hero: heroName,
+                        id: deckKey,
+                        name: deck.name,
+                        score: currentScore,
+                        grade: verdict.grade,
+                        cost: verdict.costLabel,
+                        synergy: verdict.synergyScore,
+                        power: verdict.powerScore,
+                        consistency: verdict.consistencyScore,
+                        date: deck.upload_date,
+                        author: deck.credit || "Unknown",
+                        cards: deck.cards
+                    };
+                }
+            } catch (error) {
+                console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+            }
+        }
+
+        // Convert the dictionary to an array and sort descending by score
+        const topDecksArray = Object.values(bestDecks).sort((a, b) => b.score - a.score);
+
+        if (topDecksArray.length === 0) {
+            console.log(`%c No valid decks found in the database.`, "color: #ff9900; font-weight: bold;");
+        } else {
+            console.log(`%c--- BEST DECK FOR EACH HERO (ALL-TIME) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+
+            // Map elements for console.table to include the Hero name now
+            console.table(topDecksArray.map(d => ({
+                Hero: d.hero,
+                "Deck Name": d.name,
+                Score: d.score,
+                Grade: d.grade,
+                Synergy: d.synergy,
+                Power: d.power,
+                Consistency: d.consistency,
+                Author: d.author
+            })));
+
+            // Log out the full decklists with clean text separation
+            console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
+
+            topDecksArray.forEach((d) => {
+                console.log(`%c${d.hero}: ${d.name} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
+                console.log(d.cards.join("\n"));
+            });
+        }
+
+        return topDecksArray;
+    };
+    window.getTop10DecksForCard = function (targetCard, customCtx) {
+        if (!targetCard || typeof targetCard !== 'string') {
+            console.error("Error: Please provide a target card name as the first parameter (e.g., 'Teleport').");
+            return [];
+        }
+
+        // Direct scope lookups since they are not attached to window
+        const db = typeof fullDatabase !== 'undefined' ? fullDatabase : null;
+        const cardDb = typeof cardDatabase !== 'undefined' ? cardDatabase : null;
+
+        if (!db) {
+            console.error("Error: 'fullDatabase' could not be found in the accessible scope.");
+            return [];
+        }
+        if (!cardDb) {
+            console.error("Error: 'cardDatabase' could not be found in the accessible scope.");
+            return [];
+        }
+
+        const heroMap = {
+            // Plants
+            "Mega-Grow,Smarty": "Green Shadow",
+            "Kabloom,Solar": "Solar Flare",
+            "Guardian,Solar": "Wall-Knight",
+            "Mega-Grow,Solar": "Chompzilla",
+            "Guardian,Kabloom": "Spudow",
+            "Guardian,Smarty": "Citron / Beta-Carrotina",
+            "Guardian,Mega-Grow": "Grass Knuckles",
+            "Kabloom,Smarty": "Nightcap",
+            "Kabloom,Mega-Grow": "Captain Combustible",
+            "Smarty,Solar": "Rose",
+
+            // Zombies
+            "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
+            "Beastly,Hearty": "The Smash",
+            "Crazy,Sneaky": "Impfinity",
+            "Brainy,Hearty": "Rustbolt",
+            "Beastly,Crazy": "Electric Boogaloo",
+            "Beastly,Sneaky": "Brain Freeze",
+            "Brainy,Crazy": "Professor Brainstorm",
+            "Beastly,Brainy": "Immorticia",
+            "Crazy,Hearty": "Z-Mech",
+            "Hearty,Sneaky": "Neptuna"
+        };
+
+        const cardDecks = [];
+        const seenDecks = new Set();
+
+        for (const deckKey in db) {
+            if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
+
+            const deck = db[deckKey];
+            if (!deck.cards) continue;
+
+            try {
+                // Safe evaluation of the local ctx variable
+                const activeCtx = customCtx || (typeof ctx !== 'undefined' ? ctx : undefined);
+
+                const uniqueClasses = new Set();
+                let containsTargetCard = false;
+
+                for (const cardRaw of deck.cards) {
+                    let parsedCardName = cardRaw.trim();
+
+                    const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+                    if (match) {
+                        parsedCardName = match[2].trim();
+                    }
+
+                    if (parsedCardName.toLowerCase().includes(targetCard.toLowerCase().trim())) {
+                        containsTargetCard = true;
+                    }
+
+                    const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+                    const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
+
+                    const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
+                    if (cardData && cardData.Class) {
+                        uniqueClasses.add(cardData.Class.trim());
+                    }
+                }
+
+                if (!containsTargetCard) {
+                    continue;
+                }
+
+                const classesArray = Array.from(uniqueClasses).sort();
+                const classesKey = classesArray.join(',');
+
+                const heroName = heroMap[classesKey] || "Unknown Hero";
+
+                const deckSignature = [...deck.cards]
+                    .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
+                    .sort()
+                    .join('|');
+
+                if (seenDecks.has(deckSignature)) {
+                    continue;
+                }
+
+                seenDecks.add(deckSignature);
+
+                // Dynamically check for the function in the local scope, falling back to window if needed
+                let verdict;
+                if (typeof getDeckVerdictFromCards === 'function') {
+                    verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+                } else {
+                    throw new Error("getDeckVerdictFromCards could not be found in the current scope.");
+                }
+
+                const currentScore = verdict.score;
+
+                cardDecks.push({
+                    hero: heroName,
                     id: deckKey,
-                    name: deck.name,
+                    name: deck.name || "Unnamed Deck",
+                    score: parseFloat(currentScore.toFixed(2)),
+                    grade: verdict.grade,
+                    cost: verdict.costLabel,
+                    synergy: verdict.synergyScore,
+                    power: verdict.powerScore,
+                    consistency: verdict.consistencyScore,
+                    date: deck.upload_date || "Unknown Date",
+                    author: deck.credit || "Unknown",
+                    cards: deck.cards
+                });
+
+            } catch (error) {
+                console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+            }
+        }
+
+        cardDecks.sort((a, b) => b.score - a.score);
+        const top10Decks = cardDecks.slice(0, 10);
+
+        if (top10Decks.length === 0) {
+            console.log(`%c No valid decks found containing the card "${targetCard}".`, "color: #ff9900; font-weight: bold;");
+        } else {
+            console.log(`%c--- TOP ${top10Decks.length} DECKS CONTAINING "${targetCard.toUpperCase()}" (ALL TIME) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+
+            console.table(top10Decks.map(d => ({
+                "Hero": d.hero,
+                "Deck Name": d.name,
+                "Score": d.score,
+                "Grade": d.grade,
+                "Synergy": d.synergy,
+                "Power": d.power,
+                "Consistency": d.consistency,
+                "Year": d.date.split(' ').pop() || d.date,
+                "Author": d.author
+            })));
+
+            console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
+
+            top10Decks.forEach((d, index) => {
+                console.log(`%c#${index + 1}: ${d.name} | Hero: ${d.hero} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
+                console.log(d.cards.join("\n"));
+            });
+        }
+
+        return top10Decks;
+    };
+    window.getTop10BudgetDecks = function (customCtx) {
+        // Safe lookup for variables not explicitly attached to window
+        const db = typeof fullDatabase !== 'undefined' ? fullDatabase : null;
+        const cardDb = typeof cardDatabase !== 'undefined' ? cardDatabase : null;
+
+        if (!db) {
+            console.error("Error: 'fullDatabase' could not be found in the accessible scope.");
+            return [];
+        }
+        if (!cardDb) {
+            console.error("Error: 'cardDatabase' could not be found in the accessible scope.");
+            return [];
+        }
+
+        const heroMap = {
+            // Plants
+            "Mega-Grow,Smarty": "Green Shadow",
+            "Kabloom,Solar": "Solar Flare",
+            "Guardian,Solar": "Wall-Knight",
+            "Mega-Grow,Solar": "Chompzilla",
+            "Guardian,Kabloom": "Spudow",
+            "Guardian,Smarty": "Citron / Beta-Carrotina",
+            "Guardian,Mega-Grow": "Grass Knuckles",
+            "Kabloom,Smarty": "Nightcap",
+            "Kabloom,Mega-Grow": "Captain Combustible",
+            "Smarty,Solar": "Rose",
+
+            // Zombies
+            "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
+            "Beastly,Hearty": "The Smash",
+            "Crazy,Sneaky": "Impfinity",
+            "Brainy,Hearty": "Rustbolt",
+            "Beastly,Crazy": "Electric Boogaloo",
+            "Beastly,Sneaky": "Brain Freeze",
+            "Brainy,Crazy": "Professor Brainstorm",
+            "Beastly,Brainy": "Immorticia",
+            "Crazy,Hearty": "Z-Mech",
+            "Hearty,Sneaky": "Neptuna"
+        };
+
+        const sparkCosts = {
+            "common": 0,
+            "uncommon": 50,
+            "rare": 250,
+            "super rare": 1000,
+            "super-rare": 1000,
+            "event": 1000,
+            "legendary": 4000
+        };
+
+        const compiledDecks = [];
+        const seenDecks = new Set();
+
+        for (const deckKey in db) {
+            if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
+
+            const deck = db[deckKey];
+            if (!deck.cards || !Array.isArray(deck.cards)) continue;
+
+            try {
+                const activeCtx = customCtx || (typeof ctx !== 'undefined' ? ctx : undefined);
+                const uniqueClasses = new Set();
+                let totalSparks = 0;
+
+                for (const cardRaw of deck.cards) {
+                    let parsedCardName = cardRaw.trim();
+                    let quantity = 1;
+
+                    // Robust format checker matching your structural example: "4x", "4", or "x4"
+                    const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+                    if (match) {
+                        quantity = parseInt(match[1].replace(/x/i, ''), 10) || 1;
+                        parsedCardName = match[2].trim();
+                    }
+
+                    // Database formatting clean-up keys
+                    const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+                    const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
+
+                    const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
+
+                    if (cardData) {
+                        if (cardData.Rarity) {
+                            const rarity = cardData.Rarity.toLowerCase().trim();
+                            totalSparks += (sparkCosts[rarity] || 0) * quantity;
+                        }
+                        if (cardData.Class) {
+                            uniqueClasses.add(cardData.Class.trim());
+                        }
+                    }
+                }
+
+                // Filter: Enforce budget cutoff limit (< 40000 sparks)
+                if (totalSparks >= 20000) {
+                    continue;
+                }
+
+                // Unique deck deduplication signature logic
+                const deckSignature = [...deck.cards]
+                    .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
+                    .sort()
+                    .join('|');
+
+                if (seenDecks.has(deckSignature)) {
+                    continue;
+                }
+                seenDecks.add(deckSignature);
+
+                // Determine Hero via Classes mapping
+                const classesArray = Array.from(uniqueClasses).sort();
+                const classesKey = classesArray.join(',');
+                const heroName = heroMap[classesKey] || "Unknown Hero";
+
+                // Evaluate Deck Score
+                let verdict;
+                if (typeof getDeckVerdictFromCards === 'function') {
+                    verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+                } else {
+                    throw new Error("getDeckVerdictFromCards could not be found in the current scope.");
+                }
+
+                compiledDecks.push({
+                    hero: heroName,
+                    id: deckKey,
+                    name: deck.name || "Unnamed Deck",
+                    sparks: totalSparks,
                     score: parseFloat(verdict.score.toFixed(2)),
                     grade: verdict.grade,
                     cost: verdict.costLabel,
                     synergy: verdict.synergyScore,
                     power: verdict.powerScore,
                     consistency: verdict.consistencyScore,
-                    date: deck.upload_date,
-                    author: deck.credit || "Unknown"
+                    date: deck.upload_date || "Unknown Date",
+                    author: deck.credit || "Unknown",
+                    cards: deck.cards
                 });
+
             } catch (error) {
                 console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
             }
         }
-    }
 
-    // Sort descending by score
-    compiledDecks.sort((a, b) => b.score - a.score);
+        // Sort descending by score
+        compiledDecks.sort((a, b) => b.score - a.score);
+        const top10Budget = compiledDecks.slice(0, 10);
 
-    // Slice top 10
-    const top10 = compiledDecks.slice(0, 10);
+        // Logging output configurations
+        if (top10Budget.length === 0) {
+            console.log("%c No valid budget decks (under 40,000 sparks) found.", "color: #ff9900; font-weight: bold;");
+        } else {
+            console.log(`%c--- TOP ${top10Budget.length} HIGHEST SCORING BUDGET DECKS (ALL TIME) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
 
-    // Display Results dynamically in console
-    if (top10.length === 0) {
-        console.log(`%c No decks found for ${targetMonthName} 2026.`, "color: #ff9900; font-weight: bold;");
-    } else {
-        console.log(`%c--- TOP 10 HIGHEST SCORING DECKS (${targetMonthName.toUpperCase()} 2026) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
-        console.table(top10);
-    }
+            // Clean high-level table rendering
+            console.table(top10Budget.map(d => ({
+                "Hero": d.hero,
+                "Deck Name": d.name,
+                "Sparks": d.sparks,
+                "Score": d.score,
+                "Grade": d.grade,
+                "Synergy": d.synergy,
+                "Power": d.power,
+                "Consistency": d.consistency,
+                "Year": d.date.split(' ').pop() || d.date,
+                "Author": d.author
+            })));
 
-    return top10;
-};
-window.getTopDeckForAllHeroes = function(customCtx) {
-    // Fallback lookups for databases in global scope
-    const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
-    const cardDb = window.cardDatabase || (typeof cardDatabase !== 'undefined' ? cardDatabase : null);
-    
-    if (!db) {
-        console.error("Error: 'fullDatabase' could not be found in the global scope.");
-        return [];
-    }
-    if (!cardDb) {
-        console.error("Error: 'cardDatabase' could not be found in the global scope.");
-        return [];
-    }
+            // Print raw vertical decklist breakdown lists down the log stack
+            console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
 
-    const heroMap = {
-        // Plants
-        "Mega-Grow,Smarty": "Green Shadow",
-        "Kabloom,Solar": "Solar Flare",
-        "Guardian,Solar": "Wall-Knight",
-        "Mega-Grow,Solar": "Chompzilla",
-        "Guardian,Kabloom": "Spudow",
-        "Guardian,Smarty": "Citron / Beta-Carrotina",
-        "Guardian,Mega-Grow": "Grass Knuckles",
-        "Kabloom,Smarty": "Nightcap",
-        "Kabloom,Mega-Grow": "Captain Combustible",
-        "Smarty,Solar": "Rose",
-
-        // Zombies
-        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
-        "Beastly,Hearty": "The Smash",
-        "Crazy,Sneaky": "Impfinity",
-        "Brainy,Hearty": "Rustbolt",
-        "Beastly,Crazy": "Electric Boogaloo",
-        "Beastly,Sneaky": "Brain Freeze",
-        "Brainy,Crazy": "Professor Brainstorm",
-        "Beastly,Brainy": "Immorticia",
-        "Crazy,Hearty": "Z-Mech",
-        "Hearty,Sneaky": "Neptuna"
-    };
-
-    const bestDecks = {}; // Tracks the highest scoring deck for each hero
-    const seenDecks = new Set(); // Tracks unique deck compositions
-
-    for (const deckKey in db) {
-        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
-        
-        const deck = db[deckKey];
-        if (!deck.upload_date || !deck.cards) continue;
-
-        try {
-            const activeCtx = customCtx || window.ctx || undefined;
-            
-            // Track unique classes found within this specific deck
-            const uniqueClasses = new Set();
-            
-            for (const cardRaw of deck.cards) {
-                let parsedCardName = cardRaw.trim();
-                
-                // Strip quantity prefix (e.g., "4x " or "x4 ")
-                const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
-                if (match) {
-                    parsedCardName = match[2].trim();
-                }
-                
-                // Create space and underscore variants to guarantee database hits
-                const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
-                const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
-                
-                const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
-                if (cardData && cardData.Class) {
-                    uniqueClasses.add(cardData.Class.trim());
-                }
-            }
-
-            // Alphabetize the unique classes found to flawlessly align with heroMap keys
-            const classesArray = Array.from(uniqueClasses).sort();
-            const classesKey = classesArray.join(',');
-            
-            const heroName = heroMap[classesKey];
-            
-            // If it doesn't match a valid two-class combo, skip it
-            if (!heroName) continue;
-            
-            // Create a unique signature for the deck based on its cards
-            const deckSignature = [...deck.cards]
-                .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
-                .sort()
-                .join('|');
-
-            // Prevent duplicate deck compositions from being evaluated
-            if (seenDecks.has(deckSignature)) {
-                continue;
-            }
-            seenDecks.add(deckSignature);
-
-            const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
-            const currentScore = parseFloat(verdict.score.toFixed(2));
-
-            // If we don't have a deck for this hero yet, OR if this deck scores higher, update it
-            if (!bestDecks[heroName] || currentScore > bestDecks[heroName].score) {
-                bestDecks[heroName] = {
-                    hero: heroName,
-                    id: deckKey,
-                    name: deck.name,
-                    score: currentScore,
-                    grade: verdict.grade,
-                    cost: verdict.costLabel,
-                    synergy: verdict.synergyScore,
-                    power: verdict.powerScore,
-                    consistency: verdict.consistencyScore,
-                    date: deck.upload_date,
-                    author: deck.credit || "Unknown",
-                    cards: deck.cards
-                };
-            }
-        } catch (error) {
-            console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
-        }
-    }
-
-    // Convert the dictionary to an array and sort descending by score
-    const topDecksArray = Object.values(bestDecks).sort((a, b) => b.score - a.score);
-
-    if (topDecksArray.length === 0) {
-        console.log(`%c No valid decks found in the database.`, "color: #ff9900; font-weight: bold;");
-    } else {
-        console.log(`%c--- BEST DECK FOR EACH HERO (ALL-TIME) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
-        
-        // Map elements for console.table to include the Hero name now
-        console.table(topDecksArray.map(d => ({
-            Hero: d.hero,
-            "Deck Name": d.name,
-            Score: d.score,
-            Grade: d.grade,
-            Synergy: d.synergy,
-            Power: d.power,
-            Consistency: d.consistency,
-            Author: d.author
-        })));
-
-        // Log out the full decklists with clean text separation
-        console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
-        
-        topDecksArray.forEach((d) => {
-            console.log(`%c${d.hero}: ${d.name} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
-            console.log(d.cards.join("\n"));
-        });
-    }
-
-    return topDecksArray;
-};
-window.getTop10DecksForCard = function(targetCard, customCtx) {
-    if (!targetCard || typeof targetCard !== 'string') {
-        console.error("Error: Please provide a target card name as the first parameter (e.g., 'Teleport').");
-        return [];
-    }
-
-    // Direct scope lookups since they are not attached to window
-    const db = typeof fullDatabase !== 'undefined' ? fullDatabase : null;
-    const cardDb = typeof cardDatabase !== 'undefined' ? cardDatabase : null;
-    
-    if (!db) {
-        console.error("Error: 'fullDatabase' could not be found in the accessible scope.");
-        return [];
-    }
-    if (!cardDb) {
-        console.error("Error: 'cardDatabase' could not be found in the accessible scope.");
-        return [];
-    }
-
-    const heroMap = {
-        // Plants
-        "Mega-Grow,Smarty": "Green Shadow",
-        "Kabloom,Solar": "Solar Flare",
-        "Guardian,Solar": "Wall-Knight",
-        "Mega-Grow,Solar": "Chompzilla",
-        "Guardian,Kabloom": "Spudow",
-        "Guardian,Smarty": "Citron / Beta-Carrotina",
-        "Guardian,Mega-Grow": "Grass Knuckles",
-        "Kabloom,Smarty": "Nightcap",
-        "Kabloom,Mega-Grow": "Captain Combustible",
-        "Smarty,Solar": "Rose",
-
-        // Zombies
-        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
-        "Beastly,Hearty": "The Smash",
-        "Crazy,Sneaky": "Impfinity",
-        "Brainy,Hearty": "Rustbolt",
-        "Beastly,Crazy": "Electric Boogaloo",
-        "Beastly,Sneaky": "Brain Freeze",
-        "Brainy,Crazy": "Professor Brainstorm",
-        "Beastly,Brainy": "Immorticia",
-        "Crazy,Hearty": "Z-Mech",
-        "Hearty,Sneaky": "Neptuna"
-    };
-
-    const cardDecks = [];
-    const seenDecks = new Set(); 
-
-    for (const deckKey in db) {
-        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
-        
-        const deck = db[deckKey];
-        if (!deck.cards) continue; 
-
-        try {
-            // Safe evaluation of the local ctx variable
-            const activeCtx = customCtx || (typeof ctx !== 'undefined' ? ctx : undefined);
-            
-            const uniqueClasses = new Set();
-            let containsTargetCard = false;
-            
-            for (const cardRaw of deck.cards) {
-                let parsedCardName = cardRaw.trim();
-                
-                const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
-                if (match) {
-                    parsedCardName = match[2].trim();
-                }
-                
-                if (parsedCardName.toLowerCase().includes(targetCard.toLowerCase().trim())) {
-                    containsTargetCard = true;
-                }
-                
-                const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
-                const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
-                
-                const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
-                if (cardData && cardData.Class) {
-                    uniqueClasses.add(cardData.Class.trim());
-                }
-            }
-
-            if (!containsTargetCard) {
-                continue;
-            }
-
-            const classesArray = Array.from(uniqueClasses).sort();
-            const classesKey = classesArray.join(',');
-            
-            const heroName = heroMap[classesKey] || "Unknown Hero";
-            
-            const deckSignature = [...deck.cards]
-                .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
-                .sort()
-                .join('|');
-
-            if (seenDecks.has(deckSignature)) {
-                continue;
-            }
-
-            seenDecks.add(deckSignature);
-
-            // Dynamically check for the function in the local scope, falling back to window if needed
-            let verdict;
-            if (typeof getDeckVerdictFromCards === 'function') {
-                verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
-            } else {
-                throw new Error("getDeckVerdictFromCards could not be found in the current scope.");
-            }
-
-            const currentScore = verdict.score;
-
-            cardDecks.push({
-                hero: heroName,
-                id: deckKey,
-                name: deck.name || "Unnamed Deck",
-                score: parseFloat(currentScore.toFixed(2)),
-                grade: verdict.grade,
-                cost: verdict.costLabel,
-                synergy: verdict.synergyScore,
-                power: verdict.powerScore,
-                consistency: verdict.consistencyScore,
-                date: deck.upload_date || "Unknown Date",
-                author: deck.credit || "Unknown",
-                cards: deck.cards 
+            top10Budget.forEach((d, index) => {
+                console.log(`%c#${index + 1}: ${d.name} | Hero: ${d.hero} (Sparks: ${d.sparks} | Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
+                console.log(d.cards.join("\n"));
             });
-            
-        } catch (error) {
-            console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
         }
-    }
 
-    cardDecks.sort((a, b) => b.score - a.score);
-    const top10Decks = cardDecks.slice(0, 10);
-
-    if (top10Decks.length === 0) {
-        console.log(`%c No valid decks found containing the card "${targetCard}".`, "color: #ff9900; font-weight: bold;");
-    } else {
-        console.log(`%c--- TOP ${top10Decks.length} DECKS CONTAINING "${targetCard.toUpperCase()}" (ALL TIME) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
-        
-        console.table(top10Decks.map(d => ({
-            "Hero": d.hero,
-            "Deck Name": d.name,
-            "Score": d.score,
-            "Grade": d.grade,
-            "Synergy": d.synergy,
-            "Power": d.power,
-            "Consistency": d.consistency,
-            "Year": d.date.split(' ').pop() || d.date, 
-            "Author": d.author
-        })));
-
-        console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
-        
-        top10Decks.forEach((d, index) => {
-            console.log(`%c#${index + 1}: ${d.name} | Hero: ${d.hero} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
-            console.log(d.cards.join("\n"));
-        });
-    }
-
-    return top10Decks;
-};
-window.getTop10BudgetDecks = function(customCtx) {
-    // Safe lookup for variables not explicitly attached to window
-    const db = typeof fullDatabase !== 'undefined' ? fullDatabase : null;
-    const cardDb = typeof cardDatabase !== 'undefined' ? cardDatabase : null;
-    
-    if (!db) {
-        console.error("Error: 'fullDatabase' could not be found in the accessible scope.");
-        return [];
-    }
-    if (!cardDb) {
-        console.error("Error: 'cardDatabase' could not be found in the accessible scope.");
-        return [];
-    }
-
-    const heroMap = {
-        // Plants
-        "Mega-Grow,Smarty": "Green Shadow",
-        "Kabloom,Solar": "Solar Flare",
-        "Guardian,Solar": "Wall-Knight",
-        "Mega-Grow,Solar": "Chompzilla",
-        "Guardian,Kabloom": "Spudow",
-        "Guardian,Smarty": "Citron / Beta-Carrotina",
-        "Guardian,Mega-Grow": "Grass Knuckles",
-        "Kabloom,Smarty": "Nightcap",
-        "Kabloom,Mega-Grow": "Captain Combustible",
-        "Smarty,Solar": "Rose",
-
-        // Zombies
-        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
-        "Beastly,Hearty": "The Smash",
-        "Crazy,Sneaky": "Impfinity",
-        "Brainy,Hearty": "Rustbolt",
-        "Beastly,Crazy": "Electric Boogaloo",
-        "Beastly,Sneaky": "Brain Freeze",
-        "Brainy,Crazy": "Professor Brainstorm",
-        "Beastly,Brainy": "Immorticia",
-        "Crazy,Hearty": "Z-Mech",
-        "Hearty,Sneaky": "Neptuna"
+        return top10Budget;
     };
+    window.synthesizeSuperOriginalSTierDeck = async function (iterations = 50000, customCtx) {
+        const db = typeof fullDatabase !== 'undefined' ? fullDatabase : null;
+        const cardDb = typeof cardDatabase !== 'undefined' ? cardDatabase : null;
 
-    const sparkCosts = {
-        "common": 0,
-        "uncommon": 50,
-        "rare": 250,
-        "super rare": 1000,
-        "super-rare": 1000,
-        "event": 1000,
-        "legendary": 4000
-    };
+        if (!db || !cardDb) {
+            console.error("Error: Missing database scope.");
+            return;
+        }
 
-    const compiledDecks = [];
-    const seenDecks = new Set(); 
+        const activeCtx = customCtx || (typeof ctx !== 'undefined' ? ctx : undefined);
+        console.log(`%c[Initialization] Prepping high-speed evolutionary synthesizer for ${iterations} iterations...`, "color: #00ffcc");
 
-    for (const deckKey in db) {
-        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
-        
-        const deck = db[deckKey];
-        if (!deck.cards || !Array.isArray(deck.cards)) continue;
+        // --- STEP 1: Parse DB for Jaccard baselines ---
+        const allDbSets = [];
+        const seedDecks = [];
 
-        try {
-            const activeCtx = customCtx || (typeof ctx !== 'undefined' ? ctx : undefined);
-            const uniqueClasses = new Set();
-            let totalSparks = 0;
+        const parseCardName = (raw) => {
+            const match = raw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+            return match ? match[2].trim() : raw.trim();
+        };
 
-            for (const cardRaw of deck.cards) {
-                let parsedCardName = cardRaw.trim();
-                let quantity = 1;
+        for (const key in db) {
+            if (!db[key].cards) continue;
+            const cardSet = new Set(db[key].cards.map(c => parseCardName(c).toLowerCase()));
+            allDbSets.push(cardSet);
 
-                // Robust format checker matching your structural example: "4x", "4", or "x4"
-                const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
-                if (match) {
-                    quantity = parseInt(match[1].replace(/x/i, ''), 10) || 1;
-                    parsedCardName = match[2].trim();
+            try {
+                const verdict = getDeckVerdictFromCards(db[key].cards, key, activeCtx);
+                if (verdict.grade === 'S') seedDecks.push(db[key].cards);
+            } catch (e) { }
+        }
+
+        const getSimilarity = (testSet) => {
+            let maxSim = 0;
+            for (const dbSet of allDbSets) {
+                let intersection = 0;
+                for (const item of testSet) {
+                    // LOWERCASE the item before checking the set!
+                    if (dbSet.has(item.toLowerCase())) intersection++;
                 }
-
-                // Database formatting clean-up keys
-                const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
-                const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
-                
-                const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
-                
-                if (cardData) {
-                    if (cardData.Rarity) {
-                        const rarity = cardData.Rarity.toLowerCase().trim();
-                        totalSparks += (sparkCosts[rarity] || 0) * quantity;
-                    }
-                    if (cardData.Class) {
-                        uniqueClasses.add(cardData.Class.trim());
-                    }
-                }
+                const union = testSet.size + dbSet.size - intersection;
+                const sim = union === 0 ? 0 : intersection / union;
+                if (sim > maxSim) maxSim = sim;
             }
+            return maxSim;
+        };
 
-            // Filter: Enforce budget cutoff limit (< 40000 sparks)
-            if (totalSparks >= 20000) {
+        // --- STEP 2: Build Hero Pools ---
+        const classPools = {};
+        for (const key in cardDb) {
+            const card = cardDb[key];
+            if (!classPools[card.Class]) classPools[card.Class] = [];
+            classPools[card.Class].push(card.Name);
+        }
+
+        const HERO_COMBOS = [
+            "Mega-Grow,Smarty", "Kabloom,Solar", "Guardian,Solar", "Mega-Grow,Solar", "Guardian,Kabloom",
+            "Guardian,Smarty", "Guardian,Mega-Grow", "Kabloom,Smarty", "Kabloom,Mega-Grow", "Smarty,Solar",
+            "Brainy,Sneaky", "Beastly,Hearty", "Crazy,Sneaky", "Brainy,Hearty", "Beastly,Crazy",
+            "Beastly,Sneaky", "Brainy,Crazy", "Beastly,Brainy", "Crazy,Hearty", "Hearty,Sneaky"
+        ];
+
+        const heroMap = {
+            "Mega-Grow,Smarty": "Green Shadow", "Kabloom,Solar": "Solar Flare",
+            "Guardian,Solar": "Wall-Knight", "Mega-Grow,Solar": "Chompzilla",
+            "Guardian,Kabloom": "Spudow", "Guardian,Smarty": "Citron / Beta-Carrotina",
+            "Guardian,Mega-Grow": "Grass Knuckles", "Kabloom,Smarty": "Nightcap",
+            "Kabloom,Mega-Grow": "Captain Combustible", "Smarty,Solar": "Rose",
+            "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus", "Beastly,Hearty": "The Smash",
+            "Crazy,Sneaky": "Impfinity", "Brainy,Hearty": "Rustbolt",
+            "Beastly,Crazy": "Electric Boogaloo", "Beastly,Sneaky": "Brain Freeze",
+            "Brainy,Crazy": "Professor Brainstorm", "Beastly,Brainy": "Immorticia",
+            "Crazy,Hearty": "Z-Mech", "Hearty,Sneaky": "Neptuna"
+        };
+
+        const DISTRIBUTIONS = [
+            [4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+            [4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3],
+            [4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3],
+            [4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+        ];
+
+        let globalBestDeck = null;
+        let globalBestOriginality = -1;
+        let globalBestScore = 0;
+        let globalBestHero = "";
+
+        const RUNS = Math.max(5, Math.floor(iterations / 2000));
+        const STEPS_PER_RUN = Math.floor(iterations / RUNS);
+
+        console.log(`%c[Search Config] Running ${RUNS} independent evolutionary branches. (${STEPS_PER_RUN} mutations per branch).`, "color: #ff9900");
+
+        for (let run = 0; run < RUNS; run++) {
+            await new Promise(r => setTimeout(r, 10)); // Keep UI responsive
+
+            const heroCombo = HERO_COMBOS[Math.floor(Math.random() * HERO_COMBOS.length)];
+            const classes = heroCombo.split(',');
+            const validPool = [...new Set([...(classPools[classes[0]] || []), ...(classPools[classes[1]] || [])])];
+
+            const dist = DISTRIBUTIONS[Math.floor(Math.random() * DISTRIBUTIONS.length)];
+            if (validPool.length < dist.length) {
+                console.log(`[Progress] Branch ${run + 1}/${RUNS} skipped (insufficient card pool)...`);
                 continue;
             }
 
-            // Unique deck deduplication signature logic
-            const deckSignature = [...deck.cards]
-                .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
-                .sort()
-                .join('|');
+            let currentDeckSlots = [];
+            let usedCards = new Set();
 
-            if (seenDecks.has(deckSignature)) {
-                continue;
-            }
-            seenDecks.add(deckSignature);
-
-            // Determine Hero via Classes mapping
-            const classesArray = Array.from(uniqueClasses).sort();
-            const classesKey = classesArray.join(',');
-            const heroName = heroMap[classesKey] || "Unknown Hero";
-
-            // Evaluate Deck Score
-            let verdict;
-            if (typeof getDeckVerdictFromCards === 'function') {
-                verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+            let isSeeded = (Math.random() > 0.5 && seedDecks.length > 0);
+            if (isSeeded) {
+                const seed = seedDecks[Math.floor(Math.random() * seedDecks.length)];
+                const seedUnique = seed.map(c => parseCardName(c));
+                for (let i = 0; i < dist.length; i++) {
+                    let cardName = seedUnique[i] && validPool.includes(seedUnique[i]) ? seedUnique[i] : null;
+                    if (!cardName || usedCards.has(cardName)) {
+                        const available = validPool.filter(c => !usedCards.has(c));
+                        if (available.length === 0) break;
+                        cardName = available[Math.floor(Math.random() * available.length)];
+                    }
+                    usedCards.add(cardName);
+                    currentDeckSlots.push({ name: cardName, count: dist[i] });
+                }
             } else {
-                throw new Error("getDeckVerdictFromCards could not be found in the current scope.");
-            }
-
-            compiledDecks.push({
-                hero: heroName,
-                id: deckKey,
-                name: deck.name || "Unnamed Deck",
-                sparks: totalSparks,
-                score: parseFloat(verdict.score.toFixed(2)),
-                grade: verdict.grade,
-                cost: verdict.costLabel,
-                synergy: verdict.synergyScore,
-                power: verdict.powerScore,
-                consistency: verdict.consistencyScore,
-                date: deck.upload_date || "Unknown Date",
-                author: deck.credit || "Unknown",
-                cards: deck.cards
-            });
-
-        } catch (error) {
-            console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
-        }
-    }
-
-    // Sort descending by score
-    compiledDecks.sort((a, b) => b.score - a.score);
-    const top10Budget = compiledDecks.slice(0, 10);
-
-    // Logging output configurations
-    if (top10Budget.length === 0) {
-        console.log("%c No valid budget decks (under 40,000 sparks) found.", "color: #ff9900; font-weight: bold;");
-    } else {
-        console.log(`%c--- TOP ${top10Budget.length} HIGHEST SCORING BUDGET DECKS (ALL TIME) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
-        
-        // Clean high-level table rendering
-        console.table(top10Budget.map(d => ({
-            "Hero": d.hero,
-            "Deck Name": d.name,
-            "Sparks": d.sparks,
-            "Score": d.score,
-            "Grade": d.grade,
-            "Synergy": d.synergy,
-            "Power": d.power,
-            "Consistency": d.consistency,
-            "Year": d.date.split(' ').pop() || d.date, 
-            "Author": d.author
-        })));
-
-        // Print raw vertical decklist breakdown lists down the log stack
-        console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
-        
-        top10Budget.forEach((d, index) => {
-            console.log(`%c#${index + 1}: ${d.name} | Hero: ${d.hero} (Sparks: ${d.sparks} | Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
-            console.log(d.cards.join("\n"));
-        });
-    }
-
-    return top10Budget;
-};
-window.synthesizeSuperOriginalSTierDeck = async function(iterations = 50000, customCtx) {
-    const db = typeof fullDatabase !== 'undefined' ? fullDatabase : null;
-    const cardDb = typeof cardDatabase !== 'undefined' ? cardDatabase : null;
-    
-    if (!db || !cardDb) {
-        console.error("Error: Missing database scope.");
-        return;
-    }
-
-    const activeCtx = customCtx || (typeof ctx !== 'undefined' ? ctx : undefined);
-    console.log(`%c[Initialization] Prepping high-speed evolutionary synthesizer for ${iterations} iterations...`, "color: #00ffcc");
-
-    // --- STEP 1: Parse DB for Jaccard baselines ---
-    const allDbSets = [];
-    const seedDecks = [];
-    
-    const parseCardName = (raw) => {
-        const match = raw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
-        return match ? match[2].trim() : raw.trim();
-    };
-
-    for (const key in db) {
-        if (!db[key].cards) continue;
-        const cardSet = new Set(db[key].cards.map(c => parseCardName(c).toLowerCase()));
-        allDbSets.push(cardSet);
-
-        try {
-            const verdict = getDeckVerdictFromCards(db[key].cards, key, activeCtx);
-            if (verdict.grade === 'S') seedDecks.push(db[key].cards);
-        } catch (e) {}
-    }
-
-    const getSimilarity = (testSet) => {
-        let maxSim = 0;
-        for (const dbSet of allDbSets) {
-            let intersection = 0;
-            for (const item of testSet) {
-                // LOWERCASE the item before checking the set!
-                if (dbSet.has(item.toLowerCase())) intersection++;
-            }
-            const union = testSet.size + dbSet.size - intersection;
-            const sim = union === 0 ? 0 : intersection / union;
-            if (sim > maxSim) maxSim = sim;
-        }
-        return maxSim;
-    };
-
-    // --- STEP 2: Build Hero Pools ---
-    const classPools = {};
-    for (const key in cardDb) {
-        const card = cardDb[key];
-        if (!classPools[card.Class]) classPools[card.Class] = [];
-        classPools[card.Class].push(card.Name);
-    }
-
-    const HERO_COMBOS = [
-        "Mega-Grow,Smarty", "Kabloom,Solar", "Guardian,Solar", "Mega-Grow,Solar", "Guardian,Kabloom", 
-        "Guardian,Smarty", "Guardian,Mega-Grow", "Kabloom,Smarty", "Kabloom,Mega-Grow", "Smarty,Solar",
-        "Brainy,Sneaky", "Beastly,Hearty", "Crazy,Sneaky", "Brainy,Hearty", "Beastly,Crazy", 
-        "Beastly,Sneaky", "Brainy,Crazy", "Beastly,Brainy", "Crazy,Hearty", "Hearty,Sneaky"
-    ];
-
-    const heroMap = {
-        "Mega-Grow,Smarty": "Green Shadow", "Kabloom,Solar": "Solar Flare",
-        "Guardian,Solar": "Wall-Knight", "Mega-Grow,Solar": "Chompzilla",
-        "Guardian,Kabloom": "Spudow", "Guardian,Smarty": "Citron / Beta-Carrotina",
-        "Guardian,Mega-Grow": "Grass Knuckles", "Kabloom,Smarty": "Nightcap",
-        "Kabloom,Mega-Grow": "Captain Combustible", "Smarty,Solar": "Rose",
-        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus", "Beastly,Hearty": "The Smash",
-        "Crazy,Sneaky": "Impfinity", "Brainy,Hearty": "Rustbolt",
-        "Beastly,Crazy": "Electric Boogaloo", "Beastly,Sneaky": "Brain Freeze",
-        "Brainy,Crazy": "Professor Brainstorm", "Beastly,Brainy": "Immorticia",
-        "Crazy,Hearty": "Z-Mech", "Hearty,Sneaky": "Neptuna"
-    };
-
-    const DISTRIBUTIONS = [
-        [4,4,4,4,4,4,4,4,4,4],                   
-        [4,4,4,4,4,4,4,3,3,3,3],                 
-        [4,4,4,4,3,3,3,3,3,3,3,3],               
-        [4,3,3,3,3,3,3,3,3,3,3,3,3]              
-    ];
-
-    let globalBestDeck = null;
-    let globalBestOriginality = -1; 
-    let globalBestScore = 0;
-    let globalBestHero = "";
-
-    const RUNS = Math.max(5, Math.floor(iterations / 2000));
-    const STEPS_PER_RUN = Math.floor(iterations / RUNS);
-
-    console.log(`%c[Search Config] Running ${RUNS} independent evolutionary branches. (${STEPS_PER_RUN} mutations per branch).`, "color: #ff9900");
-
-    for (let run = 0; run < RUNS; run++) {
-        await new Promise(r => setTimeout(r, 10)); // Keep UI responsive
-
-        const heroCombo = HERO_COMBOS[Math.floor(Math.random() * HERO_COMBOS.length)];
-        const classes = heroCombo.split(',');
-        const validPool = [...new Set([...(classPools[classes[0]] || []), ...(classPools[classes[1]] || [])])];
-        
-        const dist = DISTRIBUTIONS[Math.floor(Math.random() * DISTRIBUTIONS.length)];
-        if (validPool.length < dist.length) {
-            console.log(`[Progress] Branch ${run + 1}/${RUNS} skipped (insufficient card pool)...`);
-            continue;
-        }
-
-        let currentDeckSlots = [];
-        let usedCards = new Set();
-
-        let isSeeded = (Math.random() > 0.5 && seedDecks.length > 0);
-        if (isSeeded) {
-            const seed = seedDecks[Math.floor(Math.random() * seedDecks.length)];
-            const seedUnique = seed.map(c => parseCardName(c));
-            for (let i = 0; i < dist.length; i++) {
-                let cardName = seedUnique[i] && validPool.includes(seedUnique[i]) ? seedUnique[i] : null;
-                if (!cardName || usedCards.has(cardName)) {
+                for (let count of dist) {
                     const available = validPool.filter(c => !usedCards.has(c));
                     if (available.length === 0) break;
-                    cardName = available[Math.floor(Math.random() * available.length)];
+                    let cardName = available[Math.floor(Math.random() * available.length)];
+                    usedCards.add(cardName);
+                    currentDeckSlots.push({ name: cardName, count: count });
                 }
-                usedCards.add(cardName);
-                currentDeckSlots.push({ name: cardName, count: dist[i] });
             }
-        } else {
-            for (let count of dist) {
-                const available = validPool.filter(c => !usedCards.has(c));
-                if (available.length === 0) break;
-                let cardName = available[Math.floor(Math.random() * available.length)];
-                usedCards.add(cardName);
-                currentDeckSlots.push({ name: cardName, count: count });
+
+            if (currentDeckSlots.length < dist.length) {
+                console.log(`[Progress] Branch ${run + 1}/${RUNS} failed to build seed, skipping...`);
+                continue;
             }
-        }
 
-        if (currentDeckSlots.length < dist.length) {
-             console.log(`[Progress] Branch ${run + 1}/${RUNS} failed to build seed, skipping...`);
-             continue; 
-        }
+            let currentScore = 0;
+            let isCurrentlySTier = false;
+            let currentOriginality = -1;
 
-        let currentScore = 0;
-        let isCurrentlySTier = false;
-        let currentOriginality = -1;
-
-        const initialArr = currentDeckSlots.map(s => `x${s.count} ${s.name}`);
-        try {
-            const verdict = getDeckVerdictFromCards(initialArr, "synth", activeCtx);
-            currentScore = verdict.score;
-            isCurrentlySTier = (verdict.grade === 'S');
-            if (isCurrentlySTier) {
-                currentOriginality = 1 - getSimilarity(usedCards);
-            }
-        } catch (e) {}
-
-        // --- The Climbing Loop ---
-        for (let step = 0; step < STEPS_PER_RUN; step++) {
-            if (step % 500 === 0) await new Promise(r => setTimeout(r, 0));
-
-            const availableCards = validPool.filter(c => !usedCards.has(c));
-            if (availableCards.length === 0) break; 
-
-            const swapIndex = Math.floor(Math.random() * currentDeckSlots.length);
-            const oldCard = currentDeckSlots[swapIndex].name;
-            const newCard = availableCards[Math.floor(Math.random() * availableCards.length)];
-
-            currentDeckSlots[swapIndex].name = newCard;
-            usedCards.delete(oldCard);
-            usedCards.add(newCard);
-
-            const testArr = currentDeckSlots.map(s => `x${s.count} ${s.name}`);
+            const initialArr = currentDeckSlots.map(s => `x${s.count} ${s.name}`);
             try {
-                const verdict = getDeckVerdictFromCards(testArr, "synth", activeCtx);
-                const isTestSTier = (verdict.grade === 'S');
-                let keepMutation = false;
-
-                if (!isCurrentlySTier) {
-                    if (verdict.score > currentScore) keepMutation = true;
-                } else {
-                    if (isTestSTier) {
-                        const testOriginality = 1 - getSimilarity(usedCards);
-                        
-                        if (testOriginality > currentOriginality) {
-                            keepMutation = true;
-                        } else if (testOriginality === currentOriginality) {
-                            // The missing logic! Climb score even if originality is maxed out.
-                            if (verdict.score > currentScore) keepMutation = true;
-                            else if (Math.random() < 0.5) keepMutation = true; 
-                        }
-                    }
+                const verdict = getDeckVerdictFromCards(initialArr, "synth", activeCtx);
+                currentScore = verdict.score;
+                isCurrentlySTier = (verdict.grade === 'S');
+                if (isCurrentlySTier) {
+                    currentOriginality = 1 - getSimilarity(usedCards);
                 }
+            } catch (e) { }
 
-                if (keepMutation) {
-                    currentScore = verdict.score;
-                    isCurrentlySTier = isTestSTier;
-                    if (isCurrentlySTier) currentOriginality = 1 - getSimilarity(usedCards);
+            // --- The Climbing Loop ---
+            for (let step = 0; step < STEPS_PER_RUN; step++) {
+                if (step % 500 === 0) await new Promise(r => setTimeout(r, 0));
 
-                    // Check for Global Record (Originality first, then Score tie-breaker)
-                    let isNewRecord = false;
-                    if (isCurrentlySTier) {
-                        if (currentOriginality > globalBestOriginality) {
-                            isNewRecord = true;
-                        } else if (currentOriginality === globalBestOriginality && currentScore > globalBestScore) {
-                            isNewRecord = true;
+                const availableCards = validPool.filter(c => !usedCards.has(c));
+                if (availableCards.length === 0) break;
+
+                const swapIndex = Math.floor(Math.random() * currentDeckSlots.length);
+                const oldCard = currentDeckSlots[swapIndex].name;
+                const newCard = availableCards[Math.floor(Math.random() * availableCards.length)];
+
+                currentDeckSlots[swapIndex].name = newCard;
+                usedCards.delete(oldCard);
+                usedCards.add(newCard);
+
+                const testArr = currentDeckSlots.map(s => `x${s.count} ${s.name}`);
+                try {
+                    const verdict = getDeckVerdictFromCards(testArr, "synth", activeCtx);
+                    const isTestSTier = (verdict.grade === 'S');
+                    let keepMutation = false;
+
+                    if (!isCurrentlySTier) {
+                        if (verdict.score > currentScore) keepMutation = true;
+                    } else {
+                        if (isTestSTier) {
+                            const testOriginality = 1 - getSimilarity(usedCards);
+
+                            if (testOriginality > currentOriginality) {
+                                keepMutation = true;
+                            } else if (testOriginality === currentOriginality) {
+                                // The missing logic! Climb score even if originality is maxed out.
+                                if (verdict.score > currentScore) keepMutation = true;
+                                else if (Math.random() < 0.5) keepMutation = true;
+                            }
                         }
                     }
 
-                    if (isNewRecord) {
-                        globalBestOriginality = currentOriginality;
-                        globalBestDeck = [...testArr];
-                        globalBestScore = currentScore;
-                        globalBestHero = heroMap[heroCombo];
-                        console.log(`[New Record] Originality: ${(currentOriginality * 100).toFixed(1)}% | Score: ${globalBestScore.toFixed(2)} | Hero: ${globalBestHero}`);
+                    if (keepMutation) {
+                        currentScore = verdict.score;
+                        isCurrentlySTier = isTestSTier;
+                        if (isCurrentlySTier) currentOriginality = 1 - getSimilarity(usedCards);
+
+                        // Check for Global Record (Originality first, then Score tie-breaker)
+                        let isNewRecord = false;
+                        if (isCurrentlySTier) {
+                            if (currentOriginality > globalBestOriginality) {
+                                isNewRecord = true;
+                            } else if (currentOriginality === globalBestOriginality && currentScore > globalBestScore) {
+                                isNewRecord = true;
+                            }
+                        }
+
+                        if (isNewRecord) {
+                            globalBestOriginality = currentOriginality;
+                            globalBestDeck = [...testArr];
+                            globalBestScore = currentScore;
+                            globalBestHero = heroMap[heroCombo];
+                            console.log(`[New Record] Originality: ${(currentOriginality * 100).toFixed(1)}% | Score: ${globalBestScore.toFixed(2)} | Hero: ${globalBestHero}`);
+                        }
+                    } else {
+                        currentDeckSlots[swapIndex].name = oldCard;
+                        usedCards.delete(newCard);
+                        usedCards.add(oldCard);
                     }
-                } else {
+                } catch (e) {
                     currentDeckSlots[swapIndex].name = oldCard;
                     usedCards.delete(newCard);
                     usedCards.add(oldCard);
                 }
-            } catch (e) {
-                currentDeckSlots[swapIndex].name = oldCard;
-                usedCards.delete(newCard);
-                usedCards.add(oldCard);
+            }
+            console.log(`%c[Progress] Branch ${run + 1}/${RUNS} completed.`, "color: #888;");
+        }
+
+        if (!globalBestDeck) {
+            console.error("Failed to synthesize an S-tier deck. Try increasing iterations.");
+            return null;
+        }
+
+        console.log(`%c--- SYNTHESIS COMPLETE ---`, "color: #00ffcc; font-weight: bold; font-size: 14px;");
+        console.log(`%cSUPER ORIGINAL S-TIER DECK FOUND!`, "color: #ffffff; background: #1a2226; padding: 4px; border-left: 4px solid #00ffcc;");
+        console.log(`Originality Score: ${(globalBestOriginality * 100).toFixed(1)}%`);
+        console.log(`Evaluation Score: ${globalBestScore.toFixed(2)}`);
+        console.log(`Hero: ${globalBestHero}`);
+        console.log(`\nDecklist:\n` + globalBestDeck.sort().join('\n'));
+
+        return {
+            cards: globalBestDeck,
+            originalityScore: (globalBestOriginality * 100).toFixed(1),
+            hero: globalBestHero
+        };
+    };
+    // --- Render Decks Function ---
+
+    function pvzBuildAnalyzeDeck(deckInfo) {
+        return (deckInfo.cards || []).map(cardRaw => {
+            const raw = String(cardRaw).trim();
+
+            // Supports: "x4 Card Name", "4x Card Name", "4 Card Name", or just "Card Name"
+            const countMatch = raw.match(/^\s*(?:x(\d+)|(\d+)x|(\d+))\s+/i);
+            const count = countMatch
+                ? Number(countMatch[1] || countMatch[2] || countMatch[3])
+                : 4;
+
+            const cleanName = raw
+                .replace(/^[^a-zA-Z]*(x?\d+|\d+x|\d+)\s*/i, '')
+                .trim();
+
+            const underscoreName = cleanName.replace(/\s+/g, '_');
+            const spaceName = cleanName.replace(/_/g, ' ');
+
+            let finalName = underscoreName;
+
+            if (cardDatabase[underscoreName]) {
+                finalName = underscoreName;
+            } else if (cardDatabase[cleanName]) {
+                finalName = cleanName;
+            } else if (cardDatabase[spaceName]) {
+                finalName = spaceName;
+            }
+
+            return {
+                name: finalName,
+                count
+            };
+        });
+    }
+    let pvzDeckCache = {};     // deckKey -> data the sheet needs (rebuilt each render)
+    let pvzActiveTile = null;  // the tile we opened from, so we can fly back on close
+    const PVZ_TOUCH_DEVICE = window.matchMedia('(hover:none), (pointer:coarse)').matches;
+    const PVZ_RENDER_BATCH_SIZE = PVZ_TOUCH_DEVICE ? 70 : 220;
+    const PVZ_REVEAL_LIMIT = PVZ_TOUCH_DEVICE ? 48 : 120;
+
+    let pvzRenderToken = 0;
+    const pvzDeckRenderMetaCache = new Map();
+
+    function pvzWaitFrame() {
+        return new Promise(resolve => requestAnimationFrame(resolve));
+    }
+
+    function pvzCleanCardName(cardRaw) {
+        return cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
+    }
+
+    function pvzDeckMetaCacheKey(deckInfo) {
+        return [
+            (deckInfo.cards || []).join('\u0001'),
+            deckInfo.upload_date || '',
+            deckInfo.credit || '',
+            deckInfo.name || ''
+        ].join('\u0002');
+    }
+
+    function pvzGetCachedDeckMeta(deckKey, deckInfo, ctx) {
+        const cacheKey = pvzDeckMetaCacheKey(deckInfo);
+        const cached = pvzDeckRenderMetaCache.get(deckKey);
+
+        if (cached && cached.cacheKey === cacheKey) {
+            return cached.meta;
+        }
+
+        const cards = deckInfo.cards || [];
+
+        let factionClass = 'plant-deck';
+        const uniqueClasses = new Set();
+        let factionFound = false;
+
+        for (const cardRaw of cards) {
+            const parsed = pvzCleanCardName(cardRaw);
+            const cardData =
+                cardDatabase[parsed.replace(/ /g, '_')] ||
+                cardDatabase[parsed.replace(/_/g, ' ')];
+
+            if (!cardData) continue;
+
+            const cls = cardData.Class || cardData.class;
+            if (cls) uniqueClasses.add(cls);
+
+            if (!factionFound && (cardData.Type || cardData.type)) {
+                const t = (cardData.Type || cardData.type).toLowerCase();
+
+                if (t.includes('zombie')) {
+                    factionClass = 'zombie-deck';
+                    factionFound = true;
+                } else if (t.includes('plant')) {
+                    factionClass = 'plant-deck';
+                    factionFound = true;
+                }
             }
         }
-        console.log(`%c[Progress] Branch ${run + 1}/${RUNS} completed.`, "color: #888;");
+
+        let heroes = [];
+
+        if (uniqueClasses.size === 2) {
+            const ca = Array.from(uniqueClasses);
+            const heroName = heroMap[`${ca[0]},${ca[1]}`] || heroMap[`${ca[1]},${ca[0]}`];
+
+            if (heroName) {
+                heroes = heroName.split(/\s*\/\s*/).map(n => ({
+                    name: n,
+                    img: `hero_images/${n.replace(/[\s-]+/g, '_')}.webp`
+                }));
+            }
+        } else if (uniqueClasses.size === 1) {
+            const singleClass = Array.from(uniqueClasses)[0];
+
+            heroes = [{
+                name: singleClass,
+                img: `hero_images/${singleClass.toLowerCase().replace(/[\s-]+/g, '_')}.webp`
+            }];
+        }
+
+        const verdict =
+            deckInfo.verdict ||
+            (deckInfo.verdict = getDeckVerdictFromCards(cards, deckKey, ctx));
+
+        deckInfo.verdict = verdict;
+
+        const dateStr =
+            deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
+                ? deckInfo.upload_date
+                : "Unknown Date";
+
+        const creditStr = deckInfo.credit || "Unknown";
+        const creditIcon = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
+
+        let dateVal = 0;
+        if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
+            const parsed = Date.parse(deckInfo.upload_date);
+            if (!isNaN(parsed)) dateVal = parsed;
+        }
+
+        const signature = cards
+            .map(c => c.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase())
+            .sort()
+            .join('|');
+
+        const meta = {
+            deckInfo,
+            factionClass,
+            heroes,
+            verdict,
+            dateStr,
+            creditStr,
+            creditIcon,
+            dateVal,
+            signature
+        };
+
+        pvzDeckRenderMetaCache.set(deckKey, { cacheKey, meta });
+        return meta;
     }
 
-    if (!globalBestDeck) {
-        console.error("Failed to synthesize an S-tier deck. Try increasing iterations.");
-        return null;
-    }
+    function pvzCreateDeckTile(deckKey, rd, isDup, isStarred, cardIndex) {
+        const { deckInfo, factionClass, heroes, verdict, creditStr, creditIcon } = rd;
 
-    console.log(`%c--- SYNTHESIS COMPLETE ---`, "color: #00ffcc; font-weight: bold; font-size: 14px;");
-    console.log(`%cSUPER ORIGINAL S-TIER DECK FOUND!`, "color: #ffffff; background: #1a2226; padding: 4px; border-left: 4px solid #00ffcc;");
-    console.log(`Originality Score: ${(globalBestOriginality * 100).toFixed(1)}%`);
-    console.log(`Evaluation Score: ${globalBestScore.toFixed(2)}`);
-    console.log(`Hero: ${globalBestHero}`);
-    console.log(`\nDecklist:\n` + globalBestDeck.sort().join('\n'));
+        const tile = document.createElement('div');
+        tile.className = `deck-card ${factionClass}`;
+        tile.dataset.deckKey = deckKey;
+        tile.tabIndex = 0;
+        tile.setAttribute('role', 'button');
+        tile.setAttribute('aria-label', `Open ${deckInfo.name}`);
 
-    return {
-        cards: globalBestDeck,
-        originalityScore: (globalBestOriginality * 100).toFixed(1),
-        hero: globalBestHero
-    };
-};
-    // --- Render Decks Function ---
-  
-function pvzBuildAnalyzeDeck(deckInfo) {
-  return (deckInfo.cards || []).map(cardRaw => {
-    const raw = String(cardRaw).trim();
+        const revealDelay = cardIndex < PVZ_REVEAL_LIMIT
+            ? Math.min(cardIndex * 8, 600)
+            : 0;
 
-    // Supports: "x4 Card Name", "4x Card Name", "4 Card Name", or just "Card Name"
-    const countMatch = raw.match(/^\s*(?:x(\d+)|(\d+)x|(\d+))\s+/i);
-    const count = countMatch
-      ? Number(countMatch[1] || countMatch[2] || countMatch[3])
-      : 4;
+        tile.style.setProperty('--reveal-delay', `${revealDelay}ms`);
 
-    const cleanName = raw
-      .replace(/^[^a-zA-Z]*(x?\d+|\d+x|\d+)\s*/i, '')
-      .trim();
-
-    const underscoreName = cleanName.replace(/\s+/g, '_');
-    const spaceName = cleanName.replace(/_/g, ' ');
-
-    let finalName = underscoreName;
-
-    if (cardDatabase[underscoreName]) {
-      finalName = underscoreName;
-    } else if (cardDatabase[cleanName]) {
-      finalName = cleanName;
-    } else if (cardDatabase[spaceName]) {
-      finalName = spaceName;
-    }
-
-    return {
-      name: finalName,
-      count
-    };
-  });
-}
-let pvzDeckCache = {};     // deckKey -> data the sheet needs (rebuilt each render)
-let pvzActiveTile = null;  // the tile we opened from, so we can fly back on close
-const PVZ_TOUCH_DEVICE = window.matchMedia('(hover:none), (pointer:coarse)').matches;
-const PVZ_RENDER_BATCH_SIZE = PVZ_TOUCH_DEVICE ? 70 : 220;
-const PVZ_REVEAL_LIMIT = PVZ_TOUCH_DEVICE ? 48 : 120;
-
-let pvzRenderToken = 0;
-const pvzDeckRenderMetaCache = new Map();
-
-function pvzWaitFrame() {
-  return new Promise(resolve => requestAnimationFrame(resolve));
-}
-
-function pvzCleanCardName(cardRaw) {
-  return cardRaw.replace(/^[^a-zA-Z]*(x?\d+|\d+x)\s*/i, '').trim();
-}
-
-function pvzDeckMetaCacheKey(deckInfo) {
-  return [
-    (deckInfo.cards || []).join('\u0001'),
-    deckInfo.upload_date || '',
-    deckInfo.credit || '',
-    deckInfo.name || ''
-  ].join('\u0002');
-}
-
-function pvzGetCachedDeckMeta(deckKey, deckInfo, ctx) {
-  const cacheKey = pvzDeckMetaCacheKey(deckInfo);
-  const cached = pvzDeckRenderMetaCache.get(deckKey);
-
-  if (cached && cached.cacheKey === cacheKey) {
-    return cached.meta;
-  }
-
-  const cards = deckInfo.cards || [];
-
-  let factionClass = 'plant-deck';
-  const uniqueClasses = new Set();
-  let factionFound = false;
-
-  for (const cardRaw of cards) {
-    const parsed = pvzCleanCardName(cardRaw);
-    const cardData =
-      cardDatabase[parsed.replace(/ /g, '_')] ||
-      cardDatabase[parsed.replace(/_/g, ' ')];
-
-    if (!cardData) continue;
-
-    const cls = cardData.Class || cardData.class;
-    if (cls) uniqueClasses.add(cls);
-
-    if (!factionFound && (cardData.Type || cardData.type)) {
-      const t = (cardData.Type || cardData.type).toLowerCase();
-
-      if (t.includes('zombie')) {
-        factionClass = 'zombie-deck';
-        factionFound = true;
-      } else if (t.includes('plant')) {
-        factionClass = 'plant-deck';
-        factionFound = true;
-      }
-    }
-  }
-
-  let heroes = [];
-
-  if (uniqueClasses.size === 2) {
-    const ca = Array.from(uniqueClasses);
-    const heroName = heroMap[`${ca[0]},${ca[1]}`] || heroMap[`${ca[1]},${ca[0]}`];
-
-    if (heroName) {
-      heroes = heroName.split(/\s*\/\s*/).map(n => ({
-        name: n,
-        img: `hero_images/${n.replace(/[\s-]+/g, '_')}.webp`
-      }));
-    }
-  } else if (uniqueClasses.size === 1) {
-    const singleClass = Array.from(uniqueClasses)[0];
-
-    heroes = [{
-      name: singleClass,
-      img: `hero_images/${singleClass.toLowerCase().replace(/[\s-]+/g, '_')}.webp`
-    }];
-  }
-
-  const verdict =
-    deckInfo.verdict ||
-    (deckInfo.verdict = getDeckVerdictFromCards(cards, deckKey, ctx));
-
-  deckInfo.verdict = verdict;
-
-  const dateStr =
-    deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE"
-      ? deckInfo.upload_date
-      : "Unknown Date";
-
-  const creditStr = deckInfo.credit || "Unknown";
-  const creditIcon = creditStr === "FryEmUp" ? "fryemup.jpg" : "discord.webp";
-
-  let dateVal = 0;
-  if (deckInfo.upload_date && deckInfo.upload_date !== "UNKNOWN_DATE") {
-    const parsed = Date.parse(deckInfo.upload_date);
-    if (!isNaN(parsed)) dateVal = parsed;
-  }
-
-  const signature = cards
-    .map(c => c.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase())
-    .sort()
-    .join('|');
-
-  const meta = {
-    deckInfo,
-    factionClass,
-    heroes,
-    verdict,
-    dateStr,
-    creditStr,
-    creditIcon,
-    dateVal,
-    signature
-  };
-
-  pvzDeckRenderMetaCache.set(deckKey, { cacheKey, meta });
-  return meta;
-}
-
-function pvzCreateDeckTile(deckKey, rd, isDup, isStarred, cardIndex) {
-  const { deckInfo, factionClass, heroes, verdict, creditStr, creditIcon } = rd;
-
-  const tile = document.createElement('div');
-  tile.className = `deck-card ${factionClass}`;
-  tile.dataset.deckKey = deckKey;
-  tile.tabIndex = 0;
-  tile.setAttribute('role', 'button');
-  tile.setAttribute('aria-label', `Open ${deckInfo.name}`);
-
-  const revealDelay = cardIndex < PVZ_REVEAL_LIMIT
-    ? Math.min(cardIndex * 8, 600)
-    : 0;
-
-  tile.style.setProperty('--reveal-delay', `${revealDelay}ms`);
-
-  tile.innerHTML = `
+        tile.innerHTML = `
     <div class="pvz-tile-inner">
       <div class="pvz-tile-wash"></div>
       <div class="pvz-tile-heroes ${heroes.length === 2 ? 'two' : ''}">
@@ -1602,185 +1602,209 @@ function pvzCreateDeckTile(deckKey, rd, isDup, isStarred, cardIndex) {
       </div>
     </div>`;
 
-  return tile;
-}
-function renderDecks(data) {
-  const loadingIndicator = document.getElementById('loadingIndicator');
-  const thisRenderToken = ++pvzRenderToken;
+        return tile;
+    }
+    function renderDecks(data) {
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const thisRenderToken = ++pvzRenderToken;
 
-  if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+        if (loadingIndicator) loadingIndicator.classList.remove('hidden');
 
-  deckGrid.classList.add('hidden');
+        deckGrid.classList.add('hidden');
 
-  if (statsBtn)   statsBtn.disabled   = true;
-  if (guidesBtn)  guidesBtn.disabled  = true;
-  if (crafterBtn) crafterBtn.disabled = true;
-  if (gamesBtn)   gamesBtn.disabled   = true;
-  if (tiersBtn)   tiersBtn.disabled   = true;
+        if (statsBtn) statsBtn.disabled = true;
+        if (guidesBtn) guidesBtn.disabled = true;
+        if (crafterBtn) crafterBtn.disabled = true;
+        if (gamesBtn) gamesBtn.disabled = true;
+        if (tiersBtn) tiersBtn.disabled = true;
 
-  setTimeout(async () => {
-    if (thisRenderToken !== pvzRenderToken) return;
+        setTimeout(async () => {
+            if (thisRenderToken !== pvzRenderToken) return;
 
-    deckGrid.innerHTML = '';
-    pvzDeckCache = {};
+            deckGrid.innerHTML = '';
+            pvzDeckCache = {};
 
-    const ctx = getVerdictContext();
-    const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
+            const ctx = getVerdictContext();
+            const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
 
-    const entries = Object.entries(data);
-    const prepared = [];
+            const entries = Object.entries(data);
+            const prepared = [];
 
-    const signatureMap = new Map();
+            const signatureMap = new Map();
 
-    for (const [deckKey, deckInfo] of entries) {
-      const rd = pvzGetCachedDeckMeta(deckKey, deckInfo, ctx);
-      prepared.push([deckKey, rd]);
+            for (const [deckKey, deckInfo] of entries) {
+                const rd = pvzGetCachedDeckMeta(deckKey, deckInfo, ctx);
+                prepared.push([deckKey, rd]);
 
-      if (!signatureMap.has(rd.signature)) {
-        signatureMap.set(rd.signature, []);
-      }
+                if (!signatureMap.has(rd.signature)) {
+                    signatureMap.set(rd.signature, []);
+                }
 
-      signatureMap.get(rd.signature).push({
-        key: deckKey,
-        dateVal: rd.dateVal
-      });
+                signatureMap.get(rd.signature).push({
+                    key: deckKey,
+                    dateVal: rd.dateVal
+                });
+            }
+
+            const duplicateKeys = new Set();
+
+            for (const decks of signatureMap.values()) {
+                if (decks.length > 1) {
+                    decks.sort((a, b) => b.dateVal - a.dateVal);
+
+                    for (let i = 1; i < decks.length; i++) {
+                        duplicateKeys.add(decks[i].key);
+                    }
+                }
+            }
+
+            let cardIndex = 0;
+
+            for (let start = 0; start < prepared.length; start += PVZ_RENDER_BATCH_SIZE) {
+                if (thisRenderToken !== pvzRenderToken) return;
+
+                const fragment = document.createDocumentFragment();
+                const end = Math.min(start + PVZ_RENDER_BATCH_SIZE, prepared.length);
+
+                for (let i = start; i < end; i++) {
+                    const [deckKey, rd] = prepared[i];
+
+                    const isDup = duplicateKeys.has(deckKey);
+                    const isStarred = starredDecks[deckKey] === true;
+
+                    pvzDeckCache[deckKey] = {
+                        ...rd,
+                        isDup
+                    };
+
+                    fragment.appendChild(
+                        pvzCreateDeckTile(deckKey, rd, isDup, isStarred, cardIndex)
+                    );
+
+                    cardIndex++;
+                }
+
+                deckGrid.appendChild(fragment);
+
+                // Yield to the browser so phones do not freeze during huge renders.
+                await pvzWaitFrame();
+            }
+
+            if (thisRenderToken !== pvzRenderToken) return;
+
+            if (loadingIndicator) loadingIndicator.classList.add('hidden');
+
+            deckGrid.classList.remove('hidden');
+
+            if (statsBtn) statsBtn.disabled = false;
+            if (guidesBtn) guidesBtn.disabled = false;
+            if (tiersBtn) tiersBtn.disabled = false;
+            if (crafterBtn) crafterBtn.disabled = false;
+            if (gamesBtn) gamesBtn.disabled = false;
+
+            pvzBindGrid();
+        }, 50);
     }
 
-    const duplicateKeys = new Set();
-
-    for (const decks of signatureMap.values()) {
-      if (decks.length > 1) {
-        decks.sort((a, b) => b.dateVal - a.dateVal);
-
-        for (let i = 1; i < decks.length; i++) {
-          duplicateKeys.add(decks[i].key);
+    function pvzHeroPortraits(heroes, eager = false) {
+        if (!heroes.length) {
+            return `<div class="pvz-hero-portrait" aria-hidden="true">?</div>`;
         }
-      }
-    }
 
-    let cardIndex = 0;
+        const loading = eager ? 'eager' : 'lazy';
+        const priority = eager ? 'high' : 'low';
 
-    for (let start = 0; start < prepared.length; start += PVZ_RENDER_BATCH_SIZE) {
-      if (thisRenderToken !== pvzRenderToken) return;
+        return heroes.map(h => {
+            const initials = h.name
+                .split(/[\s-]+/)
+                .map(w => w[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase();
 
-      const fragment = document.createDocumentFragment();
-      const end = Math.min(start + PVZ_RENDER_BATCH_SIZE, prepared.length);
-
-      for (let i = start; i < end; i++) {
-        const [deckKey, rd] = prepared[i];
-
-        const isDup = duplicateKeys.has(deckKey);
-        const isStarred = starredDecks[deckKey] === true;
-
-        pvzDeckCache[deckKey] = {
-          ...rd,
-          isDup
-        };
-
-        fragment.appendChild(
-          pvzCreateDeckTile(deckKey, rd, isDup, isStarred, cardIndex)
-        );
-
-        cardIndex++;
-      }
-
-      deckGrid.appendChild(fragment);
-
-      // Yield to the browser so phones do not freeze during huge renders.
-      await pvzWaitFrame();
-    }
-
-    if (thisRenderToken !== pvzRenderToken) return;
-
-    if (loadingIndicator) loadingIndicator.classList.add('hidden');
-
-    deckGrid.classList.remove('hidden');
-
-    if (statsBtn)   statsBtn.disabled   = false;
-    if (guidesBtn)  guidesBtn.disabled  = false;
-    if (tiersBtn)   tiersBtn.disabled   = false;
-    if (crafterBtn) crafterBtn.disabled = false;
-    if (gamesBtn)   gamesBtn.disabled   = false;
-
-    pvzBindGrid();
-  }, 50);
-}
-
-function pvzHeroPortraits(heroes, eager = false) {
-  if (!heroes.length) {
-    return `<div class="pvz-hero-portrait" aria-hidden="true">?</div>`;
-  }
-
-  const loading = eager ? 'eager' : 'lazy';
-  const priority = eager ? 'high' : 'low';
-
-  return heroes.map(h => {
-    const initials = h.name
-      .split(/[\s-]+/)
-      .map(w => w[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase();
-
-    return `<div class="pvz-hero-portrait" title="${h.name}">
+            return `<div class="pvz-hero-portrait" title="${h.name}">
         <img src="${h.img}" alt="${h.name}" loading="${loading}" decoding="async" fetchpriority="${priority}" onerror="this.remove()">${initials}
       </div>`;
-  }).join('');
-}
+        }).join('');
+    }
 
-/* one delegated handler for opening the sheet — bound once */
-function pvzBindGrid() {
-  const grid = document.getElementById('deckGrid');
-  if (grid.dataset.pvzBound) return;     // don't double-bind on re-render
-  grid.dataset.pvzBound = '1';
+    /* one delegated handler for opening the sheet — bound once */
+    function pvzBindGrid() {
+        const grid = document.getElementById('deckGrid');
+        if (grid.dataset.pvzBound) return;     // don't double-bind on re-render
+        grid.dataset.pvzBound = '1';
 
-  grid.addEventListener('click', (e) => {
-    // let your existing star handler deal with stars; ignore them here
-    if (e.target.closest('.deck-star-btn')) return;
-    const tile = e.target.closest('.deck-card');
-    if (tile) pvzOpenSheet(tile.dataset.deckKey, tile);
-  });
+        grid.addEventListener('click', (e) => {
+            // let your existing star handler deal with stars; ignore them here
+            if (e.target.closest('.deck-star-btn')) return;
+            const tile = e.target.closest('.deck-card');
+            if (tile) pvzOpenSheet(tile.dataset.deckKey, tile);
+        });
 
-  grid.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    if (e.target.closest('.deck-star-btn')) return;
-    const tile = e.target.closest('.deck-card');
-    if (tile) { e.preventDefault(); pvzOpenSheet(tile.dataset.deckKey, tile); }
-  });
-}
+        grid.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            if (e.target.closest('.deck-star-btn')) return;
+            const tile = e.target.closest('.deck-card');
+            if (tile) { e.preventDefault(); pvzOpenSheet(tile.dataset.deckKey, tile); }
+        });
+    }
+    /* ---------- OPEN: fly from the tile to center, then the deck unfolds ---------- */
+    function pvzOpenSheet(deckKey, tileEl) {
+        const rd = pvzDeckCache[deckKey];
+        if (!rd) return;
+        pvzActiveTile = tileEl;
+        const { deckInfo, factionClass, heroes, verdict, dateStr, creditStr, creditIcon, isDup } = rd;
 
-/* ---------- OPEN: fly from the tile to center, then the deck unfolds ---------- */
-function pvzOpenSheet(deckKey, tileEl) {
-  const rd = pvzDeckCache[deckKey];
-  if (!rd) return;
-  pvzActiveTile = tileEl;
-  const { deckInfo, factionClass, heroes, verdict, dateStr, creditStr, creditIcon, isDup } = rd;
+        // 1. Setup Sparks Map & Tracker
+        let totalSparks = 0;
+        const rarityCosts = {
+            'common': 0,
+            'basic': 0,
+            'uncommon': 50,
+            'rare': 250,
+            'super rare': 1000,
+            'super-rare': 1000,
+            'event': 1000,
+            'legendary': 4000
+        };
 
-  // real card images, using YOUR card_images path + png→webp fallback
-  const cardsHtml = (deckInfo.cards || []).map((cardString, i) => {
-    const m = cardString.trim().match(/^x(\d+)\s+(.+)$/i);
-    let count = 1, raw = cardString;
-    if (m) { count = parseInt(m[1], 10); raw = m[2]; }
-    const display = raw.replace(/_/g, ' ');
-    const db = display.replace(/ /g, '_');
-    return `<div class="pvz-card" style="--i:${i}">
+        // real card images, using YOUR card_images path + png→webp fallback
+        const cardsHtml = (deckInfo.cards || []).map((cardString, i) => {
+            const m = cardString.trim().match(/^x(\d+)\s+(.+)$/i);
+            let count = 1, raw = cardString;
+            if (m) { count = parseInt(m[1], 10); raw = m[2]; }
+            const display = raw.replace(/_/g, ' ');
+            const db = display.replace(/ /g, '_');
+
+            // 2. Look up the card and add to Spark Total
+            if (typeof cardDatabase !== 'undefined' && cardDatabase[db]) {
+                const rarity = (cardDatabase[db].Rarity || '').toLowerCase();
+                totalSparks += (rarityCosts[rarity] || 0) * count;
+            }
+
+            return `<div class="pvz-card" style="--i:${i}">
         <img src="card_images/${db}.png" alt="${display}" title="${display}" loading="lazy" decoding="async" fetchpriority="low"
      onerror="this.onerror=null;this.src='card_images/${db}.webp'">
         <span class="pvz-card-qty">x${count}</span>
       </div>`;
-  }).join('');
+        }).join('');
 
-  const videoId = getYouTubeId(deckInfo.youtube_url);
-  const thumb   = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
-  const videoHtml = (creditStr === "FryEmUp" && deckInfo.youtube_url && thumb) ? `
+        // 3. Format sparks string
+        const formattedSparks = totalSparks.toLocaleString();
+
+        const videoId = getYouTubeId(deckInfo.youtube_url);
+        const thumb = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+        const videoHtml = (creditStr === "FryEmUp" && deckInfo.youtube_url && thumb) ? `
       <a class="pvz-sheet-video" href="${deckInfo.youtube_url}" target="_blank" rel="noopener" title="${deckInfo.youtube_title || ''}">
         <span class="pvz-video-thumb"><img src="${thumb}" alt="" loading="lazy" decoding="async" fetchpriority="low"><span class="pvz-play"></span></span>
         <span class="pvz-video-title">${deckInfo.youtube_title || 'Watch on YouTube'}</span>
       </a>` : '';
 
-  const overlay = document.createElement('div');
-  overlay.className = 'pvz-sheet-overlay';
-  overlay.innerHTML = `
+        const overlay = document.createElement('div');
+        overlay.className = 'pvz-sheet-overlay';
+
+        // 4. Moved Sparks UI under Analyze button, reusing the Rating CSS classes
+        overlay.innerHTML = `
   <div class="pvz-sheet ${factionClass}" role="dialog" aria-modal="true" aria-label="${deckInfo.name}">
     <button class="pvz-sheet-close" aria-label="Close">&times;</button>
 
@@ -1807,136 +1831,142 @@ function pvzOpenSheet(deckKey, tileEl) {
     <div class="pvz-sheet-body">
       <div class="pvz-card-grid">${cardsHtml}</div>
 
-      <div class="pvz-deck-side">
-        <div class="pvz-deck-rating" style="color:${verdict.gradeColor || '#fff'}">
+      <div class="pvz-deck-side" style="display: flex; flex-direction: column; gap: 12px; align-items: flex-end;">
+        
+        <div class="pvz-deck-rating" style="color:${verdict.gradeColor || '#fff'}; margin-bottom: 0 !important;">
           <span class="pvz-rating-label">Rating</span>
           <span class="pvz-rating-grade">${verdict.grade || '?'}</span>
         </div>
 
-        <button id="pvzAnalyzeDeckBtn" class="pvz-analyze-deck-btn" type="button">
+        <div class="pvz-deck-rating pvz-deck-sparks" style="color: #4dd0e1; margin-bottom: 0 !important;">
+          <span class="pvz-rating-label">Sparks</span>
+          <span class="pvz-rating-grade">${formattedSparks}</span>
+        </div>
+
+        <button id="pvzAnalyzeDeckBtn" class="pvz-analyze-deck-btn" type="button" style="margin-top: 6px;">
           Analyze Deck
         </button>
+
       </div>
 
       ${videoHtml}
     </div>
   </div>`;
-  const analyzeBtn = overlay.querySelector('#pvzAnalyzeDeckBtn');
 
-if (analyzeBtn) {
-  analyzeBtn.onclick = function (e) {
-    e.stopPropagation();
+        const analyzeBtn = overlay.querySelector('#pvzAnalyzeDeckBtn');
 
-    const deckToAnalyze = pvzBuildAnalyzeDeck(deckInfo);
-    const cardDictionary = Object.keys(cardDatabase).sort();
+        if (analyzeBtn) {
+            analyzeBtn.onclick = function (e) {
+                e.stopPropagation();
 
-    const encodedCards = deckToAnalyze.map(card => {
-      const index = cardDictionary.indexOf(card.name);
+                const deckToAnalyze = pvzBuildAnalyzeDeck(deckInfo);
+                const cardDictionary = Object.keys(cardDatabase).sort();
 
-      if (index === -1) {
-        console.error(`🚨 Could not find card in dictionary: ${card.name}`);
-        return null;
-      }
+                const encodedCards = deckToAnalyze.map(card => {
+                    const index = cardDictionary.indexOf(card.name);
 
-      const cardIndex = index.toString(36);
+                    if (index === -1) {
+                        console.error(`🚨 Could not find card in dictionary: ${card.name}`);
+                        return null;
+                    }
 
-      return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
-    });
+                    const cardIndex = index.toString(36);
 
-    if (encodedCards.includes(null)) {
-      alert("Could not analyze this deck because one or more cards could not be found.");
-      return;
+                    return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
+                });
+
+                if (encodedCards.includes(null)) {
+                    alert("Could not analyze this deck because one or more cards could not be found.");
+                    return;
+                }
+
+                const minimalDeckString = encodedCards.join('-');
+                const analyzeUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}#crafter`;
+
+                console.log("Encoding complete. Target URL:", analyzeUrl);
+                window.location.href = analyzeUrl;
+            };
+        }
+
+        document.body.appendChild(overlay);
+        document.body.style.overflow = 'hidden';
+
+        const sheet = overlay.querySelector('.pvz-sheet');
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (!reduce && tileEl) {
+            const t = tileEl.getBoundingClientRect();
+            const p = sheet.getBoundingClientRect();
+            const dx = (t.left + t.width / 2) - (p.left + p.width / 2);
+            const dy = (t.top + t.height / 2) - (p.top + p.height / 2);
+            const scale = Math.max(t.width / p.width, t.height / p.height);
+            sheet.style.setProperty('transform', `translate(${dx}px,${dy}px) scale(${scale})`, 'important');
+            sheet.style.setProperty('opacity', '0', 'important');
+            overlay.style.setProperty('opacity', '0', 'important');
+            sheet.getBoundingClientRect(); // reflow
+            requestAnimationFrame(() => {
+                overlay.style.setProperty('transition', 'opacity .3s ease', 'important');
+                overlay.style.setProperty('opacity', '1', 'important');
+                sheet.style.setProperty('transition', 'transform .55s cubic-bezier(.16,1,.3,1), opacity .4s ease', 'important');
+                sheet.style.setProperty('transform', 'translate(0,0) scale(1)', 'important');
+                sheet.style.setProperty('opacity', '1', 'important');
+            });
+        }
+        requestAnimationFrame(() => overlay.classList.add('open'));
+
+        const close = () => pvzCloseSheet(overlay);
+        overlay.querySelector('.pvz-sheet-close').addEventListener('click', close);
+        overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) close(); });
+        overlay._esc = (e) => { if (e.key === 'Escape') close(); };
+        document.addEventListener('keydown', overlay._esc);
+
+        overlay.querySelector('.pvz-sheet-close').focus();
     }
 
-    const minimalDeckString = encodedCards.join('-');
+    function pvzCloseSheet(overlay) {
+        const sheet = overlay.querySelector('.pvz-sheet');
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.removeEventListener('keydown', overlay._esc);
+        const done = () => { overlay.remove(); document.body.style.overflow = ''; };
 
-    const analyzeUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}#crafter`;
-
-    console.log("Encoding complete. Target URL:", analyzeUrl);
-
-    window.location.href = analyzeUrl;
-  };
-}
-  document.body.appendChild(overlay);
-  document.body.style.overflow = 'hidden';
-
-  const sheet = overlay.querySelector('.pvz-sheet');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (!reduce && tileEl) {
-    const t = tileEl.getBoundingClientRect();
-    const p = sheet.getBoundingClientRect();
-    const dx = (t.left + t.width / 2) - (p.left + p.width / 2);
-    const dy = (t.top + t.height / 2) - (p.top + p.height / 2);
-    const scale = Math.max(t.width / p.width, t.height / p.height);
-    // start AT the tile (inline-important beats any !important in CSS)
-    sheet.style.setProperty('transform', `translate(${dx}px,${dy}px) scale(${scale})`, 'important');
-    sheet.style.setProperty('opacity', '0', 'important');
-    overlay.style.setProperty('opacity', '0', 'important');
-    sheet.getBoundingClientRect(); // reflow
-    requestAnimationFrame(() => {
-      overlay.style.setProperty('transition', 'opacity .3s ease', 'important');
-      overlay.style.setProperty('opacity', '1', 'important');
-      sheet.style.setProperty('transition', 'transform .55s cubic-bezier(.16,1,.3,1), opacity .4s ease', 'important');
-      sheet.style.setProperty('transform', 'translate(0,0) scale(1)', 'important');
-      sheet.style.setProperty('opacity', '1', 'important');
-    });
-  }
-  requestAnimationFrame(() => overlay.classList.add('open')); // staggers the card reveal
-
-  const close = () => pvzCloseSheet(overlay);
-  overlay.querySelector('.pvz-sheet-close').addEventListener('click', close);
-  overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) close(); });
-  overlay._esc = (e) => { if (e.key === 'Escape') close(); };
-  document.addEventListener('keydown', overlay._esc);
-
-  overlay.querySelector('.pvz-sheet-close').focus();
-}
-
-function pvzCloseSheet(overlay) {
-  const sheet = overlay.querySelector('.pvz-sheet');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.removeEventListener('keydown', overlay._esc);
-  const done = () => { overlay.remove(); document.body.style.overflow = ''; };
-
-  if (reduce || !pvzActiveTile || !document.body.contains(pvzActiveTile)) {
-    overlay.style.setProperty('transition', 'opacity .25s ease', 'important');
-    overlay.style.setProperty('opacity', '0', 'important');
-    setTimeout(done, 250); return;
-  }
-  const t = pvzActiveTile.getBoundingClientRect();
-  const p = sheet.getBoundingClientRect();
-  const dx = (t.left + t.width / 2) - (p.left + p.width / 2);
-  const dy = (t.top + t.height / 2) - (p.top + p.height / 2);
-  const scale = Math.max(t.width / p.width, t.height / p.height);
-  overlay.style.setProperty('transition', 'opacity .35s ease', 'important');
-  overlay.style.setProperty('opacity', '0', 'important');
-  sheet.style.setProperty('transition', 'transform .4s cubic-bezier(.16,1,.3,1), opacity .35s ease', 'important');
-  sheet.style.setProperty('transform', `translate(${dx}px,${dy}px) scale(${scale})`, 'important');
-  sheet.style.setProperty('opacity', '0', 'important');
-  setTimeout(done, 400);
-}
-
-// 2. Global Event Listener for Star Buttons (Put this outside renderDecks so it runs once)
-document.getElementById('deckGrid').addEventListener('click', (e) => {
-    const starBtn = e.target.closest('.deck-star-btn');
-    if (!starBtn) return;
-
-    const deckKey = starBtn.getAttribute('data-deck');
-    const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
-
-    if (starBtn.classList.contains('starred')) {
-        // Unstar
-        starBtn.classList.remove('starred');
-        delete starredDecks[deckKey];
-    } else {
-        // Star! (Triggers CSS animation)
-        starBtn.classList.add('starred');
-        starredDecks[deckKey] = true;
+        if (reduce || !pvzActiveTile || !document.body.contains(pvzActiveTile)) {
+            overlay.style.setProperty('transition', 'opacity .25s ease', 'important');
+            overlay.style.setProperty('opacity', '0', 'important');
+            setTimeout(done, 250); return;
+        }
+        const t = pvzActiveTile.getBoundingClientRect();
+        const p = sheet.getBoundingClientRect();
+        const dx = (t.left + t.width / 2) - (p.left + p.width / 2);
+        const dy = (t.top + t.height / 2) - (p.top + p.height / 2);
+        const scale = Math.max(t.width / p.width, t.height / p.height);
+        overlay.style.setProperty('transition', 'opacity .35s ease', 'important');
+        overlay.style.setProperty('opacity', '0', 'important');
+        sheet.style.setProperty('transition', 'transform .4s cubic-bezier(.16,1,.3,1), opacity .35s ease', 'important');
+        sheet.style.setProperty('transform', `translate(${dx}px,${dy}px) scale(${scale})`, 'important');
+        sheet.style.setProperty('opacity', '0', 'important');
+        setTimeout(done, 400);
     }
 
-    localStorage.setItem('pvz_starred_decks', JSON.stringify(starredDecks));
-});
+    // 2. Global Event Listener for Star Buttons (Put this outside renderDecks so it runs once)
+    document.getElementById('deckGrid').addEventListener('click', (e) => {
+        const starBtn = e.target.closest('.deck-star-btn');
+        if (!starBtn) return;
+
+        const deckKey = starBtn.getAttribute('data-deck');
+        const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
+
+        if (starBtn.classList.contains('starred')) {
+            // Unstar
+            starBtn.classList.remove('starred');
+            delete starredDecks[deckKey];
+        } else {
+            // Star! (Triggers CSS animation)
+            starBtn.classList.add('starred');
+            starredDecks[deckKey] = true;
+        }
+
+        localStorage.setItem('pvz_starred_decks', JSON.stringify(starredDecks));
+    });
 
     // --- Combined Search + Grade Filter ---
 
@@ -2000,56 +2030,56 @@ document.getElementById('deckGrid').addEventListener('click', (e) => {
     }
 
     function applyFilters() {
-    const filteredData = {};
+        const filteredData = {};
 
-    const searchRegex = currentSearchTerm
-        ? new RegExp("\\b" + escapeRegExp(currentSearchTerm), "i")
-        : null;
+        const searchRegex = currentSearchTerm
+            ? new RegExp("\\b" + escapeRegExp(currentSearchTerm), "i")
+            : null;
 
-    const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
+        const starredDecks = JSON.parse(localStorage.getItem('pvz_starred_decks') || '{}');
 
-    for (const [deckKey, deckInfo] of Object.entries(fullDatabase)) {
-        const grade = deckInfo.verdict?.grade || "—";
+        for (const [deckKey, deckInfo] of Object.entries(fullDatabase)) {
+            const grade = deckInfo.verdict?.grade || "—";
 
-        // Starred filter
-        if (currentGradeFilter === "STARRED") {
-            if (!starredDecks[deckKey]) continue;
+            // Starred filter
+            if (currentGradeFilter === "STARRED") {
+                if (!starredDecks[deckKey]) continue;
+            }
+            // Normal grade filter
+            else if (currentGradeFilter && grade !== currentGradeFilter) {
+                continue;
+            }
+
+            // Search filter
+            if (searchRegex && !matchesSearch(deckInfo, searchRegex)) continue;
+
+            filteredData[deckKey] = deckInfo;
         }
-        // Normal grade filter
-        else if (currentGradeFilter && grade !== currentGradeFilter) {
-            continue;
-        }
 
-        // Search filter
-        if (searchRegex && !matchesSearch(deckInfo, searchRegex)) continue;
-
-        filteredData[deckKey] = deckInfo;
+        renderDecks(filteredData);
     }
-
-    renderDecks(filteredData);
-}
 
     // --- Search input ---
     searchInput.addEventListener("input", (e) => {
         currentSearchTerm = e.target.value.trim();
         applyFilters();
     });
-const gradesBtn = document.getElementById("gradesBtn");
-const gradesDropdown = document.getElementById("gradesDropdown");
+    const gradesBtn = document.getElementById("gradesBtn");
+    const gradesDropdown = document.getElementById("gradesDropdown");
 
-gradesBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
+    gradesBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
 
-    const open = !gradesDropdown.hidden;
-    gradesDropdown.hidden = open;
+        const open = !gradesDropdown.hidden;
+        gradesDropdown.hidden = open;
 
-    gradesBtn.setAttribute("aria-expanded", String(!open));
-});
+        gradesBtn.setAttribute("aria-expanded", String(!open));
+    });
 
-document.addEventListener("click", () => {
-    gradesDropdown.hidden = true;
-    gradesBtn.setAttribute("aria-expanded", "false");
-});
+    document.addEventListener("click", () => {
+        gradesDropdown.hidden = true;
+        gradesBtn.setAttribute("aria-expanded", "false");
+    });
     // --- Grade buttons ---
     gradeButtons.forEach(button => {
         button.addEventListener("click", () => {
@@ -3414,58 +3444,58 @@ document.addEventListener("click", () => {
         generateDeckBtn.disabled = totalCards >= 40;
 
         if (totalCards >= 40) {
-    const classArray = Array.from(activeClasses).sort();
-    let heroName = "";
-    let heroesData = [];
+            const classArray = Array.from(activeClasses).sort();
+            let heroName = "";
+            let heroesData = [];
 
-    // Handle single vs multiple classes
-    if (classArray.length === 1) {
-        const singleClass = classArray[0];
-        heroName = `Any ${singleClass} Hero`; // Used for clipboard
-        heroesData = [{
-            name: singleClass, // Used for the label under the avatar
-            imgFilename: `${singleClass.toLowerCase().replace(/[\s-]+/g, '_')}.webp`
-        }];
-    } else {
-        heroName = heroMap[classArray.join(',')] || `Any ${classArray.join(' / ')} Hero`;
-        heroesData = heroName.split(/\s*\/\s*/).map(name => ({
-            name: name,
-            imgFilename: `${name.replace(/[\s-]+/g, '_')}.webp`
-        }));
-    }
+            // Handle single vs multiple classes
+            if (classArray.length === 1) {
+                const singleClass = classArray[0];
+                heroName = `Any ${singleClass} Hero`; // Used for clipboard
+                heroesData = [{
+                    name: singleClass, // Used for the label under the avatar
+                    imgFilename: `${singleClass.toLowerCase().replace(/[\s-]+/g, '_')}.webp`
+                }];
+            } else {
+                heroName = heroMap[classArray.join(',')] || `Any ${classArray.join(' / ')} Hero`;
+                heroesData = heroName.split(/\s*\/\s*/).map(name => ({
+                    name: name,
+                    imgFilename: `${name.replace(/[\s-]+/g, '_')}.webp`
+                }));
+            }
 
-    const isPlant = currentFaction === "Plant";
-    const aiDeckName = generateDeckName(currentSeeds, isPlant);
+            const isPlant = currentFaction === "Plant";
+            const aiDeckName = generateDeckName(currentSeeds, isPlant);
 
-    if (title) {
-        title.classList.remove('hidden');
+            if (title) {
+                title.classList.remove('hidden');
 
-        const heroBadgesHtml = heroesData.map(hero => {
-            return `
+                const heroBadgesHtml = heroesData.map(hero => {
+                    return `
             <div class="title-hero-pill">
                 <img src="hero_images/${hero.imgFilename}" alt="${hero.name}" class="title-hero-avatar">
                 <span class="title-hero-label">${hero.name}</span>
             </div>
         `;
-        }).join('');
+                }).join('');
 
-        title.innerHTML = `
+                title.innerHTML = `
         <div style="font-size: 1.2em; color: var(--accent); font-style: italic; margin-bottom: 8px; text-align: center;">"${aiDeckName}"</div>
         <div class="title-hero-container">
             ${heroBadgesHtml}
         </div>
     `;
-    }
+            }
 
-    currentClipboardText = `Deck: ${aiDeckName}\nHero: ${heroName}\n\n`;
-    if (actionContainer) {
-        actionContainer.classList.remove('hidden');
-        actionContainer.style.display = 'flex';
-    }
-} else {
-    if (title) title.classList.add('hidden');
-    if (actionContainer) actionContainer.style.display = 'none';
-}
+            currentClipboardText = `Deck: ${aiDeckName}\nHero: ${heroName}\n\n`;
+            if (actionContainer) {
+                actionContainer.classList.remove('hidden');
+                actionContainer.style.display = 'flex';
+            }
+        } else {
+            if (title) title.classList.add('hidden');
+            if (actionContainer) actionContainer.style.display = 'none';
+        }
 
         let displaySeeds = [...currentSeeds].sort((a, b) => {
             const costA = cardDatabase[a.name]?.Cost || 0;
@@ -3788,7 +3818,7 @@ document.addEventListener("click", () => {
         return { grade, gradeColor };
     }
     // --- LIVE DECK ANALYTICS ENGINE ---
-    
+
     document.getElementById('shareDeckBtn').addEventListener('click', function () {
         const cardDictionary = Object.keys(cardDatabase).sort();
 
@@ -3907,7 +3937,7 @@ document.addEventListener("click", () => {
             }
         }, 100);
     });
-    
+
 
     function getTopThreeRecommendations(baseCardName = null) {
         let candidatePool = Object.keys(cardDatabase);
@@ -3996,208 +4026,208 @@ document.addEventListener("click", () => {
         return scoredCandidates.slice(0, 3);
     }
     // ============================================================
-// PvZ HEROES DECK BUILDER — VISUAL UPGRADE (JS)
-// Replaces: updateDeckStats(), triggerAICoPilot(), showSwapSuggestions()
-// All scoring / recommendation / simulation logic is untouched —
-// only the rendering changed. Requires deck-builder-visuals.css
-// and the new ai-pane HTML.
-// ============================================================
+    // PvZ HEROES DECK BUILDER — VISUAL UPGRADE (JS)
+    // Replaces: updateDeckStats(), triggerAICoPilot(), showSwapSuggestions()
+    // All scoring / recommendation / simulation logic is untouched —
+    // only the rendering changed. Requires deck-builder-visuals.css
+    // and the new ai-pane HTML.
+    // ============================================================
 
-// ------------------------------------------------------------
-// Shared helpers (new — rendering only)
-// ------------------------------------------------------------
+    // ------------------------------------------------------------
+    // Shared helpers (new — rendering only)
+    // ------------------------------------------------------------
 
-// Grade cutoffs — the gauge (zones, letters, marker mapping) is built
-// entirely from this constant, so editing it here is all you need to do.
-// `label` is the plain-language meaning shown instead of a raw /100 score.
-const GRADE_CUTOFFS = [
-    { letter: 'S', min: 95, label: 'Excellent' },
-    { letter: 'A', min: 87.5, label: 'Good' },
-    { letter: 'B', min: 75,   label: 'Average' },
-    { letter: 'C', min: 65,   label: 'Weak' },
-    { letter: 'D', min: 50,   label: 'Bad' },
-    { letter: 'F', min: 0,    label: 'Awful' },
-];
+    // Grade cutoffs — the gauge (zones, letters, marker mapping) is built
+    // entirely from this constant, so editing it here is all you need to do.
+    // `label` is the plain-language meaning shown instead of a raw /100 score.
+    const GRADE_CUTOFFS = [
+        { letter: 'S', min: 95, label: 'Excellent' },
+        { letter: 'A', min: 87.5, label: 'Good' },
+        { letter: 'B', min: 75, label: 'Average' },
+        { letter: 'C', min: 65, label: 'Weak' },
+        { letter: 'D', min: 50, label: 'Bad' },
+        { letter: 'F', min: 0, label: 'Awful' },
+    ];
 
-const GRADE_COLORS = {
-    F: 'var(--grade-f)', D: 'var(--grade-d)', C: 'var(--grade-c)',
-    B: 'var(--grade-b)', A: 'var(--grade-a)', S: 'var(--grade-s)',
-};
+    const GRADE_COLORS = {
+        F: 'var(--grade-f)', D: 'var(--grade-d)', C: 'var(--grade-c)',
+        B: 'var(--grade-b)', A: 'var(--grade-a)', S: 'var(--grade-s)',
+    };
 
-// Ascending bands with explicit [min, max) ranges, derived once
-const GRADE_BANDS = [...GRADE_CUTOFFS]
-    .sort((a, b) => a.min - b.min)
-    .map((g, i, arr) => ({
-        letter: g.letter,
-        label: g.label,
-        min: g.min,
-        max: i < arr.length - 1 ? arr[i + 1].min : 100,
-    }));
+    // Ascending bands with explicit [min, max) ranges, derived once
+    const GRADE_BANDS = [...GRADE_CUTOFFS]
+        .sort((a, b) => a.min - b.min)
+        .map((g, i, arr) => ({
+            letter: g.letter,
+            label: g.label,
+            min: g.min,
+            max: i < arr.length - 1 ? arr[i + 1].min : 100,
+        }));
 
-// Maps a raw 0–100 score to a visual % on the gauge.
-// Each grade occupies an equal-width zone; the score is interpolated
-// within its own band. So mid-B (81 of 75–87.5) sits mid-way through
-// the B segment — F no longer hogs half the bar, S isn't a sliver.
-function scoreToGaugePercent(score) {
-    const s = Math.max(0, Math.min(100, score));
-    const bandWidth = 100 / GRADE_BANDS.length;
-    const i = GRADE_BANDS.findIndex(b => s >= b.min && s < b.max);
-    const idx = i === -1 ? GRADE_BANDS.length - 1 : i;   // score === 100
-    const band = GRADE_BANDS[idx];
-    const frac = band.max > band.min ? (s - band.min) / (band.max - band.min) : 1;
-    return idx * bandWidth + frac * bandWidth;
-}
+    // Maps a raw 0–100 score to a visual % on the gauge.
+    // Each grade occupies an equal-width zone; the score is interpolated
+    // within its own band. So mid-B (81 of 75–87.5) sits mid-way through
+    // the B segment — F no longer hogs half the bar, S isn't a sliver.
+    function scoreToGaugePercent(score) {
+        const s = Math.max(0, Math.min(100, score));
+        const bandWidth = 100 / GRADE_BANDS.length;
+        const i = GRADE_BANDS.findIndex(b => s >= b.min && s < b.max);
+        const idx = i === -1 ? GRADE_BANDS.length - 1 : i;   // score === 100
+        const band = GRADE_BANDS[idx];
+        const frac = band.max > band.min ? (s - band.min) / (band.max - band.min) : 1;
+        return idx * bandWidth + frac * bandWidth;
+    }
 
-// Builds the gauge zones + letters from GRADE_CUTOFFS (runs once, lazily)
-let _gaugeBuilt = false;
-function buildPowerGauge() {
-    const zonesHost = document.getElementById('pmZones');
-    const lettersHost = document.getElementById('pmLetters');
-    if (!zonesHost || !lettersHost || _gaugeBuilt) return;
+    // Builds the gauge zones + letters from GRADE_CUTOFFS (runs once, lazily)
+    let _gaugeBuilt = false;
+    function buildPowerGauge() {
+        const zonesHost = document.getElementById('pmZones');
+        const lettersHost = document.getElementById('pmLetters');
+        if (!zonesHost || !lettersHost || _gaugeBuilt) return;
 
-    const bandWidth = 100 / GRADE_BANDS.length;
+        const bandWidth = 100 / GRADE_BANDS.length;
 
-    zonesHost.innerHTML = GRADE_BANDS.map(b =>
-        `<div class="pm-zone" data-g="${b.letter}" title="${b.letter} · ${b.min}–${b.max}"></div>`
-    ).join('');
+        zonesHost.innerHTML = GRADE_BANDS.map(b =>
+            `<div class="pm-zone" data-g="${b.letter}" title="${b.letter} · ${b.min}–${b.max}"></div>`
+        ).join('');
 
-    lettersHost.innerHTML = GRADE_BANDS.map((b, i) =>
-        `<span class="pm-letter" data-g="${b.letter}" style="left: ${(i + 0.5) * bandWidth}%; --g: ${GRADE_COLORS[b.letter] || '#fff'};">${b.letter}</span>`
-    ).join('');
+        lettersHost.innerHTML = GRADE_BANDS.map((b, i) =>
+            `<span class="pm-letter" data-g="${b.letter}" style="left: ${(i + 0.5) * bandWidth}%; --g: ${GRADE_COLORS[b.letter] || '#fff'};">${b.letter}</span>`
+        ).join('');
 
-    _gaugeBuilt = true;
-}
+        _gaugeBuilt = true;
+    }
 
-// Wraps a message in Dave's speech bubble (mini avatar + tail + pop animation)
-function daveSay(innerHtml) {
-    return `
+    // Wraps a message in Dave's speech bubble (mini avatar + tail + pop animation)
+    function daveSay(innerHtml) {
+        return `
     <div class="dave-msg">
         <img src="crazydave.webp" alt="" class="dave-msg-avatar">
         <div class="speech-bubble">${innerHtml}</div>
     </div>`;
-}
+    }
 
-// Dave "thinking" bubble with bouncing dots
-function daveThinking(text) {
-    return daveSay(`
+    // Dave "thinking" bubble with bouncing dots
+    function daveThinking(text) {
+        return daveSay(`
         <span style="display:inline-flex; align-items:center; gap:8px;">
             <span class="typing-dots"><span></span><span></span><span></span></span>
             <em style="opacity:0.8;">${text}</em>
         </span>`);
-}
-
-// Smoothly counts the "pts to next grade" number toward its new value
-let _pmTweenRaf = null;
-function tweenNumber(el, target, suffix = '') {
-    if (!el) return;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        el.innerText = Math.round(target * 10) / 10 + suffix;
-        return;
-    }
-    cancelAnimationFrame(_pmTweenRaf);
-    const start = parseFloat(el.innerText) || 0;
-    const t0 = performance.now();
-    const dur = 700;
-    const step = (now) => {
-        const p = Math.min((now - t0) / dur, 1);
-        const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
-        el.innerText = Math.round((start + (target - start) * eased) * 10) / 10 + suffix;
-        if (p < 1) _pmTweenRaf = requestAnimationFrame(step);
-    };
-    _pmTweenRaf = requestAnimationFrame(step);
-}
-
-// ------------------------------------------------------------
-// LIVE DECK ANALYTICS — Power Meter edition
-// ------------------------------------------------------------
-function updateDeckStats() {
-    const hud = document.getElementById('deckStatsHud');
-    const totalCards = getTotalCards();
-
-    if (!hud || totalCards === 0) {
-        if (hud) hud.style.display = 'none';
-        return;
     }
 
-    hud.style.display = 'block';
-
-    // 1. Format the current seeds into the string array getDeckVerdictFromCards expects
-    const deckCards = currentSeeds.map(s => `${s.count}x ${s.name}`);
-
-    // 2. Delegate all heavy lifting to the verdict function (unchanged)
-    const stats = getDeckVerdictFromCards(deckCards);
-
-    // ==========================================
-    // UI 1: Score gauge — marker mapped piecewise through grade zones
-    // ==========================================
-    buildPowerGauge();
-
-    const score = Math.max(0, Math.min(100, stats.score || 0));
-
-    const marker = document.getElementById('pmMarker');
-    if (marker) marker.style.left = `${scoreToGaugePercent(score)}%`;
-
-    // Light up the active grade zone + letter
-    const activeBand = GRADE_BANDS.find(b => score >= b.min && score < b.max)
-        || GRADE_BANDS[GRADE_BANDS.length - 1];
-    const activeLetter = activeBand.letter;
-
-    // Plain-language verdict ("Average") instead of a misleading /100 number,
-    // plus a "pts to next grade" countdown for live feedback
-    const qualityEl = document.getElementById('pmQualityWord');
-    const nextEl = document.getElementById('pmNextGrade');
-    if (qualityEl) {
-        qualityEl.innerText = activeBand.label;
-        qualityEl.style.color = stats.gradeColor;
-    }
-    if (nextEl) {
-        const bandIdx = GRADE_BANDS.indexOf(activeBand);
-        const nextBand = GRADE_BANDS[bandIdx + 1];
-        if (nextBand) {
-            const ptsToNext = Math.max(nextBand.min - score, 0);
-            nextEl.style.display = '';
-            // tween the number, keep the static text outside the tween target
-            nextEl.innerHTML = `<span id="pmNextPts">${nextEl.querySelector('#pmNextPts')?.innerText || 0}</span> pts to ${nextBand.letter}`;
-            tweenNumber(document.getElementById('pmNextPts'), Math.round(ptsToNext * 10) / 10);
-        } else {
-            nextEl.style.display = '';
-            nextEl.innerText = 'Top grade!';
+    // Smoothly counts the "pts to next grade" number toward its new value
+    let _pmTweenRaf = null;
+    function tweenNumber(el, target, suffix = '') {
+        if (!el) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            el.innerText = Math.round(target * 10) / 10 + suffix;
+            return;
         }
+        cancelAnimationFrame(_pmTweenRaf);
+        const start = parseFloat(el.innerText) || 0;
+        const t0 = performance.now();
+        const dur = 700;
+        const step = (now) => {
+            const p = Math.min((now - t0) / dur, 1);
+            const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+            el.innerText = Math.round((start + (target - start) * eased) * 10) / 10 + suffix;
+            if (p < 1) _pmTweenRaf = requestAnimationFrame(step);
+        };
+        _pmTweenRaf = requestAnimationFrame(step);
     }
-    document.querySelectorAll('.pm-zone').forEach(z =>
-        z.classList.toggle('active', z.dataset.g === activeLetter));
-    document.querySelectorAll('.pm-letter').forEach(l =>
-        l.classList.toggle('active', l.dataset.g === activeLetter));
 
-    // Big grade letter (uses the verdict's own grade + color)
-    const gradeEl = document.getElementById('verdictGrade');
-    gradeEl.innerText = stats.grade;
-    gradeEl.style.color = stats.gradeColor;
+    // ------------------------------------------------------------
+    // LIVE DECK ANALYTICS — Power Meter edition
+    // ------------------------------------------------------------
+    function updateDeckStats() {
+        const hud = document.getElementById('deckStatsHud');
+        const totalCards = getTotalCards();
 
-    // ==========================================
-    // UI 2: Mana Curve Chart (SVG — unchanged renderer)
-    // ==========================================
-    const chart = document.getElementById('manaCurveChart');
-    const counts = [stats.curve[1], stats.curve[2], stats.curve[3], stats.curve[4], stats.curve[5], stats.curve["6+"]];
-    const maxCurveVal = Math.max(...counts, 1);
+        if (!hud || totalCards === 0) {
+            if (hud) hud.style.display = 'none';
+            return;
+        }
 
-    const width = chart.clientWidth > 0 ? chart.clientWidth : 300;
-    const height = 40;
-    const xStep = width / (counts.length - 1);
+        hud.style.display = 'block';
 
-    let pathD = `M 0,${height} `;
-    const points = [];
+        // 1. Format the current seeds into the string array getDeckVerdictFromCards expects
+        const deckCards = currentSeeds.map(s => `${s.count}x ${s.name}`);
 
-    counts.forEach((count, i) => {
-        const x = i * xStep;
-        const y = height - ((count / maxCurveVal) * (height - 4)) - 2;
-        points.push({ x, y });
-        pathD += `L ${x},${y} `;
-    });
+        // 2. Delegate all heavy lifting to the verdict function (unchanged)
+        const stats = getDeckVerdictFromCards(deckCards);
 
-    pathD += `L ${width},${height} Z`;
+        // ==========================================
+        // UI 1: Score gauge — marker mapped piecewise through grade zones
+        // ==========================================
+        buildPowerGauge();
 
-    chart.innerHTML = `
+        const score = Math.max(0, Math.min(100, stats.score || 0));
+
+        const marker = document.getElementById('pmMarker');
+        if (marker) marker.style.left = `${scoreToGaugePercent(score)}%`;
+
+        // Light up the active grade zone + letter
+        const activeBand = GRADE_BANDS.find(b => score >= b.min && score < b.max)
+            || GRADE_BANDS[GRADE_BANDS.length - 1];
+        const activeLetter = activeBand.letter;
+
+        // Plain-language verdict ("Average") instead of a misleading /100 number,
+        // plus a "pts to next grade" countdown for live feedback
+        const qualityEl = document.getElementById('pmQualityWord');
+        const nextEl = document.getElementById('pmNextGrade');
+        if (qualityEl) {
+            qualityEl.innerText = activeBand.label;
+            qualityEl.style.color = stats.gradeColor;
+        }
+        if (nextEl) {
+            const bandIdx = GRADE_BANDS.indexOf(activeBand);
+            const nextBand = GRADE_BANDS[bandIdx + 1];
+            if (nextBand) {
+                const ptsToNext = Math.max(nextBand.min - score, 0);
+                nextEl.style.display = '';
+                // tween the number, keep the static text outside the tween target
+                nextEl.innerHTML = `<span id="pmNextPts">${nextEl.querySelector('#pmNextPts')?.innerText || 0}</span> pts to ${nextBand.letter}`;
+                tweenNumber(document.getElementById('pmNextPts'), Math.round(ptsToNext * 10) / 10);
+            } else {
+                nextEl.style.display = '';
+                nextEl.innerText = 'Top grade!';
+            }
+        }
+        document.querySelectorAll('.pm-zone').forEach(z =>
+            z.classList.toggle('active', z.dataset.g === activeLetter));
+        document.querySelectorAll('.pm-letter').forEach(l =>
+            l.classList.toggle('active', l.dataset.g === activeLetter));
+
+        // Big grade letter (uses the verdict's own grade + color)
+        const gradeEl = document.getElementById('verdictGrade');
+        gradeEl.innerText = stats.grade;
+        gradeEl.style.color = stats.gradeColor;
+
+        // ==========================================
+        // UI 2: Mana Curve Chart (SVG — unchanged renderer)
+        // ==========================================
+        const chart = document.getElementById('manaCurveChart');
+        const counts = [stats.curve[1], stats.curve[2], stats.curve[3], stats.curve[4], stats.curve[5], stats.curve["6+"]];
+        const maxCurveVal = Math.max(...counts, 1);
+
+        const width = chart.clientWidth > 0 ? chart.clientWidth : 300;
+        const height = 40;
+        const xStep = width / (counts.length - 1);
+
+        let pathD = `M 0,${height} `;
+        const points = [];
+
+        counts.forEach((count, i) => {
+            const x = i * xStep;
+            const y = height - ((count / maxCurveVal) * (height - 4)) - 2;
+            points.push({ x, y });
+            pathD += `L ${x},${y} `;
+        });
+
+        pathD += `L ${width},${height} Z`;
+
+        chart.innerHTML = `
     <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible; display: block;">
         <defs>
             <linearGradient id="curveGradient" x1="0" y1="0" x2="0" y2="1">
@@ -4210,154 +4240,154 @@ function updateDeckStats() {
     </svg>
 `;
 
-    // ==========================================
-    // UI 3: Speed / cost computations (unchanged math — feeds subtitle)
-    // ==========================================
-    let speedLabel = "Midrange";
+        // ==========================================
+        // UI 3: Speed / cost computations (unchanged math — feeds subtitle)
+        // ==========================================
+        let speedLabel = "Midrange";
 
-    if (stats.avgCost <= 2.2) {
-        speedLabel = "Aggro/Rush";
-    } else if (stats.avgCost > 2.2 && stats.avgCost <= 3.5) {
-        speedLabel = "Midrange";
-    } else {
-        speedLabel = "Control/Late";
-    }
+        if (stats.avgCost <= 2.2) {
+            speedLabel = "Aggro/Rush";
+        } else if (stats.avgCost > 2.2 && stats.avgCost <= 3.5) {
+            speedLabel = "Midrange";
+        } else {
+            speedLabel = "Control/Late";
+        }
 
-    const archetype = speedLabel.split('/')[0];
-    document.getElementById('verdictArchetype').innerText = archetype;
-    document.getElementById('verdictSubtitle').innerText =
-        `${totalCards} cards · avg cost ${stats.avgCost.toFixed(1)} · ${stats.costLabel.toLowerCase()}`;
+        const archetype = speedLabel.split('/')[0];
+        document.getElementById('verdictArchetype').innerText = archetype;
+        document.getElementById('verdictSubtitle').innerText =
+            `${totalCards} cards · avg cost ${stats.avgCost.toFixed(1)} · ${stats.costLabel.toLowerCase()}`;
 
-    // ==========================================
-    // UI 4: Callouts (same logic, rendered as pill chips)
-    // ==========================================
-    const callouts = [];
-    if (totalCards >= 6) {
-        if (stats.synergyScore >= 88) callouts.push({ dir: 'up', text: 'Elite synergy', val: stats.synergyScore + '%', pri: 5 });
-        else if (stats.synergyScore >= 75) callouts.push({ dir: 'up', text: 'Strong synergy', val: stats.synergyScore + '%', pri: 3 });
-        else if (stats.synergyScore < 65) callouts.push({ dir: 'down', text: 'Weak synergy', val: stats.synergyScore + '%', pri: 5 });
-        else if (stats.synergyScore < 50) callouts.push({ dir: 'down', text: 'Low synergy', val: stats.synergyScore + '%', pri: 3 });
+        // ==========================================
+        // UI 4: Callouts (same logic, rendered as pill chips)
+        // ==========================================
+        const callouts = [];
+        if (totalCards >= 6) {
+            if (stats.synergyScore >= 88) callouts.push({ dir: 'up', text: 'Elite synergy', val: stats.synergyScore + '%', pri: 5 });
+            else if (stats.synergyScore >= 75) callouts.push({ dir: 'up', text: 'Strong synergy', val: stats.synergyScore + '%', pri: 3 });
+            else if (stats.synergyScore < 65) callouts.push({ dir: 'down', text: 'Weak synergy', val: stats.synergyScore + '%', pri: 5 });
+            else if (stats.synergyScore < 50) callouts.push({ dir: 'down', text: 'Low synergy', val: stats.synergyScore + '%', pri: 3 });
 
-        if (stats.consistencyScore >= 85) callouts.push({ dir: 'up', text: 'Highly consistent', val: stats.consistencyScore + '%', pri: 4 });
-        else if (stats.consistencyScore < 40) callouts.push({ dir: 'down', text: 'Inconsistent', val: stats.consistencyScore + '%', pri: 5 });
-        else if (stats.consistencyScore < 65) callouts.push({ dir: 'down', text: 'Low consistency', val: stats.consistencyScore + '%', pri: 3 });
+            if (stats.consistencyScore >= 85) callouts.push({ dir: 'up', text: 'Highly consistent', val: stats.consistencyScore + '%', pri: 4 });
+            else if (stats.consistencyScore < 40) callouts.push({ dir: 'down', text: 'Inconsistent', val: stats.consistencyScore + '%', pri: 5 });
+            else if (stats.consistencyScore < 65) callouts.push({ dir: 'down', text: 'Low consistency', val: stats.consistencyScore + '%', pri: 3 });
 
-        if (stats.powerScore >= 85) callouts.push({ dir: 'up', text: 'Meta powerhouse', val: stats.powerScore + '%', pri: 4 });
-        else if (stats.powerScore < 50) callouts.push({ dir: 'down', text: 'Off-meta', val: stats.powerScore + '%', pri: 2 });
+            if (stats.powerScore >= 85) callouts.push({ dir: 'up', text: 'Meta powerhouse', val: stats.powerScore + '%', pri: 4 });
+            else if (stats.powerScore < 50) callouts.push({ dir: 'down', text: 'Off-meta', val: stats.powerScore + '%', pri: 2 });
 
-        if (stats.curveHealthText === "Excellent") callouts.push({ dir: 'up', text: 'Excellent curve', val: '', pri: 4 });
-        else if (stats.curveHealthText === "Awkward") callouts.push({ dir: 'down', text: 'Awkward curve', val: '', pri: 5 });
+            if (stats.curveHealthText === "Excellent") callouts.push({ dir: 'up', text: 'Excellent curve', val: '', pri: 4 });
+            else if (stats.curveHealthText === "Awkward") callouts.push({ dir: 'down', text: 'Awkward curve', val: '', pri: 5 });
 
-        if (stats.costLabel === "P2W") callouts.push({ dir: 'down', text: 'P2W cost', val: '', pri: 2 });
-        else if (stats.costLabel === "Budget" && stats.powerScore >= 60) callouts.push({ dir: 'up', text: 'Budget powerhouse', val: '', pri: 3 });
-    }
+            if (stats.costLabel === "P2W") callouts.push({ dir: 'down', text: 'P2W cost', val: '', pri: 2 });
+            else if (stats.costLabel === "Budget" && stats.powerScore >= 60) callouts.push({ dir: 'up', text: 'Budget powerhouse', val: '', pri: 3 });
+        }
 
-    callouts.sort((a, b) => b.pri - a.pri);
-    const top = callouts.slice(0, 3);
-    const calloutHost = document.getElementById('verdictCallouts');
+        callouts.sort((a, b) => b.pri - a.pri);
+        const top = callouts.slice(0, 3);
+        const calloutHost = document.getElementById('verdictCallouts');
 
-    calloutHost.innerHTML = top.map((c, i) => `
+        calloutHost.innerHTML = top.map((c, i) => `
         <span class="pm-chip ${c.dir}" style="animation-delay:${i * 70}ms;">
             ${c.dir === 'up' ? '↑' : '↓'} ${c.text}
             ${c.val ? `<span class="pm-chip-val">${c.val}</span>` : ''}
         </span>
     `).join('');
-}
+    }
 
-// ------------------------------------------------------------
-// CONVERSATIONAL AI CO-PILOT — speech bubble edition
-// ------------------------------------------------------------
-function triggerAICoPilot() {
-    window.activeSwapTarget = null;
-    const chatFeed = document.getElementById('aiChatFeed');
-    if (!chatFeed) return;
+    // ------------------------------------------------------------
+    // CONVERSATIONAL AI CO-PILOT — speech bubble edition
+    // ------------------------------------------------------------
+    function triggerAICoPilot() {
+        window.activeSwapTarget = null;
+        const chatFeed = document.getElementById('aiChatFeed');
+        if (!chatFeed) return;
 
-    if (currentSeeds.length === 0) {
-        const cardNames = Object.keys(cardDatabase);
-        const randomCard = cardNames[Math.floor(Math.random() * cardNames.length)].replace(/_/g, ' ');
+        if (currentSeeds.length === 0) {
+            const cardNames = Object.keys(cardDatabase);
+            const randomCard = cardNames[Math.floor(Math.random() * cardNames.length)].replace(/_/g, ' ');
 
-        chatFeed.innerHTML = daveSay(`
+            chatFeed.innerHTML = daveSay(`
             Heey I'm Craaaazy Dave! I'm the best at creating amazing PvZ Heroes decks!
             Enter a card to get started. Maybe <strong>${randomCard}</strong>?
         `);
-        return;
-    }
+            return;
+        }
 
-    if (getTotalCards() >= 40) {
-        const closestDeck = getClosestDeckMatch();
-        let baseHtml = "";
+        if (getTotalCards() >= 40) {
+            const closestDeck = getClosestDeckMatch();
+            let baseHtml = "";
 
-        if (!closestDeck) {
-            baseHtml = daveSay(`Your deck is complete! I could not find a close match in the deck database.`);
-        } else {
-            const deckName = (closestDeck.name || "").trim();
-            const uploadDate = closestDeck.upload_date || "Unknown date";
+            if (!closestDeck) {
+                baseHtml = daveSay(`Your deck is complete! I could not find a close match in the deck database.`);
+            } else {
+                const deckName = (closestDeck.name || "").trim();
+                const uploadDate = closestDeck.upload_date || "Unknown date";
 
-            if (closestDeck.youtube_url) {
-                baseHtml = daveSay(`
+                if (closestDeck.youtube_url) {
+                    baseHtml = daveSay(`
                     Your deck is complete! Your deck is closest to
                     <a href="${closestDeck.youtube_url}" target="_blank" rel="noopener noreferrer">${deckName}</a>
                     (from ${uploadDate}).
                     <span class="bubble-sub">Video: ${closestDeck.youtube_title || "YouTube deck video"}</span>
                 `);
-            } else {
-                baseHtml = daveSay(`
+                } else {
+                    baseHtml = daveSay(`
                     Your deck is complete! Your deck is closest to
                     <strong style="color: var(--accent, #4CAF50);">${deckName}</strong>
                     (from ${uploadDate}).
                 `);
+                }
             }
-        }
 
-        // Show thinking bubble immediately so the UI doesn't feel frozen
-        chatFeed.innerHTML = baseHtml + daveThinking("Hmm, let me study this deck...");
+            // Show thinking bubble immediately so the UI doesn't feel frozen
+            chatFeed.innerHTML = baseHtml + daveThinking("Hmm, let me study this deck...");
 
-        // Yield the main thread so the browser paints the thinking bubble
-        setTimeout(() => {
-            initSynergyMatrix();
+            // Yield the main thread so the browser paints the thinking bubble
+            setTimeout(() => {
+                initSynergyMatrix();
 
-            const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
+                const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
 
-            const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
-            const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
-            const baselineScore = baselineVerdict.score;
+                const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
+                const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
+                const baselineScore = baselineVerdict.score;
 
-            let bestSwapIdea = null;
-            let maxImprovement = 0;
+                let bestSwapIdea = null;
+                let maxImprovement = 0;
 
-            currentSeeds.forEach(seed => {
-                const recommendations = getTopThreeRecommendations(seed.name);
+                currentSeeds.forEach(seed => {
+                    const recommendations = getTopThreeRecommendations(seed.name);
 
-                recommendations.forEach(rec => {
-                    const simulatedStrings = currentSeeds.map(s => {
-                        if (s.name === seed.name) return `${s.count}x ${rec.name}`;
-                        return `${s.count}x ${s.name}`;
+                    recommendations.forEach(rec => {
+                        const simulatedStrings = currentSeeds.map(s => {
+                            if (s.name === seed.name) return `${s.count}x ${rec.name}`;
+                            return `${s.count}x ${s.name}`;
+                        });
+
+                        const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
+                        const simScore = simVerdict.score;
+                        const improvement = simScore - baselineScore;
+
+                        if (improvement > maxImprovement) {
+                            maxImprovement = improvement;
+                            bestSwapIdea = {
+                                removeCard: seed.name,
+                                addCard: rec.name,
+                                oldScore: baselineScore,
+                                newScore: simScore
+                            };
+                        }
                     });
-
-                    const simVerdict = getDeckVerdictFromCards(simulatedStrings, null, ctx);
-                    const simScore = simVerdict.score;
-                    const improvement = simScore - baselineScore;
-
-                    if (improvement > maxImprovement) {
-                        maxImprovement = improvement;
-                        bestSwapIdea = {
-                            removeCard: seed.name,
-                            addCard: rec.name,
-                            oldScore: baselineScore,
-                            newScore: simScore
-                        };
-                    }
                 });
-            });
 
-            let swapHtml = "";
+                let swapHtml = "";
 
-            if (bestSwapIdea) {
-                const weakName = bestSwapIdea.removeCard.replace(/_/g, ' ');
-                const topName = bestSwapIdea.addCard.replace(/_/g, ' ');
-                const boostText = `+${Math.round(maxImprovement)}% rating`;
+                if (bestSwapIdea) {
+                    const weakName = bestSwapIdea.removeCard.replace(/_/g, ' ');
+                    const topName = bestSwapIdea.addCard.replace(/_/g, ' ');
+                    const boostText = `+${Math.round(maxImprovement)}% rating`;
 
-                swapHtml = daveSay(`
+                    swapHtml = daveSay(`
                     I found something! Swapping out <strong>${weakName}</strong> for
                     <strong>${topName}</strong> will improve your deck's curve and synergy!
                 `) + `
@@ -4380,162 +4410,162 @@ function triggerAICoPilot() {
                         Make the swap
                     </button>
                 </div>`;
-            } else {
-                swapHtml = daveSay(`Great job on such a well-optimized and balanced deck!`);
-            }
+                } else {
+                    swapHtml = daveSay(`Great job on such a well-optimized and balanced deck!`);
+                }
 
-            chatFeed.innerHTML = baseHtml + swapHtml;
+                chatFeed.innerHTML = baseHtml + swapHtml;
 
-            const swapBtn = chatFeed.querySelector('.add-rec-btn[data-remove]');
-            if (swapBtn) {
-                swapBtn.addEventListener('click', (e) => {
-                    const removeName = e.target.getAttribute('data-remove');
-                    const addName = e.target.getAttribute('data-add');
-                    applyFullSwap(removeName, addName);
-                });
-            }
-        }, 50);
+                const swapBtn = chatFeed.querySelector('.add-rec-btn[data-remove]');
+                if (swapBtn) {
+                    swapBtn.addEventListener('click', (e) => {
+                        const removeName = e.target.getAttribute('data-remove');
+                        const addName = e.target.getAttribute('data-add');
+                        applyFullSwap(removeName, addName);
+                    });
+                }
+            }, 50);
 
-        return;
-    }
-
-    // --- Deck NOT complete: greeting + 3 recommendations ---
-    initSynergyMatrix();
-    chatFeed.innerHTML = daveThinking("Analyzing synergies...");
-
-    setTimeout(() => {
-        const recommendations = getTopThreeRecommendations();
-
-        if (recommendations.length === 0) {
-            chatFeed.innerHTML = daveSay(`I can't find any more valid cards for this combination! Try removing a card.`);
             return;
         }
 
-        const spaceLeft = 40 - getTotalCards();
-        const classArray = Array.from(activeClasses).sort();
-        const heroName = heroMap[classArray.join(',')] || `a ${classArray.join(' / ')} Hero`;
+        // --- Deck NOT complete: greeting + 3 recommendations ---
+        initSynergyMatrix();
+        chatFeed.innerHTML = daveThinking("Analyzing synergies...");
 
-        const recData = recommendations.map(rec => {
-            const displayName = rec.name.replace(/_/g, ' ');
-            const data = cardDatabase[rec.name];
-            let targetCopies = 3;
+        setTimeout(() => {
+            const recommendations = getTopThreeRecommendations();
 
-            if (cardAverageCopies && cardAverageCopies[rec.name] && cardAverageCopies[rec.name].appearances > 0) {
-                targetCopies = Math.round(cardAverageCopies[rec.name].total / cardAverageCopies[rec.name].appearances);
-            }
-            targetCopies = Math.min(targetCopies, spaceLeft, 4);
-            if (targetCopies < 1) targetCopies = 1;
-
-            return { name: rec.name, displayName, data, targetCopies };
-        });
-
-        // 1. Average play frequency → smart adjectives (unchanged)
-        let avgFreq = 1;
-        if (Object.keys(cardFrequencies).length > 0) {
-            const sumFreq = Object.values(cardFrequencies).reduce((a, b) => a + b, 0);
-            avgFreq = sumFreq / Object.keys(cardFrequencies).length;
-        }
-
-        let aiDialogue = "";
-
-        // 2. Contextual greeting based on last action (unchanged)
-        let comboTriggered = false;
-
-        if (lastAddedCard) {
-            const triggeredCombo = comboDictionary.find(combo =>
-                combo.cards.includes(lastAddedCard) &&
-                combo.cards.every(c => currentSeeds.some(s => s.name === c))
-            );
-
-            if (triggeredCombo) {
-                let formattedMessage = triggeredCombo.message
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-                aiDialogue = formattedMessage + "<br><br>";
-                comboTriggered = true;
+            if (recommendations.length === 0) {
+                chatFeed.innerHTML = daveSay(`I can't find any more valid cards for this combination! Try removing a card.`);
+                return;
             }
 
-            if (!comboTriggered) {
-                const lastNameClean = lastAddedCard.replace(/_/g, ' ');
-                const lastCardData = cardDatabase[lastAddedCard];
-                const lastClass = lastCardData ? lastCardData.Class : "Unknown";
+            const spaceLeft = 40 - getTotalCards();
+            const classArray = Array.from(activeClasses).sort();
+            const heroName = heroMap[classArray.join(',')] || `a ${classArray.join(' / ')} Hero`;
 
-                const myFreq = cardFrequencies[lastAddedCard] || 0;
-                const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            const recData = recommendations.map(rec => {
+                const displayName = rec.name.replace(/_/g, ' ');
+                const data = cardDatabase[rec.name];
+                let targetCopies = 3;
 
-                let popAdj = "";
+                if (cardAverageCopies && cardAverageCopies[rec.name] && cardAverageCopies[rec.name].appearances > 0) {
+                    targetCopies = Math.round(cardAverageCopies[rec.name].total / cardAverageCopies[rec.name].appearances);
+                }
+                targetCopies = Math.min(targetCopies, spaceLeft, 4);
+                if (targetCopies < 1) targetCopies = 1;
 
-                if (myFreq > avgFreq * 3.0) {
-                    popAdj = pickRandom([
-                        "an absolute powerhouse",
-                        "a ridiculously popular",
-                        "an everywhere-all-at-once",
-                        "a top-tier, essential"
-                    ]);
-                } else if (myFreq > avgFreq * 1.8) {
-                    popAdj = pickRandom([
-                        "a super reliable",
-                        "a heavy-hitting, competitive",
-                        "a widely-used",
-                        "a trusty, go-to"
-                    ]);
-                } else if (myFreq > avgFreq * 0.8) {
-                    popAdj = pickRandom([
-                        "a solid, standard",
-                        "a completely reasonable",
-                        "a fair, middle-of-the-road",
-                        "an okay, everyday"
-                    ]);
-                } else if (myFreq > avgFreq * 0.3) {
-                    popAdj = pickRandom([
-                        "a pretty clunky, situational",
-                        "a definitely off-meta (and maybe a bit weak)",
-                        "a rarely played",
-                        "a somewhat questionable"
-                    ]);
-                } else {
-                    popAdj = pickRandom([
-                        "a bottom-of-the-barrel",
-                        "a straight-up desperate",
-                        "a very, uh... *brave*",
-                        "a highly unpopular (probably for a good reason)"
-                    ]);
+                return { name: rec.name, displayName, data, targetCopies };
+            });
+
+            // 1. Average play frequency → smart adjectives (unchanged)
+            let avgFreq = 1;
+            if (Object.keys(cardFrequencies).length > 0) {
+                const sumFreq = Object.values(cardFrequencies).reduce((a, b) => a + b, 0);
+                avgFreq = sumFreq / Object.keys(cardFrequencies).length;
+            }
+
+            let aiDialogue = "";
+
+            // 2. Contextual greeting based on last action (unchanged)
+            let comboTriggered = false;
+
+            if (lastAddedCard) {
+                const triggeredCombo = comboDictionary.find(combo =>
+                    combo.cards.includes(lastAddedCard) &&
+                    combo.cards.every(c => currentSeeds.some(s => s.name === c))
+                );
+
+                if (triggeredCombo) {
+                    let formattedMessage = triggeredCombo.message
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                    aiDialogue = formattedMessage + "<br><br>";
+                    comboTriggered = true;
                 }
 
-                if (currentSeeds.length === 1 && currentSeeds[0].count === getTotalCards()) {
-                    aiDialogue = `<strong>${lastNameClean}</strong> is ${popAdj} ${lastClass} card! <br><br>`;
-                } else if (activeClasses.size === 2 && !heroAnnounced) {
-                    aiDialogue = `This is now officially a <strong>${heroName}</strong> deck! <strong>${lastNameClean}</strong> adds some great synergy. <br><br>`;
-                    heroAnnounced = true;
-                } else {
-                    aiDialogue = `Adding <strong>${lastNameClean}</strong> gives us a great direction! <br><br>`;
+                if (!comboTriggered) {
+                    const lastNameClean = lastAddedCard.replace(/_/g, ' ');
+                    const lastCardData = cardDatabase[lastAddedCard];
+                    const lastClass = lastCardData ? lastCardData.Class : "Unknown";
+
+                    const myFreq = cardFrequencies[lastAddedCard] || 0;
+                    const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+                    let popAdj = "";
+
+                    if (myFreq > avgFreq * 3.0) {
+                        popAdj = pickRandom([
+                            "an absolute powerhouse",
+                            "a ridiculously popular",
+                            "an everywhere-all-at-once",
+                            "a top-tier, essential"
+                        ]);
+                    } else if (myFreq > avgFreq * 1.8) {
+                        popAdj = pickRandom([
+                            "a super reliable",
+                            "a heavy-hitting, competitive",
+                            "a widely-used",
+                            "a trusty, go-to"
+                        ]);
+                    } else if (myFreq > avgFreq * 0.8) {
+                        popAdj = pickRandom([
+                            "a solid, standard",
+                            "a completely reasonable",
+                            "a fair, middle-of-the-road",
+                            "an okay, everyday"
+                        ]);
+                    } else if (myFreq > avgFreq * 0.3) {
+                        popAdj = pickRandom([
+                            "a pretty clunky, situational",
+                            "a definitely off-meta (and maybe a bit weak)",
+                            "a rarely played",
+                            "a somewhat questionable"
+                        ]);
+                    } else {
+                        popAdj = pickRandom([
+                            "a bottom-of-the-barrel",
+                            "a straight-up desperate",
+                            "a very, uh... *brave*",
+                            "a highly unpopular (probably for a good reason)"
+                        ]);
+                    }
+
+                    if (currentSeeds.length === 1 && currentSeeds[0].count === getTotalCards()) {
+                        aiDialogue = `<strong>${lastNameClean}</strong> is ${popAdj} ${lastClass} card! <br><br>`;
+                    } else if (activeClasses.size === 2 && !heroAnnounced) {
+                        aiDialogue = `This is now officially a <strong>${heroName}</strong> deck! <strong>${lastNameClean}</strong> adds some great synergy. <br><br>`;
+                        heroAnnounced = true;
+                    } else {
+                        aiDialogue = `Adding <strong>${lastNameClean}</strong> gives us a great direction! <br><br>`;
+                    }
                 }
-            }
-        } else {
-            if (activeClasses.size === 2) {
-                aiDialogue = `This is a <strong>${heroName}</strong> deck! You have some great options from here.<br><br>`;
             } else {
-                aiDialogue = `You have some great options for this <strong>${currentFaction}</strong> deck! <br><br>`;
+                if (activeClasses.size === 2) {
+                    aiDialogue = `This is a <strong>${heroName}</strong> deck! You have some great options from here.<br><br>`;
+                } else {
+                    aiDialogue = `You have some great options for this <strong>${currentFaction}</strong> deck! <br><br>`;
+                }
             }
-        }
 
-        // 3. Suggestion sentence (unchanged)
-        if (recData.length >= 3) {
-            aiDialogue += `<strong>${recData[0].displayName}</strong> would fit really well here! My 2nd choice would be <strong>${recData[1].displayName}</strong>, and my 3rd choice is <strong>${recData[2].displayName}</strong>.`;
-        } else if (recData.length > 0) {
-            aiDialogue += `<strong>${recData[0].displayName}</strong> is my top recommendation to add next!`;
-        }
+            // 3. Suggestion sentence (unchanged)
+            if (recData.length >= 3) {
+                aiDialogue += `<strong>${recData[0].displayName}</strong> would fit really well here! My 2nd choice would be <strong>${recData[1].displayName}</strong>, and my 3rd choice is <strong>${recData[2].displayName}</strong>.`;
+            } else if (recData.length > 0) {
+                aiDialogue += `<strong>${recData[0].displayName}</strong> is my top recommendation to add next!`;
+            }
 
-        // 4. Render: speech bubble + staggered recommendation cards
-        let htmlString = daveSay(aiDialogue);
+            // 4. Render: speech bubble + staggered recommendation cards
+            let htmlString = daveSay(aiDialogue);
 
-        htmlString += `<div class="rec-row">`;
+            htmlString += `<div class="rec-row">`;
 
-        recData.forEach((rec, index) => {
-            const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+            recData.forEach((rec, index) => {
+                const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
 
-            htmlString += `
+                htmlString += `
             <div class="rec-card" style="--d: ${index * 70}ms;">
                 <span class="rec-badge ${index === 0 ? 'gold' : ''}">${badgeText}</span>
                 <img src="card_images/${rec.name}.png" alt="${rec.displayName}" title="${rec.displayName}"
@@ -4544,81 +4574,81 @@ function triggerAICoPilot() {
                     Add x${rec.targetCopies}
                 </button>
             </div>`;
-        });
-
-        htmlString += `</div>`;
-
-        chatFeed.innerHTML = htmlString;
-
-        chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const amount = parseInt(e.target.getAttribute('data-amount')) || 1;
-                addSeed(e.target.getAttribute('data-name'), e.target.getAttribute('data-class'), currentFaction, amount);
             });
-        });
 
-    }, 50);
-}
+            htmlString += `</div>`;
 
-// ------------------------------------------------------------
-// SWAP SUGGESTIONS — speech bubble edition
-// ------------------------------------------------------------
-function showSwapSuggestions(baseCardName) {
-    const chatFeed = document.getElementById('aiChatFeed');
-    if (!chatFeed) return;
+            chatFeed.innerHTML = htmlString;
 
-    // QoL toggle (unchanged)
-    if (window.activeSwapTarget === baseCardName) {
-        window.activeSwapTarget = null;
-        triggerAICoPilot();
-        return;
+            chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const amount = parseInt(e.target.getAttribute('data-amount')) || 1;
+                    addSeed(e.target.getAttribute('data-name'), e.target.getAttribute('data-class'), currentFaction, amount);
+                });
+            });
+
+        }, 50);
     }
-    window.activeSwapTarget = baseCardName;
 
-    const baseSeed = currentSeeds.find(c => c.name === baseCardName);
-    if (!baseSeed) return;
+    // ------------------------------------------------------------
+    // SWAP SUGGESTIONS — speech bubble edition
+    // ------------------------------------------------------------
+    function showSwapSuggestions(baseCardName) {
+        const chatFeed = document.getElementById('aiChatFeed');
+        if (!chatFeed) return;
 
-    const displayName = baseCardName.replace(/_/g, ' ');
-    initSynergyMatrix();
-
-    chatFeed.innerHTML = daveThinking(`Finding the best replacements for ${displayName}...`);
-
-    setTimeout(() => {
-        const replacements = getTopThreeRecommendations(baseCardName);
-
-        if (replacements.length === 0) {
-            chatFeed.innerHTML = daveSay(`I could not find any good replacements for <strong>${displayName}</strong>.`);
+        // QoL toggle (unchanged)
+        if (window.activeSwapTarget === baseCardName) {
+            window.activeSwapTarget = null;
+            triggerAICoPilot();
             return;
         }
+        window.activeSwapTarget = baseCardName;
 
-        // True baseline score of the current deck (unchanged)
-        const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
-        const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
-        const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
-        const baselineScore = baselineVerdict.score;
+        const baseSeed = currentSeeds.find(c => c.name === baseCardName);
+        if (!baseSeed) return;
 
-        let html = daveSay(`Here are the top alternatives for <strong>${displayName}</strong>:`);
-        html += `<div class="rec-row">`;
+        const displayName = baseCardName.replace(/_/g, ' ');
+        initSynergyMatrix();
 
-        replacements.forEach((rec, index) => {
-            const cardName = rec.name.replace(/_/g, ' ');
-            const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+        chatFeed.innerHTML = daveThinking(`Finding the best replacements for ${displayName}...`);
 
-            // Compare true percentage scores (unchanged)
-            const scoreDiff = Math.round(rec.score - baselineScore);
+        setTimeout(() => {
+            const replacements = getTopThreeRecommendations(baseCardName);
 
-            let comparisonText = "Equal";
-            let comparisonColor = "#9e9e9e";
-
-            if (scoreDiff > 0) {
-                comparisonText = `Better (+${scoreDiff}%)`;
-                comparisonColor = "#4CAF50";
-            } else if (scoreDiff < 0) {
-                comparisonText = `Worse (${scoreDiff}%)`;
-                comparisonColor = "#f44336";
+            if (replacements.length === 0) {
+                chatFeed.innerHTML = daveSay(`I could not find any good replacements for <strong>${displayName}</strong>.`);
+                return;
             }
 
-            html += `
+            // True baseline score of the current deck (unchanged)
+            const ctx = typeof getVerdictContext === "function" ? getVerdictContext() : {};
+            const currentDeckStrings = currentSeeds.map(s => `${s.count}x ${s.name}`);
+            const baselineVerdict = getDeckVerdictFromCards(currentDeckStrings, null, ctx);
+            const baselineScore = baselineVerdict.score;
+
+            let html = daveSay(`Here are the top alternatives for <strong>${displayName}</strong>:`);
+            html += `<div class="rec-row">`;
+
+            replacements.forEach((rec, index) => {
+                const cardName = rec.name.replace(/_/g, ' ');
+                const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+
+                // Compare true percentage scores (unchanged)
+                const scoreDiff = Math.round(rec.score - baselineScore);
+
+                let comparisonText = "Equal";
+                let comparisonColor = "#9e9e9e";
+
+                if (scoreDiff > 0) {
+                    comparisonText = `Better (+${scoreDiff}%)`;
+                    comparisonColor = "#4CAF50";
+                } else if (scoreDiff < 0) {
+                    comparisonText = `Worse (${scoreDiff}%)`;
+                    comparisonColor = "#f44336";
+                }
+
+                html += `
             <div class="rec-card" style="--d: ${index * 70}ms;">
                 <span class="rec-badge ${index === 0 ? 'gold' : ''}">${badgeText}</span>
                 <img src="card_images/${rec.name}.png" alt="${cardName}" title="${cardName}"
@@ -4628,21 +4658,21 @@ function showSwapSuggestions(baseCardName) {
                 </button>
                 <div class="rec-compare" style="color: ${comparisonColor};">${comparisonText}</div>
             </div>`;
-        });
-
-        html += `</div>`;
-        chatFeed.innerHTML = html;
-
-        chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const removeName = e.target.getAttribute('data-remove');
-                const addName = e.target.getAttribute('data-add');
-                applyFullSwap(removeName, addName);
             });
-        });
 
-    }, 50);
-}
+            html += `</div>`;
+            chatFeed.innerHTML = html;
+
+            chatFeed.querySelectorAll('.add-rec-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const removeName = e.target.getAttribute('data-remove');
+                    const addName = e.target.getAttribute('data-add');
+                    applyFullSwap(removeName, addName);
+                });
+            });
+
+        }, 50);
+    }
     function applyFullSwap(removeName, addName) {
         const removeSeed = currentSeeds.find(s => s.name === removeName);
         const addData = cardDatabase[addName];
@@ -6255,83 +6285,83 @@ function drawCurrentClassTiers() {
 }
 
 const guidesData = [
-  {
-    title: "Top 10 Best Decks in PvZH",
-    description: "A data-backed ranking of the strongest decks in the current meta.",
-    href: "/best-decks-pvzh-june-2026",
-    badge: "Most searched",
-    time: "6 min read",
-    date: "June 11, 2026",
-    icon: "stack"
-  },
-  {
-    title: "Best Immorticia Decks",
-    description: "Taking a look at the most powerful Immorticia decks.",
-    href: "/best-immorticia-decks",
-    badge: "Hero Guide", 
-    time: "4 min read",  
-    date: "June 12, 2026",
-    icon: "hero"          
-  },
-  {
-    title: "Top 10 Espresso Fiesta Decks",
-    description: "A breakdown of the highest-scoring decks featuring the Espresso Fiesta finisher.",
-    href: "/best-espresso-fiesta-decks",
-    badge: "Card Guide", 
-    time: "5 min read",  
-    date: "June 16, 2026",
-    icon: "book"          
-  },
-  {
-    title: "Top 10 Bad Moon Rising Decks",
-    description: "A showcase of the most chaotic and competitive decks relying on the Bad Moon Rising finisher.",
-    href: "/best-bad-moon-rising-decks",
-    badge: "Card Guide",
-    time: "5 min read",
-    date: "June 17, 2026",
-    icon: "book"
-  },
-  {
-    title: "Top 10 Budget Decks",
-    description: "A roundup of the highest-scoring, low-spark decks for players on a budget.",
-    href: "/best-budget-decks",
-    badge: "Budget Guide",
-    time: "5 min read",
-    date: "June 19, 2026",
-    icon: "budget"
-  },
-  {
-  title: "Best Decks for Every Hero in PvZH",
-  description: "A complete hero-by-hero guide to the best Plant and Zombie decks, including budget and maxed options.",
-  href: "/best-decks-for-every-hero",
-  badge: "Mega Guide",
-  time: "12 min read",
-  date: "June 20, 2026",
-  icon: "tiers"
-},
+    {
+        title: "Top 10 Best Decks in PvZH",
+        description: "A data-backed ranking of the strongest decks in the current meta.",
+        href: "/best-decks-pvzh-june-2026",
+        badge: "Most searched",
+        time: "6 min read",
+        date: "June 11, 2026",
+        icon: "stack"
+    },
+    {
+        title: "Best Immorticia Decks",
+        description: "Taking a look at the most powerful Immorticia decks.",
+        href: "/best-immorticia-decks",
+        badge: "Hero Guide",
+        time: "4 min read",
+        date: "June 12, 2026",
+        icon: "hero"
+    },
+    {
+        title: "Top 10 Espresso Fiesta Decks",
+        description: "A breakdown of the highest-scoring decks featuring the Espresso Fiesta finisher.",
+        href: "/best-espresso-fiesta-decks",
+        badge: "Card Guide",
+        time: "5 min read",
+        date: "June 16, 2026",
+        icon: "book"
+    },
+    {
+        title: "Top 10 Bad Moon Rising Decks",
+        description: "A showcase of the most chaotic and competitive decks relying on the Bad Moon Rising finisher.",
+        href: "/best-bad-moon-rising-decks",
+        badge: "Card Guide",
+        time: "5 min read",
+        date: "June 17, 2026",
+        icon: "book"
+    },
+    {
+        title: "Top 10 Budget Decks",
+        description: "A roundup of the highest-scoring, low-spark decks for players on a budget.",
+        href: "/best-budget-decks",
+        badge: "Budget Guide",
+        time: "5 min read",
+        date: "June 19, 2026",
+        icon: "budget"
+    },
+    {
+        title: "Best Decks for Every Hero in PvZH",
+        description: "A complete hero-by-hero guide to the best Plant and Zombie decks, including budget and maxed options.",
+        href: "/best-decks-for-every-hero",
+        badge: "Mega Guide",
+        time: "12 min read",
+        date: "June 20, 2026",
+        icon: "tiers"
+    },
 ];
 
 function guideIconSvg(type) {
-  // All icons standardized to a crisp 24x24 outline grid
-  const baseAttrs = 'class="guide-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-  
-  const icons = {
-    stack: `<svg ${baseAttrs}><path d="M7 3h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M3 7H2v10a2 2 0 0 0 2 2h10v-1"/></svg>`,
-    hero: `<svg ${baseAttrs}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-    budget: `<svg ${baseAttrs}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
-    tiers: `<svg ${baseAttrs}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-    book: `<svg ${baseAttrs}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
-    arrow: `<svg ${baseAttrs}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`
-  };
+    // All icons standardized to a crisp 24x24 outline grid
+    const baseAttrs = 'class="guide-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
 
-  return icons[type] || icons.stack;
+    const icons = {
+        stack: `<svg ${baseAttrs}><path d="M7 3h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M3 7H2v10a2 2 0 0 0 2 2h10v-1"/></svg>`,
+        hero: `<svg ${baseAttrs}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+        budget: `<svg ${baseAttrs}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
+        tiers: `<svg ${baseAttrs}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+        book: `<svg ${baseAttrs}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+        arrow: `<svg ${baseAttrs}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`
+    };
+
+    return icons[type] || icons.stack;
 }
 
 function renderGuides() {
-  const grid = document.getElementById("guidesGrid");
-  if (!grid) return;
+    const grid = document.getElementById("guidesGrid");
+    if (!grid) return;
 
-  grid.innerHTML = guidesData.map(guide => `
+    grid.innerHTML = guidesData.map(guide => `
     <a class="guide-card" href="${guide.href}">
       <div class="guide-top">
         <div class="guide-icon-wrap">
@@ -6354,14 +6384,14 @@ function renderGuides() {
     </a>
   `).join("");
 }
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const container = document.querySelector('.featured-decks-container');
     if (container) {
         const links = container.querySelectorAll('.featured-decks-link');
         if (links.length > 0) {
             // Choose a random index between 0 and the total number of links
             const randomIndex = Math.floor(Math.random() * links.length);
-            
+
             // Un-hide the chosen link
             links[randomIndex].classList.add('is-visible');
         }
