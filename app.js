@@ -6695,3 +6695,4 @@ document.addEventListener("DOMContentLoaded", renderGuides);
         if (e.key === 'Escape') closeMenu();
     });
 })();
+
