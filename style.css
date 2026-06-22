@@ -1623,7 +1623,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 /* AI Chat Feed specific styling */
 .ai-pane {
     position: relative;
-    max-height: 600px; /* Keep it contained */
+    max-height: min-content;
 }
 
 .ai-header {
