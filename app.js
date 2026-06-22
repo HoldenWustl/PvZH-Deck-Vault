@@ -6629,28 +6629,77 @@ function renderGuides() {
     const grid = document.getElementById("guidesGrid");
     if (!grid) return;
 
-    grid.innerHTML = guidesData.map(guide => `
-    <a class="guide-card" href="${guide.href}">
-      <div class="guide-top">
-        <div class="guide-icon-wrap">
-          ${guideIconSvg(guide.icon)}
-        </div>
-        <div class="guide-badge">${guide.badge}</div>
-      </div>
+    // 1. Sort all guides by date descending (Most recent first)
+    const sortedGuides = [...guidesData].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      <h3>${guide.title}</h3>
-      <p>${guide.description}</p>
+    // 2. Map structural icon identifiers to clean display categories
+    const categoryMapping = {
+        stack: "Meta & Core Tier Lists",
+        tiers: "Meta & Core Tier Lists",
+        hero: "Hero Strategy Guides",
+        book: "Card & Finisher Breakdowns",
+        budget: "Budget Archetypes"
+    };
 
-      <div class="guide-meta">
-        <div class="guide-meta-left">
-          <span class="guide-date">${guide.date}</span>
-          <span class="guide-separator">•</span>
-          <span class="guide-time">${guide.time}</span>
-        </div>
-        <div class="guide-arrow" aria-hidden="true">→</div>
-      </div>
-    </a>
-  `).join("");
+    // 3. Group the chronologically sorted guides into categories
+    const groupedGuides = {};
+    sortedGuides.forEach(guide => {
+        const categoryName = categoryMapping[guide.icon] || "General Resources";
+        if (!groupedGuides[categoryName]) {
+            groupedGuides[categoryName] = [];
+        }
+        groupedGuides[categoryName].push(guide);
+    });
+
+    // 4. Set an intentional sequence for how categories stack down the page
+    const categoryOrder = [
+        "Meta & Core Tier Lists",
+        "Hero Strategy Guides",
+        "Card & Finisher Breakdowns",
+        "Budget Archetypes"
+    ];
+
+    // 5. Generate structured HTML chunks
+    let htmlContent = "";
+
+    categoryOrder.forEach(category => {
+        const guidesInCat = groupedGuides[category];
+        
+        // If you haven't written a guide for this category yet, skip rendering the header entirely
+        if (!guidesInCat || guidesInCat.length === 0) return;
+
+        htmlContent += `
+            <div class="guide-category-group">
+                <h2 class="category-heading">${category}</h2>
+                <div class="category-cards-grid">
+                    ${guidesInCat.map(guide => `
+                        <a class="guide-card" href="${guide.href}">
+                            <div class="guide-top">
+                                <div class="guide-icon-wrap">
+                                    ${guideIconSvg(guide.icon)}
+                                </div>
+                                <div class="guide-badge">${guide.badge}</div>
+                            </div>
+
+                            <h3>${guide.title}</h3>
+                            <p>${guide.description}</p>
+
+                            <div class="guide-meta">
+                                <div class="guide-meta-left">
+                                    <span class="guide-date">${guide.date}</span>
+                                    <span class="guide-separator">•</span>
+                                    <span class="guide-time">${guide.time}</span>
+                                </div>
+                                <div class="guide-arrow" aria-hidden="true">→</div>
+                            </div>
+                        </a>
+                    `).join("")}
+                </div>
+            </div>
+        `;
+    });
+
+    grid.innerHTML = htmlContent;
 }
 document.addEventListener("DOMContentLoaded", function () {
     const container = document.querySelector('.featured-decks-container');

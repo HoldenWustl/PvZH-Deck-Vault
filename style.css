@@ -3974,3 +3974,34 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
         display: none !important;
     }
 }
+/* 1. Force the main container to drop its old grid layout */
+#guidesGrid {
+    display: block !important;
+    width: 100% !important;
+}
+
+/* 2. Force the new category sections to stack vertically */
+.guide-category-section {
+    display: block !important;
+    margin-bottom: 3.5rem !important;
+    width: 100% !important;
+}
+
+/* 3. Ensure category titles format correctly */
+.category-title {
+    display: block !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin-bottom: 1.5rem !important;
+    padding-left: 0.75rem !important;
+    border-left: 4px solid #00ffcc !important;
+}
+
+/* 4. Force the actual cards to use the grid layout inside their new containers */
+.category-cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+    gap: 1.5rem !important;
+    width: 100% !important;
+}
