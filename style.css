@@ -4005,3 +4005,45 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     gap: 1.5rem !important;
     width: 100% !important;
 }
+@media (max-width: 600px) {
+  .pvz-sheet .pvz-deck-side {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-auto-rows: 1fr !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .pvz-sheet .pvz-deck-side > * {
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Center the Rating / Sparks contents inside their cells */
+  .pvz-sheet .pvz-deck-side .pvz-deck-rating {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* Make the two buttons fill their cells and sit nicely */
+  .pvz-sheet .pvz-deck-side .pvz-analyze-deck-btn {
+    margin-top: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+.pvz-analyze-deck-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    font-weight: 600; /* Makes text pair nicely with thicker 2.5px vector strokes */
+}

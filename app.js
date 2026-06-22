@@ -673,166 +673,166 @@ document.addEventListener('DOMContentLoaded', () => {
         return top10;
     };
     window.getTopDecksForHero = function (targetHero, customCtx) {
-    // Fallback lookups for databases in global scope
-    const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
-    const cardDb = window.cardDatabase || (typeof cardDatabase !== 'undefined' ? cardDatabase : null);
+        // Fallback lookups for databases in global scope
+        const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
+        const cardDb = window.cardDatabase || (typeof cardDatabase !== 'undefined' ? cardDatabase : null);
 
-    if (!db) {
-        console.error("Error: 'fullDatabase' could not be found in the global scope.");
-        return [];
-    }
-    if (!cardDb) {
-        console.error("Error: 'cardDatabase' could not be found in the global scope.");
-        return [];
-    }
-    if (!targetHero) {
-        console.error("Error: You must provide a hero name (e.g., 'Rose', 'Rustbolt') as the first parameter.");
-        return [];
-    }
-
-    const heroMap = {
-        // Plants
-        "Mega-Grow,Smarty": "Green Shadow",
-        "Kabloom,Solar": "Solar Flare",
-        "Guardian,Solar": "Wall-Knight",
-        "Mega-Grow,Solar": "Chompzilla",
-        "Guardian,Kabloom": "Spudow",
-        "Guardian,Smarty": "Citron / Beta-Carrotina",
-        "Guardian,Mega-Grow": "Grass Knuckles",
-        "Kabloom,Smarty": "Nightcap",
-        "Kabloom,Mega-Grow": "Captain Combustible",
-        "Smarty,Solar": "Rose",
-
-        // Zombies
-        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
-        "Beastly,Hearty": "The Smash",
-        "Crazy,Sneaky": "Impfinity",
-        "Brainy,Hearty": "Rustbolt",
-        "Beastly,Crazy": "Electric Boogaloo",
-        "Beastly,Sneaky": "Brain Freeze",
-        "Brainy,Crazy": "Professor Brainstorm",
-        "Beastly,Brainy": "Immorticia",
-        "Crazy,Hearty": "Z-Mech",
-        "Hearty,Sneaky": "Neptuna"
-    };
-
-    const normalizedTarget = targetHero.trim().toLowerCase();
-    const matchingDecks = []; // Tracks all valid decks found for this hero
-    const seenDecks = new Set(); // Tracks unique deck compositions
-
-    for (const deckKey in db) {
-        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
-
-        const deck = db[deckKey];
-        if (!deck.upload_date || !deck.cards) continue;
-
-        try {
-            const activeCtx = customCtx || window.ctx || undefined;
-
-            // Track unique classes found within this specific deck
-            const uniqueClasses = new Set();
-
-            for (const cardRaw of deck.cards) {
-                let parsedCardName = cardRaw.trim();
-
-                // Strip quantity prefix (e.g., "4x " or "x4 ")
-                const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
-                if (match) {
-                    parsedCardName = match[2].trim();
-                }
-
-                // Create space and underscore variants to guarantee database hits
-                const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
-                const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
-
-                const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
-                if (cardData && cardData.Class) {
-                    uniqueClasses.add(cardData.Class.trim());
-                }
-            }
-
-            // Alphabetize the unique classes found to flawlessly align with heroMap keys
-            const classesArray = Array.from(uniqueClasses).sort();
-            const classesKey = classesArray.join(',');
-
-            const heroName = heroMap[classesKey];
-
-            // If it doesn't match a valid two-class combo, skip it
-            if (!heroName) continue;
-
-            // Check if the current deck's hero matches the requested parameter
-            if (!heroName.toLowerCase().includes(normalizedTarget)) continue;
-
-            // Create a unique signature for the deck based on its cards
-            const deckSignature = [...deck.cards]
-                .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
-                .sort()
-                .join('|');
-
-            // Prevent duplicate deck compositions from being evaluated
-            if (seenDecks.has(deckSignature)) {
-                continue;
-            }
-            seenDecks.add(deckSignature);
-
-            const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
-            const currentScore = parseFloat(verdict.score.toFixed(2));
-
-            // Push every matching deck object into the list
-            matchingDecks.push({
-                hero: heroName,
-                id: deckKey,
-                name: deck.name,
-                score: currentScore,
-                grade: verdict.grade,
-                cost: verdict.costLabel,
-                synergy: verdict.synergyScore,
-                power: verdict.powerScore,
-                consistency: verdict.consistencyScore,
-                date: deck.upload_date,
-                author: deck.credit || "Unknown",
-                cards: deck.cards
-            });
-
-        } catch (error) {
-            console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+        if (!db) {
+            console.error("Error: 'fullDatabase' could not be found in the global scope.");
+            return [];
         }
-    }
+        if (!cardDb) {
+            console.error("Error: 'cardDatabase' could not be found in the global scope.");
+            return [];
+        }
+        if (!targetHero) {
+            console.error("Error: You must provide a hero name (e.g., 'Rose', 'Rustbolt') as the first parameter.");
+            return [];
+        }
 
-    // Sort descending by score and slice the top 10 results
-    const topDecksArray = matchingDecks
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 10);
+        const heroMap = {
+            // Plants
+            "Mega-Grow,Smarty": "Green Shadow",
+            "Kabloom,Solar": "Solar Flare",
+            "Guardian,Solar": "Wall-Knight",
+            "Mega-Grow,Solar": "Chompzilla",
+            "Guardian,Kabloom": "Spudow",
+            "Guardian,Smarty": "Citron / Beta-Carrotina",
+            "Guardian,Mega-Grow": "Grass Knuckles",
+            "Kabloom,Smarty": "Nightcap",
+            "Kabloom,Mega-Grow": "Captain Combustible",
+            "Smarty,Solar": "Rose",
 
-    if (topDecksArray.length === 0) {
-        console.log(`%c No valid decks found for hero: "${targetHero}".`, "color: #ff9900; font-weight: bold;");
-    } else {
-        console.log(`%c--- TOP ${topDecksArray.length} DECKS FOR ${targetHero.toUpperCase()} ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+            // Zombies
+            "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
+            "Beastly,Hearty": "The Smash",
+            "Crazy,Sneaky": "Impfinity",
+            "Brainy,Hearty": "Rustbolt",
+            "Beastly,Crazy": "Electric Boogaloo",
+            "Beastly,Sneaky": "Brain Freeze",
+            "Brainy,Crazy": "Professor Brainstorm",
+            "Beastly,Brainy": "Immorticia",
+            "Crazy,Hearty": "Z-Mech",
+            "Hearty,Sneaky": "Neptuna"
+        };
 
-        // Map elements for console.table
-        console.table(topDecksArray.map((d, index) => ({
-            Rank: index + 1,
-            Hero: d.hero,
-            "Deck Name": d.name,
-            Score: d.score,
-            Grade: d.grade,
-            Synergy: d.synergy,
-            Power: d.power,
-            Consistency: d.consistency,
-            Author: d.author
-        })));
+        const normalizedTarget = targetHero.trim().toLowerCase();
+        const matchingDecks = []; // Tracks all valid decks found for this hero
+        const seenDecks = new Set(); // Tracks unique deck compositions
 
-        // Log out the full decklists with clean text separation
-        console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
+        for (const deckKey in db) {
+            if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
 
-        topDecksArray.forEach((d, index) => {
-            console.log(`%c#${index + 1} - ${d.hero}: ${d.name} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
-            console.log(d.cards.join("\n"));
-        });
-    }
+            const deck = db[deckKey];
+            if (!deck.upload_date || !deck.cards) continue;
 
-    return topDecksArray;
-};
+            try {
+                const activeCtx = customCtx || window.ctx || undefined;
+
+                // Track unique classes found within this specific deck
+                const uniqueClasses = new Set();
+
+                for (const cardRaw of deck.cards) {
+                    let parsedCardName = cardRaw.trim();
+
+                    // Strip quantity prefix (e.g., "4x " or "x4 ")
+                    const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+                    if (match) {
+                        parsedCardName = match[2].trim();
+                    }
+
+                    // Create space and underscore variants to guarantee database hits
+                    const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+                    const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
+
+                    const cardData = cardDb[keyWithUnderscores] || cardDb[keyWithSpaces] || cardDb[parsedCardName];
+                    if (cardData && cardData.Class) {
+                        uniqueClasses.add(cardData.Class.trim());
+                    }
+                }
+
+                // Alphabetize the unique classes found to flawlessly align with heroMap keys
+                const classesArray = Array.from(uniqueClasses).sort();
+                const classesKey = classesArray.join(',');
+
+                const heroName = heroMap[classesKey];
+
+                // If it doesn't match a valid two-class combo, skip it
+                if (!heroName) continue;
+
+                // Check if the current deck's hero matches the requested parameter
+                if (!heroName.toLowerCase().includes(normalizedTarget)) continue;
+
+                // Create a unique signature for the deck based on its cards
+                const deckSignature = [...deck.cards]
+                    .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
+                    .sort()
+                    .join('|');
+
+                // Prevent duplicate deck compositions from being evaluated
+                if (seenDecks.has(deckSignature)) {
+                    continue;
+                }
+                seenDecks.add(deckSignature);
+
+                const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+                const currentScore = parseFloat(verdict.score.toFixed(2));
+
+                // Push every matching deck object into the list
+                matchingDecks.push({
+                    hero: heroName,
+                    id: deckKey,
+                    name: deck.name,
+                    score: currentScore,
+                    grade: verdict.grade,
+                    cost: verdict.costLabel,
+                    synergy: verdict.synergyScore,
+                    power: verdict.powerScore,
+                    consistency: verdict.consistencyScore,
+                    date: deck.upload_date,
+                    author: deck.credit || "Unknown",
+                    cards: deck.cards
+                });
+
+            } catch (error) {
+                console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+            }
+        }
+
+        // Sort descending by score and slice the top 10 results
+        const topDecksArray = matchingDecks
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 10);
+
+        if (topDecksArray.length === 0) {
+            console.log(`%c No valid decks found for hero: "${targetHero}".`, "color: #ff9900; font-weight: bold;");
+        } else {
+            console.log(`%c--- TOP ${topDecksArray.length} DECKS FOR ${targetHero.toUpperCase()} ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
+
+            // Map elements for console.table
+            console.table(topDecksArray.map((d, index) => ({
+                Rank: index + 1,
+                Hero: d.hero,
+                "Deck Name": d.name,
+                Score: d.score,
+                Grade: d.grade,
+                Synergy: d.synergy,
+                Power: d.power,
+                Consistency: d.consistency,
+                Author: d.author
+            })));
+
+            // Log out the full decklists with clean text separation
+            console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
+
+            topDecksArray.forEach((d, index) => {
+                console.log(`%c#${index + 1} - ${d.hero}: ${d.name} (Score: ${d.score} | Grade: ${d.grade})`, "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;");
+                console.log(d.cards.join("\n"));
+            });
+        }
+
+        return topDecksArray;
+    };
     window.getTop10DecksForCard = function (targetCard, customCtx) {
         if (!targetCard || typeof targetCard !== 'string') {
             console.error("Error: Please provide a target card name as the first parameter (e.g., 'Teleport').");
@@ -1414,7 +1414,6 @@ document.addEventListener('DOMContentLoaded', () => {
             hero: globalBestHero
         };
     };
-    // --- Render Decks Function ---
 
     function pvzBuildAnalyzeDeck(deckInfo) {
         return (deckInfo.cards || []).map(cardRaw => {
@@ -1448,6 +1447,78 @@ document.addEventListener('DOMContentLoaded', () => {
                 count
             };
         });
+    }
+    let pvzAutoOpenDone = false;
+
+    // Order-independent canonical form so card order in the code doesn't matter.
+    function pvzCanonicalizeDeckCode(code) {
+        if (!code) return '';
+        return code.split('-').map(t => t.trim()).filter(Boolean).sort().join('-');
+    }
+
+    function pvzFindTileEl(deckKey, fallbackIndex) {
+        const safe = (window.CSS && CSS.escape) ? CSS.escape(deckKey) : deckKey;
+        const tile =
+            deckGrid.querySelector(`[data-deck-key="${safe}"]`) ||
+            deckGrid.querySelector(`[data-key="${safe}"]`) ||
+            deckGrid.querySelector(`[data-deck="${safe}"]`);
+        // Tiles are appended in pvzDeckCache key order, so position is a safe fallback.
+        return tile || deckGrid.children[fallbackIndex] || null;
+    }
+
+    function pvzOpenDeckFromUrl() {
+        const hash = (window.location.hash || '').replace(/^#/, '').trim();
+        if (hash !== '') return;
+
+        const targetCode = new URLSearchParams(window.location.search).get('deck');
+        if (!targetCode) return;
+
+        const target = pvzCanonicalizeDeckCode(targetCode);
+        if (!target) return;
+
+        if (typeof cardDatabase === 'undefined' || typeof pvzBuildAnalyzeDeck !== 'function') return;
+
+        // Build the dictionary + lookup map ONCE (the analyze button rebuilds it per click).
+        const cardDictionary = Object.keys(cardDatabase).sort();
+        const indexMap = new Map();
+        cardDictionary.forEach((name, i) => indexMap.set(name, i));
+
+        const encode = (deckInfo) => {
+            const deck = pvzBuildAnalyzeDeck(deckInfo);
+            const tokens = [];
+            for (const card of deck) {
+                const index = indexMap.get(card.name);
+                if (index === undefined) return null;            // unknown card -> can't match
+                const cardIndex = index.toString(36);
+                tokens.push(card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`);
+            }
+            return tokens.join('-');
+        };
+
+        const keys = Object.keys(pvzDeckCache);
+        let fallbackKey = null, fallbackIdx = -1;
+
+        for (let i = 0; i < keys.length; i++) {
+            const deckKey = keys[i];
+            const rd = pvzDeckCache[deckKey];
+            if (!rd || !rd.deckInfo) continue;
+
+            const code = encode(rd.deckInfo);
+            if (!code || pvzCanonicalizeDeckCode(code) !== target) continue;
+
+            // Prefer the "real" deck if the same list exists more than once.
+            if (!rd.isDup) {
+                pvzOpenSheet(deckKey, pvzFindTileEl(deckKey, i));
+                return;
+            }
+            if (fallbackKey === null) { fallbackKey = deckKey; fallbackIdx = i; }
+        }
+
+        if (fallbackKey !== null) {
+            pvzOpenSheet(fallbackKey, pvzFindTileEl(fallbackKey, fallbackIdx));
+        } else {
+            console.warn('[pvz] No deck matched the URL deck code:', targetCode);
+        }
     }
     let pvzDeckCache = {};     // deckKey -> data the sheet needs (rebuilt each render)
     let pvzActiveTile = null;  // the tile we opened from, so we can fly back on close
@@ -1713,6 +1784,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (gamesBtn) gamesBtn.disabled = false;
 
             pvzBindGrid();
+            // Auto-open a deck when the page is loaded with ?deck=... and NOT #crafter
+            if (!pvzAutoOpenDone) {
+                pvzAutoOpenDone = true;
+                pvzOpenDeckFromUrl();
+            }
         }, 50);
     }
 
@@ -1854,8 +1930,21 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <button id="pvzAnalyzeDeckBtn" class="pvz-analyze-deck-btn" type="button" style="margin-top: 6px;">
-          Analyze Deck
-        </button>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0;">
+    <path d="m12 14 4-4"/>
+    <path d="M3.34 19a10 10 0 1 1 17.32 0"/>
+  </svg>
+  Analyze Deck
+</button>
+
+<button id="pvzShareDeckBtn" class="pvz-analyze-deck-btn" type="button" style="margin-top: 6px;">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0;">
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+    <polyline points="16 6 12 2 8 6"/>
+    <line x1="12" y1="2" x2="12" y2="15"/>
+  </svg>
+  Share Link
+</button>
 
       </div>
 
@@ -1897,7 +1986,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = analyzeUrl;
             };
         }
+        const shareBtn = overlay.querySelector('#pvzShareDeckBtn');
 
+        if (shareBtn) {
+            shareBtn.onclick = function (e) {
+                e.stopPropagation();
+
+                const deckToShare = pvzBuildAnalyzeDeck(deckInfo);
+                const cardDictionary = Object.keys(cardDatabase).sort();
+
+                const encodedCards = deckToShare.map(card => {
+                    const index = cardDictionary.indexOf(card.name);
+                    if (index === -1) {
+                        console.error(`🚨 Could not find card in dictionary: ${card.name}`);
+                        return null;
+                    }
+                    const cardIndex = index.toString(36);
+                    return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
+                });
+
+                if (encodedCards.includes(null)) {
+                    alert("Could not share this deck because one or more cards could not be found.");
+                    return;
+                }
+
+                const minimalDeckString = encodedCards.join('-');
+                // No #crafter — bare link so it auto-opens the panel on the home screen.
+                const shareUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}`;
+
+                const originalText = shareBtn.textContent;
+                const flash = (msg) => {
+                    shareBtn.textContent = msg;
+                    shareBtn.disabled = true;
+                    setTimeout(() => {
+                        shareBtn.textContent = originalText;
+                        shareBtn.disabled = false;
+                    }, 1500);
+                };
+
+                const fallbackCopy = () => {
+                    const ta = document.createElement('textarea');
+                    ta.value = shareUrl;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    let ok = false;
+                    try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+                    document.body.removeChild(ta);
+                    flash(ok ? 'Copied!' : 'Copy failed');
+                };
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(shareUrl)
+                        .then(() => flash('Copied!'))
+                        .catch(fallbackCopy);
+                } else {
+                    fallbackCopy();
+                }
+            };
+        }
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
 
@@ -1932,94 +2081,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
         overlay.querySelector('.pvz-sheet-close').focus();
     }
-    window.calculateDeckSparkStats = function() {
-  if (typeof pvzDeckCache === 'undefined' || typeof cardDatabase === 'undefined') {
-    console.error("🚨 pvzDeckCache or cardDatabase is not available.");
-    return null;
-  }
+    window.calculateDeckSparkStats = function () {
+        if (typeof pvzDeckCache === 'undefined' || typeof cardDatabase === 'undefined') {
+            console.error("🚨 pvzDeckCache or cardDatabase is not available.");
+            return null;
+        }
 
-  const rarityCosts = {
-    'common': 0,
-    'basic': 0,
-    'uncommon': 50,
-    'rare': 250,
-    'super rare': 1000,
-    'super-rare': 1000,
-    'event': 1000,
-    'legendary': 4000
-  };
+        const rarityCosts = {
+            'common': 0,
+            'basic': 0,
+            'uncommon': 50,
+            'rare': 250,
+            'super rare': 1000,
+            'super-rare': 1000,
+            'event': 1000,
+            'legendary': 4000
+        };
 
-  const sparkTotals = [];
+        const sparkTotals = [];
 
-  // 1. Calculate sparks for every deck in the cache
-  for (const rd of Object.values(pvzDeckCache)) {
-    if (!rd.deckInfo || !rd.deckInfo.cards) continue;
+        // 1. Calculate sparks for every deck in the cache
+        for (const rd of Object.values(pvzDeckCache)) {
+            if (!rd.deckInfo || !rd.deckInfo.cards) continue;
 
-    let totalSparks = 0;
-    
-    for (const cardString of rd.deckInfo.cards) {
-      const m = cardString.trim().match(/^x(\d+)\s+(.+)$/i);
-      let count = 1, raw = cardString;
-      if (m) { count = parseInt(m[1], 10); raw = m[2]; }
-      const db = raw.replace(/ /g, '_');
+            let totalSparks = 0;
 
-      if (cardDatabase[db]) {
-        const rarity = (cardDatabase[db].Rarity || '').toLowerCase();
-        totalSparks += (rarityCosts[rarity] || 0) * count;
-      }
-    }
-    
-    sparkTotals.push(totalSparks);
-  }
+            for (const cardString of rd.deckInfo.cards) {
+                const m = cardString.trim().match(/^x(\d+)\s+(.+)$/i);
+                let count = 1, raw = cardString;
+                if (m) { count = parseInt(m[1], 10); raw = m[2]; }
+                const db = raw.replace(/ /g, '_');
 
-  if (sparkTotals.length === 0) {
-    console.warn("No decks found to calculate.");
-    return null;
-  }
+                if (cardDatabase[db]) {
+                    const rarity = (cardDatabase[db].Rarity || '').toLowerCase();
+                    totalSparks += (rarityCosts[rarity] || 0) * count;
+                }
+            }
 
-  // 2. Sort the array numerically to calculate stats
-  sparkTotals.sort((a, b) => a - b);
+            sparkTotals.push(totalSparks);
+        }
 
-  // Helper function to find the median of an array
-  const getMedian = (arr) => {
-    if (arr.length === 0) return 0;
-    const mid = Math.floor(arr.length / 2);
-    return arr.length % 2 !== 0 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
-  };
+        if (sparkTotals.length === 0) {
+            console.warn("No decks found to calculate.");
+            return null;
+        }
 
-  // 3. Calculate statistics
-  const totalDecks = sparkTotals.length;
-  const mean = sparkTotals.reduce((sum, val) => sum + val, 0) / totalDecks;
-  const median = getMedian(sparkTotals);
-  
-  // To find Q1 and Q3, split the array in half
-  const midIndex = Math.floor(totalDecks / 2);
-  const lowerHalf = sparkTotals.slice(0, midIndex);
-  
-  // If odd, exclude the exact middle value from both halves
-  const upperHalf = totalDecks % 2 === 0 
-    ? sparkTotals.slice(midIndex) 
-    : sparkTotals.slice(midIndex + 1);
+        // 2. Sort the array numerically to calculate stats
+        sparkTotals.sort((a, b) => a - b);
 
-  const q1 = getMedian(lowerHalf);
-  const q3 = getMedian(upperHalf);
+        // Helper function to find the median of an array
+        const getMedian = (arr) => {
+            if (arr.length === 0) return 0;
+            const mid = Math.floor(arr.length / 2);
+            return arr.length % 2 !== 0 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
+        };
 
-  // 4. Format the final output
-  const stats = {
-    "Total Decks": totalDecks,
-    "Min Sparks": sparkTotals[0],
-    "Q1 (25th %)": q1,
-    "Median (50th %)": median,
-    "Mean (Average)": Math.round(mean),
-    "Q3 (75th %)": q3,
-    "Max Sparks": sparkTotals[totalDecks - 1]
-  };
+        // 3. Calculate statistics
+        const totalDecks = sparkTotals.length;
+        const mean = sparkTotals.reduce((sum, val) => sum + val, 0) / totalDecks;
+        const median = getMedian(sparkTotals);
 
-  // Log as a clean visual table in the console
-  console.table(stats);
+        // To find Q1 and Q3, split the array in half
+        const midIndex = Math.floor(totalDecks / 2);
+        const lowerHalf = sparkTotals.slice(0, midIndex);
 
-  return stats;
-};
+        // If odd, exclude the exact middle value from both halves
+        const upperHalf = totalDecks % 2 === 0
+            ? sparkTotals.slice(midIndex)
+            : sparkTotals.slice(midIndex + 1);
+
+        const q1 = getMedian(lowerHalf);
+        const q3 = getMedian(upperHalf);
+
+        // 4. Format the final output
+        const stats = {
+            "Total Decks": totalDecks,
+            "Min Sparks": sparkTotals[0],
+            "Q1 (25th %)": q1,
+            "Median (50th %)": median,
+            "Mean (Average)": Math.round(mean),
+            "Q3 (75th %)": q3,
+            "Max Sparks": sparkTotals[totalDecks - 1]
+        };
+
+        // Log as a clean visual table in the console
+        console.table(stats);
+
+        return stats;
+    };
     function pvzCloseSheet(overlay) {
         const sheet = overlay.querySelector('.pvz-sheet');
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2544,7 +2693,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imgEl.alt = `${deck.name || deck.youtube_title || 'Deck'} thumbnail`;
             linkEl.href = deck.youtube_url || "#";
         }
-        
+
 
         // Prepare Data for Charts 
         const topCopied = Object.entries(cardCopies).sort((a, b) => b[1] - a[1]);
@@ -3178,107 +3327,107 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             // --- Mana Cost Distribution (smooth KDE over all decks) ---
-        const manaCanvas = document.getElementById('manaDistributionChart');
-        if (manaCanvas && allAvgCosts.length > 1) {
-            const data = allAvgCosts;
-            const n = data.length;
-            const minVal = Math.min(...data);
-            const maxVal = Math.max(...data);
+            const manaCanvas = document.getElementById('manaDistributionChart');
+            if (manaCanvas && allAvgCosts.length > 1) {
+                const data = allAvgCosts;
+                const n = data.length;
+                const minVal = Math.min(...data);
+                const maxVal = Math.max(...data);
 
-            const mean = data.reduce((a, b) => a + b, 0) / n;
-            const std = Math.sqrt(data.reduce((a, b) => a + (b - mean) ** 2, 0) / n);
+                const mean = data.reduce((a, b) => a + b, 0) / n;
+                const std = Math.sqrt(data.reduce((a, b) => a + (b - mean) ** 2, 0) / n);
 
-            const sorted = [...data].sort((a, b) => a - b);
-            const quantile = (q) => {
-                const pos = (sorted.length - 1) * q;
-                const base = Math.floor(pos);
-                const rest = pos - base;
-                return sorted[base + 1] !== undefined
-                    ? sorted[base] + rest * (sorted[base + 1] - sorted[base])
-                    : sorted[base];
-            };
-            const iqr = quantile(0.75) - quantile(0.25);
+                const sorted = [...data].sort((a, b) => a - b);
+                const quantile = (q) => {
+                    const pos = (sorted.length - 1) * q;
+                    const base = Math.floor(pos);
+                    const rest = pos - base;
+                    return sorted[base + 1] !== undefined
+                        ? sorted[base] + rest * (sorted[base + 1] - sorted[base])
+                        : sorted[base];
+                };
+                const iqr = quantile(0.75) - quantile(0.25);
 
-            const spread = iqr > 0 ? Math.min(std, iqr / 1.34) : std;
-            let bandwidth = 1.06 * spread * Math.pow(n, -1 / 5);
-            if (!bandwidth || bandwidth <= 0) bandwidth = (maxVal - minVal) / 20 || 0.1;
+                const spread = iqr > 0 ? Math.min(std, iqr / 1.34) : std;
+                let bandwidth = 1.06 * spread * Math.pow(n, -1 / 5);
+                if (!bandwidth || bandwidth <= 0) bandwidth = (maxVal - minVal) / 20 || 0.1;
 
-            // Reference window = histogram-style bin width (scale-independent → clean "# of decks" axis)
-            const numBins = Math.min(30, Math.max(10, Math.round(Math.sqrt(n))));
-            const refWindow = (maxVal - minVal) > 0 ? (maxVal - minVal) / numBins : bandwidth;
-            const invH = 1 / bandwidth;
+                // Reference window = histogram-style bin width (scale-independent → clean "# of decks" axis)
+                const numBins = Math.min(30, Math.max(10, Math.round(Math.sqrt(n))));
+                const refWindow = (maxVal - minVal) > 0 ? (maxVal - minVal) / numBins : bandwidth;
+                const invH = 1 / bandwidth;
 
-            const STEPS = 200;
-            const pad = bandwidth * 3;
-            const lo = Math.max(0, minVal - pad);
-            const hi = maxVal + pad;
-            const step = (hi - lo) / STEPS;
+                const STEPS = 200;
+                const pad = bandwidth * 3;
+                const lo = Math.max(0, minVal - pad);
+                const hi = maxVal + pad;
+                const step = (hi - lo) / STEPS;
 
-            const manaPoints = [];
-            for (let i = 0; i <= STEPS; i++) {
-                const x = lo + i * step;
-                let sum = 0;
-                for (let j = 0; j < n; j++) {
-                    const u = (x - data[j]) * invH;
-                    sum += Math.exp(-0.5 * u * u);
+                const manaPoints = [];
+                for (let i = 0; i <= STEPS; i++) {
+                    const x = lo + i * step;
+                    let sum = 0;
+                    for (let j = 0; j < n; j++) {
+                        const u = (x - data[j]) * invH;
+                        sum += Math.exp(-0.5 * u * u);
+                    }
+                    const y = (sum / n) / (Math.sqrt(2 * Math.PI) * bandwidth) * n * refWindow;
+                    manaPoints.push({ x, y });
                 }
-                const y = (sum / n) / (Math.sqrt(2 * Math.PI) * bandwidth) * n * refWindow;
-                manaPoints.push({ x, y });
-            }
 
-            const avgMana = mean;
+                const avgMana = mean;
 
-            charts.manaDistribution = new Chart(manaCanvas.getContext('2d'), {
-                type: 'line',
-                data: {
-                    datasets: [{
-                        label: 'Decks',
-                        data: manaPoints,
-                        borderColor: '#3fb950',
-                        backgroundColor: 'rgba(63, 185, 80, 0.2)',
-                        borderWidth: 3,
-                        tension: 0,
-                        fill: true,
-                        pointRadius: 0,
-                        pointHoverRadius: 4,
-                        pointHoverBackgroundColor: '#2ea043'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    scales: {
-                        x: {
-                            type: 'linear',
-                            grid: { color: gridColor },
-                            ticks: {
-                                color: textColor,
-                                maxTicksLimit: 8,
-                                callback: (value) => value.toFixed(2)
-                            },
-                            title: { display: true, text: 'Average Mana Cost', color: textColor }
-                        },
-                        y: {
-                            grid: { color: gridColor },
-                            ticks: { color: textColor, precision: 0 },
-                            beginAtZero: true,
-                            title: { display: true, text: '# of Decks', color: textColor }
-                        }
+                charts.manaDistribution = new Chart(manaCanvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: 'Decks',
+                            data: manaPoints,
+                            borderColor: '#3fb950',
+                            backgroundColor: 'rgba(63, 185, 80, 0.2)',
+                            borderWidth: 3,
+                            tension: 0,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            pointHoverBackgroundColor: '#2ea043'
+                        }]
                     },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                title: (items) => `${items[0].parsed.x.toFixed(2)} avg mana`,
-                                label: (ctx) => ` ~${Math.round(ctx.parsed.y)} decks nearby`,
-                                footer: () => `Avg: ${avgMana.toFixed(2)} mana`
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                grid: { color: gridColor },
+                                ticks: {
+                                    color: textColor,
+                                    maxTicksLimit: 8,
+                                    callback: (value) => value.toFixed(2)
+                                },
+                                title: { display: true, text: 'Average Mana Cost', color: textColor }
+                            },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor, precision: 0 },
+                                beginAtZero: true,
+                                title: { display: true, text: '# of Decks', color: textColor }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: (items) => `${items[0].parsed.x.toFixed(2)} avg mana`,
+                                    label: (ctx) => ` ~${Math.round(ctx.parsed.y)} decks nearby`,
+                                    footer: () => `Avg: ${avgMana.toFixed(2)} mana`
+                                }
                             }
                         }
                     }
-                }
-            });
-        }
+                });
+            }
         }
         // --- CHART 6.5: Hot & Cold Trending Cards ---
         const trendingCanvas = document.getElementById('trendingCardsChart');
@@ -6664,7 +6813,7 @@ function renderGuides() {
 
     categoryOrder.forEach(category => {
         const guidesInCat = groupedGuides[category];
-        
+
         // If you haven't written a guide for this category yet, skip rendering the header entirely
         if (!guidesInCat || guidesInCat.length === 0) return;
 
