@@ -1983,7 +1983,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const analyzeUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}#crafter`;
 
                 console.log("Encoding complete. Target URL:", analyzeUrl);
+                const sameQuery = window.location.search === `?deck=${minimalDeckString}`;
+
                 window.location.href = analyzeUrl;
+
+                if (sameQuery) {
+                    window.location.reload();
+                }
             };
         }
         const shareBtn = overlay.querySelector('#pvzShareDeckBtn');
