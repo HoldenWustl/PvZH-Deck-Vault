@@ -4047,3 +4047,16 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     gap: 8px !important;
     font-weight: 600; /* Makes text pair nicely with thicker 2.5px vector strokes */
 }
+
+.set5-easter-egg {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+}
+
+.set5-easter-egg:hover,
+.set5-easter-egg:visited,
+.set5-easter-egg:active {
+  color: inherit;
+  text-decoration: none;
+}
