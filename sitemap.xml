@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
     <loc>https://pvzhvault.com/</loc>
@@ -9,11 +9,6 @@
   <url>
     <loc>https://pvzhvault.com/best-decks-for-every-hero/</loc>
     <lastmod>2026-06-20</lastmod>
-  </url>
-
-  <url>
-    <loc>https://pvzhvault.com/best-rose-decks/</loc>
-    <lastmod>2026-06-22</lastmod>
   </url>
 
   <url>
@@ -41,4 +36,8 @@
     <lastmod>2026-06-20</lastmod>
   </url>
 
+  <url>
+    <loc>https://pvzhvault.com/is-set-5-out-yet/</loc>
+    <lastmod>2026-06-23</lastmod>
+  </url>
 </urlset>
