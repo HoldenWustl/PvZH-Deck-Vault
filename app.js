@@ -6762,6 +6762,15 @@ const guidesData = [
         date: "June 22, 2026",
         icon: "hero"
     },
+    {
+        title: "Best Nightcap Decks",
+        description: "Exploring the most effective Nightcap decks, featuring aggressive swarm and devastating Cyclecap strategies.",
+        href: "/best-nightcap-decks",
+        badge: "Hero Guide",
+        time: "4 min read",
+        date: "June 24, 2026",
+        icon: "hero"
+    }
 ];
 
 function guideIconSvg(type) {
