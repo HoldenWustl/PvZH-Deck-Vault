@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modal Elements
     const infoModal = document.getElementById('infoModal');
-    const infoBtn = document.getElementById('infoBtn');
+    
     const closeModal = document.getElementById('closeModal');
 
     // View/Tab Elements
@@ -2343,12 +2343,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Modal Logic ---
-    infoBtn.addEventListener('click', () => infoModal.style.display = 'block');
-    closeModal.addEventListener('click', () => infoModal.style.display = 'none');
-    window.addEventListener('click', (event) => {
-        if (event.target === infoModal) infoModal.style.display = 'none';
-    });
+    
 
 
     // NEW: Listen for when the user changes the dropdown

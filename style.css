@@ -265,7 +265,6 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 .highlight {
     color: var(--accent);
     font-weight: bold;
-    font-size: 1.2rem;
 }
 
 /* =========================================

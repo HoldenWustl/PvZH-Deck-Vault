@@ -28,8 +28,8 @@
     <header>
         <div class="header-content">
             <h1>PvZH Deck Builder & Database</h1>
-            <p>Browsing <span id="deckCount" class="highlight">...</span> <span id="randomAdjective">glorious</span> PvZ
-                Heroes decks <button id="infoBtn" class="info-btn">?</button></p>
+            <p>With <span id="deckCount" class="highlight">...</span> <span id="randomAdjective">glorious</span> PvZ
+                Heroes decks</p>
             <p class="last-updated">
   Last updated:
   <a class="set5-easter-egg" href="/is-set-5-out-yet/" aria-label="Is Set 5 out yet?">
@@ -1158,32 +1158,7 @@
 
     </main>
 
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>How was this made? 🤓</h2>
-                <span class="close-btn" id="closeModal">&times;</span>
-            </div>
-
-            <div class="modal-body">
-                <p>This database wasn't typed by hand! All deck lists were extracted automatically using computer
-                    vision, written in Python.</p>
-                <ul>
-                    <li><strong>The Cards:</strong> Scraped directly from YouTube video screenshots by isolating the
-                        card slots and reading the counts.</li>
-                    <li><strong>The Names:</strong> Grabbed by applying color-masking to the deck title
-                        banners.</li>
-                    <li><strong>The Videos:</strong> Matched directly to FryEmUp's YouTube channels using script
-                        automation to pull the links and titles.</li>
-                    <li><strong>The Images:</strong> Pulled from the PvZ Fandom Wiki infoboxes.</li>
-                    <li><strong>The Card Data:</strong> To make all the beautiful stats work, the base game data was
-                        sourced from <a href="https://github.com/dannyguy253/PvZHeroes-Database" target="_blank"
-                            style="color: #58a6ff; text-decoration: none;">this repo</a>
-                        and modified into JSON files.</li>
-                </ul>
-            </div>
-        </div>
-    </div>
+    
     <div id="deckVisualModal" class="deck-modal hidden">
         <div class="deck-modal-content">
             <span class="close-modal-btn">&times;</span>
