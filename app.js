@@ -453,21 +453,23 @@ document.addEventListener('DOMContentLoaded', () => {
         else costLabel = "P2W";
 
         // --- Synergy ---
-        let synergyScore = 0;
-        if (totalCards > 0 && seeds.length > 1) {
-            const rawAvg = totalConnection / totalCards;
-            const depthAvg = totalDepth / totalCards;
+let synergyScore = 0;
+if (totalCards > 0 && seeds.length > 1) {
+    const rawAvg = totalConnection / totalCards;
+    const depthAvg = totalDepth / totalCards;
 
-            synergyScore = Math.min(100, Math.round(rawAvg * 100));
+    // 1. Normalize depthAvg between a lower bound (0.40) and upper bound (0.85)
+    const t = Math.max(0, Math.min(1, (depthAvg - 0.40) / (0.9 - 0.40)));
 
-            // Only the very top end is harder now
-            // 100 requires stronger 2-level support
-            if (synergyScore >= 98) {
-                if (depthAvg < 0.55) synergyScore = 97;
-                else if (depthAvg < 0.70) synergyScore = 98;
-                else if (depthAvg < 0.85) synergyScore = 99;
-                else synergyScore = 100;
-            }
+    // 2. Apply a cubic smoothstep equation for natural easing
+    const depthFactor = t * t * (3 - 2 * t);
+
+    // 3. Set a dynamic ceiling for the score that scales smoothly from 90 to 100
+    const maxScoreLimit = 90 + (10 * depthFactor);
+
+    // 4. Calculate base score and clamp it against our new smooth limit
+    const baseScore = rawAvg * 100;
+    synergyScore = Math.round(Math.min(baseScore, maxScoreLimit));
 
             if (totalCards < 6) {
                 synergyScore = Math.round(synergyScore * (totalCards / 6));
@@ -499,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rawRatio = metaCopies / ctx.maxMetaCopies;
                 totalPowerPoints += Math.pow(rawRatio, curveFactor) * 100 * seed.count;
             });
-            powerScore = Math.min(100, Math.round((totalPowerPoints * 2.75) / totalCards));
+            powerScore = Math.min(100, Math.round((totalPowerPoints * 2.7) / totalCards));
         }
 
         // --- Curve health (full archetype envelope, like the live builder) ---
