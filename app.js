@@ -5655,7 +5655,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 // 6. Draw Modern Watermark (Pill Shape)
-                const wmText = 'PvZH Vault · pvzhvault.com';
+                const wmText = 'pvzhvault.com';
                 ctx.font = 'bold 15px "Segoe UI", sans-serif';
                 const wmTextWidth = ctx.measureText(wmText).width;
 
