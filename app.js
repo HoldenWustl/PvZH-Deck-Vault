@@ -6765,7 +6765,16 @@ const guidesData = [
         time: "4 min read",
         date: "June 24, 2026",
         icon: "hero"
-    }
+    },
+    {
+    title: "Best Solar Flare Decks",
+    description: "A guide to the strongest Solar Flare decks, from budget aggro builds to powerful Pineclone and late-game finishers.",
+    href: "/best-solar-flare-decks",
+    badge: "Hero Guide",
+    time: "5 min read",
+    date: "June 25, 2026",
+    icon: "hero"
+}
 ];
 
 function guideIconSvg(type) {
