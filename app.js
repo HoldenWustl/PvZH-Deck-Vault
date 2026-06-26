@@ -5828,8 +5828,7 @@ function generateDeckName(deck, isPlant) {
     return name
         .replace(/_/g, ' ')
         .trim()
-        .replace(/[\s-]+/g, '_')
-        .toLowerCase();
+        .replace(/[\s-]+/g, '_');
 }
 
 function loadCanvasImage(srcs) {
