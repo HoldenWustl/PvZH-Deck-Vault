@@ -5412,76 +5412,368 @@ if (totalCards > 0 && seeds.length > 1) {
         return workingDeck;
     }
 
-    // --- 6. NAMING & COPY LOGIC ---
-    function generateDeckName(deck, isPlant) {
-        if (!deck || deck.length === 0) return isPlant ? "Plant Deck" : "Zombie Deck";
-
-        // 1. Cleaner, mechanic-focused prefixes instead of cheesy adjectives
-        const plantPrefixes = ["Green", "Bloom", "Thicket", "Solar", "Savage", "Root", "Petal", "Timber"];
-        const zombiePrefixes = ["Grave", "Brain", "Scrap", "Tech", "Doom", "Bolt", "Plague", "Rust"];
-        const neutralPrefixes = ["Turbo", "Heavy", "Classic", "Greedy", "Miracle", "Tempo", "Core", "Value"];
-
-        // 2. Real CCG archetype nouns
-        const aggroNouns = ["Rush", "Swarm", "Burn", "Zoo", "Face", "Blitz", "Beatdown"];
-        const midNouns = ["Midrange", "Tempo", "Stompy", "Goodstuff", "Engine", "Flex", "Company"];
-        const controlNouns = ["Control", "Ramp", "Grinder", "Stall", "Prison", "Endgame", "Attrition"];
-
-        // 3. SMART SIGNATURE CARDS: Find the top 2 highest (cost * count) cards
-        // This allows for "Card A / Card B" formats.
-        const sortedDeck = [...deck].sort((a, b) => (b.count * b.cost) - (a.count * a.cost));
-
-        const cleanName = (name) => name.replace(/_/g, ' ').replace(/^The /i, '');
-
-        const sigCard1 = cleanName(sortedDeck[0].name);
-        // Fallback to sigCard1 if the deck only has 1 unique card in it
-        const sigCard2 = sortedDeck.length > 1 ? cleanName(sortedDeck[1].name) : sigCard1;
-
-        // 4. ARCHETYPE DETECTION: Calculate average cost
-        let totalCost = 0;
-        let totalCards = 0;
-        deck.forEach(c => {
-            totalCost += (c.cost * c.count);
-            totalCards += c.count;
-        });
-        const avgCost = totalCost / (totalCards || 1);
-
-        // Pick the noun pool and a baseline archetype name based on deck speed
-        let nounPool = midNouns;
-        let baseArchetype = "Midrange";
-
-        if (avgCost <= 2.8) {
-            nounPool = aggroNouns;
-            baseArchetype = "Aggro";
-        } else if (avgCost >= 4.0) {
-            nounPool = controlNouns;
-            baseArchetype = "Control";
-        }
-
-        // 5. GENERATION
-        const factionPrefixes = isPlant ? plantPrefixes : zombiePrefixes;
-        const prefix = factionPrefixes[Math.floor(Math.random() * factionPrefixes.length)];
-        const neutral = neutralPrefixes[Math.floor(Math.random() * neutralPrefixes.length)];
-        const noun = nounPool[Math.floor(Math.random() * nounPool.length)];
-
-        // Serious, community-style CCG formats
-        const formats = [
-            `${sigCard1} ${noun}`,                     // e.g., Valkyrie Burn
-            `${prefix} ${sigCard1}`,                   // e.g., Scrap Valkyrie
-            `${neutral} ${sigCard1}`,                  // e.g., Turbo Valkyrie
-            `${sigCard1} ${baseArchetype}`,            // e.g., Valkyrie Midrange
-            `${sigCard1} / ${sigCard2}`,               // e.g., Valkyrie / Trickster
-            `${sigCard1} & ${sigCard2} ${noun}`,       // e.g., Valkyrie & Trickster Control
-            `${prefix} ${noun}`,                       // e.g., Scrap Midrange
-            `${sigCard1} Core`,                        // e.g., Valkyrie Core
-            `${noun} ${sigCard1}`                      // e.g., Burn Valkyrie
-        ];
-
-        // Optional: Filter out duplicates if sigCard1 and sigCard2 are the same 
-        // (Happens if a deck only has 1 type of card)
-        const validFormats = formats.filter(f => !f.includes(`${sigCard1} / ${sigCard1}`));
-
-        return validFormats[Math.floor(Math.random() * validFormats.length)];
+   // --- 6. NAMING & COPY LOGIC ---
+function generateDeckName(deck, isPlant) {
+    if (!Array.isArray(deck) || deck.length === 0) {
+        return isPlant ? "Suspicious Salad" : "Unlicensed Brain Buffet";
     }
+
+    const cleanName = (name = "") =>
+        String(name)
+            .replace(/_/g, " ")
+            .replace(/^The /i, "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+    const cards = deck
+        .filter(c => c && c.name && c.count > 0)
+        .map(c => ({
+            ...c,
+            name: cleanName(c.name),
+            cost: Number(c.cost) || 0,
+            count: Number(c.count) || 1
+        }));
+
+    if (cards.length === 0) {
+        return isPlant ? "Suspicious Salad" : "Unlicensed Brain Buffet";
+    }
+
+    // Stable hash so deck names do not randomly change every render.
+    const hashString = (str) => {
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+    };
+
+    const deckKey = cards
+        .map(c => `${c.name}:${c.count}`)
+        .sort()
+        .join("|") + (isPlant ? "|plant" : "|zombie");
+
+    const seed = hashString(deckKey);
+
+    const pick = (arr, salt = 0) => {
+        if (!arr.length) return "";
+        return arr[(seed + salt * 2654435761) >>> 0 % arr.length];
+    };
+
+    const pickActually = (arr, salt = 0) => {
+        if (!arr.length) return "";
+        const n = (seed + Math.imul(salt + 1, 2654435761)) >>> 0;
+        return arr[n % arr.length];
+    };
+
+    const namesBlob = cards.map(c => c.name.toLowerCase()).join(" | ");
+
+    const hasAny = (...terms) =>
+        terms.some(t => namesBlob.includes(String(t).toLowerCase()));
+
+    const totalCards = cards.reduce((s, c) => s + c.count, 0);
+    const totalCost = cards.reduce((s, c) => s + c.cost * c.count, 0);
+    const avgCost = totalCost / Math.max(totalCards, 1);
+
+    // Signature cards: not just most expensive, but likely "deck-defining."
+    const signatureHints = [
+        "valkyrie",
+        "trickster",
+        "bad moon rising",
+        "espresso fiesta",
+        "going viral",
+        "con man",
+        "quickdraw con man",
+        "teleport",
+        "teleportation zombie",
+        "interdimensional zombie",
+        "teacher",
+        "zombology teacher",
+        "gargantuar",
+        "binary stars",
+        "mustache monument",
+        "astro-shroom",
+        "heartichoke",
+        "pepper m.d.",
+        "ketchup mechanic",
+        "pineclone",
+        "dandy lion king",
+        "gatling pea",
+        "threepeater",
+        "repeat moss",
+        "magnifying grass",
+        "pecanolith",
+        "soul patch",
+        "brainana",
+        "dark matter dragonfruit",
+        "starch-lord"
+    ];
+
+    const scoreCard = (c) => {
+        const n = c.name.toLowerCase();
+        let score = c.count * (c.cost + 1);
+        if (signatureHints.some(h => n.includes(h))) score += 20;
+        if (c.count >= 4) score += 4;
+        return score;
+    };
+
+    const sortedDeck = [...cards].sort((a, b) => scoreCard(b) - scoreCard(a));
+
+    const sig1 = sortedDeck[0].name;
+    const sig2 = sortedDeck[1] ? sortedDeck[1].name : sig1;
+
+    // Archetype vibes, used only to choose jokes.
+    let vibe = "mid";
+
+    if (avgCost <= 2.7) vibe = "aggro";
+    else if (avgCost >= 4.1) vibe = "greed";
+
+    if (hasAny("trick", "teleport", "mustache monument", "bonus attack", "espresso fiesta", "repeat moss")) {
+        vibe = "combo";
+    }
+
+    if (hasAny("heal", "heartichoke", "pepper m.d", "venus flytraplanet", "taco")) {
+        vibe = "heal";
+    }
+
+    if (hasAny("bad moon rising", "gargantuar", "dark matter dragonfruit", "brainana")) {
+        vibe = "greed";
+    }
+
+    if (hasAny("mushroom", "astro-shroom", "pineclone", "swarm")) {
+        vibe = "swarm";
+    }
+
+    const genericFunny = [
+        `${sig1}: The Deck`,
+        `Oops! All ${sig1}`,
+        `I Swear ${sig1} Is Balanced`,
+        `${sig1} Did Nothing Wrong`,
+        `Mom Said It’s My Turn to Play ${sig1}`,
+        `${sig1} and the Audacity`,
+        `The ${sig1} Incident`,
+        `${sig1} Support Group`,
+        `Local Player Discovers ${sig1}`,
+        `${sig1} Delivery Service`,
+        `Please Nerf ${sig1}`,
+        `${sig1} Apology Tour`,
+        `${sig1} with Extra Sauce`,
+        `Definitely Not Just ${sig1}`,
+        `${sig1} and Friends`,
+        `${sig1} Friendship Simulator`,
+        `${sig1} Any% Speedrun`,
+        `My Lawyer Advised Me to Play ${sig1}`,
+        `${sig1} Tax Evasion`,
+        `Least Annoying ${sig1} Deck`
+    ];
+
+    const plantFunny = [
+        `Lawn Enforcement`,
+        `Compost Malone`,
+        `Peas Was Never an Option`,
+        `Photosynthesis Crimes`,
+        `Garden Variety Nonsense`,
+        `Root Canal`,
+        `The Salad Bar Brawl`,
+        `Weaponized Vegetables`,
+        `Certified Lawn Goblin`,
+        `Botany With Bad Intentions`,
+        `${sig1} Garden Party`,
+        `${sig1} but Make It Organic`,
+        `${sig1} Touches Grass`,
+        `Farm-to-Face ${sig1}`,
+        `${sig1} Chlorophyll Villain Arc`,
+        `Locally Sourced Lethal`
+    ];
+
+    const zombieFunny = [
+        `Brains Before Gains`,
+        `Graveyard Shift Manager`,
+        `Undead Tax Fraud`,
+        `OSHA Violation Zombies`,
+        `Brain Buffet Deluxe`,
+        `Mildly Legal Necromancy`,
+        `The Walking Debt`,
+        `Certified Brainrot`,
+        `Rot Pocket`,
+        `Funeral Home Combo Meal`,
+        `${sig1} Brain Subscription`,
+        `${sig1} but Somehow Dumber`,
+        `${sig1} Grave Mistake`,
+        `${sig1} Ate My Homework`,
+        `Weekend at ${sig1}’s`,
+        `Corporate Wants More Brains`
+    ];
+
+    const vibeFunny = {
+        aggro: [
+            `Go Face or Go Home`,
+            `No Blocks? No Problem`,
+            `Turn Two Emotional Damage`,
+            `${sig1} Speedrun`,
+            `${sig1} Hits the Gas`,
+            `Counting to 20 Is Hard`,
+            `The Opponent Had Plans?`,
+            `Oops, No Late Game`
+        ],
+        mid: [
+            `Good Cards, Bad Manners`,
+            `${sig1} Value Meal`,
+            `Reasonable Deck, Unreasonable Results`,
+            `${sig1} Midlife Crisis`,
+            `Curve? I Hardly Know Her`,
+            `${sig1} and Some Other Nonsense`,
+            `The Fair and Balanced Lie`
+        ],
+        greed: [
+            `Late Game Greed Goblin`,
+            `Seven-Cost Personality Disorder`,
+            `${sig1} Retirement Plan`,
+            `Please Survive Until Turn 8`,
+            `Big Cards, Small Shame`,
+            `Wallet Inspector ${sig1}`,
+            `The Greed Is Good Actually`,
+            `Oops, All Finishers`
+        ],
+        combo: [
+            `Oops, Lethal`,
+            `The Math Homework Deck`,
+            `${sig1} Combo Crimes`,
+            `One Weird Trick`,
+            `Judge, I Can Explain`,
+            `${sig1} Rube Goldberg Machine`,
+            `Totally Intended Lethal`,
+            `The Spreadsheet Said Yes`
+        ],
+        heal: [
+            `Healthcare Fraud`,
+            `Emotional Support Taco`,
+            `${sig1} Urgent Care`,
+            `HIPAA Violation Garden`,
+            `Doctor Recommended Violence`,
+            `Healing but Rude`,
+            `The Insurance Claim`
+        ],
+        swarm: [
+            `Personal Space Invaders`,
+            `Oops, All Bodies`,
+            `${sig1} Population Problem`,
+            `The Board Is Full Again`,
+            `Tiny Guys, Huge Problem`,
+            `Clown Car Garden`,
+            `One Million Little Problems`
+        ]
+    };
+
+    // Card-specific jokes. These fire when a famous card appears.
+    const cardSpecific = [];
+
+    const addIf = (condition, names) => {
+        if (condition) cardSpecific.push(...names);
+    };
+
+    addIf(hasAny("valkyrie"), [
+        `Valkaholics Anonymous`,
+        `Valkyrie Did Nothing Wrong`,
+        `Valk and Awe`,
+        `Live Laugh Valkyrie`
+    ]);
+
+    addIf(hasAny("trickster"), [
+        `Trickster? I Barely Know Her`,
+        `The Trickster Situation`,
+        `One Trick Pony, Literally`,
+        `Trickster Math Department`
+    ]);
+
+    addIf(hasAny("bad moon rising"), [
+        `Bad Moon, Worse Decisions`,
+        `BMR Support Group`,
+        `Moon Landing Was Personal`,
+        `Oops, All Gargantuars`
+    ]);
+
+    addIf(hasAny("espresso fiesta"), [
+        `Espresso Depresso`,
+        `Caffeine-Based Lethal`,
+        `One More Shot`,
+        `The 3 AM Fiesta`
+    ]);
+
+    addIf(hasAny("going viral"), [
+        `Going Viral, Unfortunately`,
+        `Contagious Bad Decisions`,
+        `The Algorithm Liked This`,
+        `Viral Marketing`
+    ]);
+
+    addIf(hasAny("con man"), [
+        `Con Man Tax Season`,
+        `Legally Questionable Pirates`,
+        `This Deck Is a Scam`,
+        `Fraudulent Activities`
+    ]);
+
+    addIf(hasAny("astro-shroom"), [
+        `Astro-Shroom Space Program`,
+        `NASA but Fungus`,
+        `One Small Shroom for Man`,
+        `The Mushroom Tax`
+    ]);
+
+    addIf(hasAny("heartichoke"), [
+        `Heartichoke Healthcare Fraud`,
+        `Emotional Damage Healing`,
+        `Doctor’s Hate This One Trick`,
+        `Cardiology Crimes`
+    ]);
+
+    addIf(hasAny("pineclone"), [
+        `Pineclone Identity Theft`,
+        `Oops, All Trees`,
+        `Forest of Bad Choices`,
+        `Clone Wars: Lawn Edition`
+    ]);
+
+    addIf(hasAny("starch-lord"), [
+        `Starch-Lord’s Weird Potato Cult`,
+        `All Hail the Potato`,
+        `The Spudfather`,
+        `Tubersday`
+    ]);
+
+    addIf(hasAny("gargantuar"), [
+        `Gargantuar Daycare`,
+        `Big Guy Appreciation Club`,
+        `Large Adult Zombies`,
+        `Oops, All Large Men`
+    ]);
+
+    const duoFunny = [
+        `${sig1} & ${sig2}: Buddy Comedy`,
+        `${sig1} / ${sig2} Divorce Court`,
+        `${sig1} and ${sig2} Ruin Everything`,
+        `${sig1} + ${sig2} = Bad News`,
+        `${sig1} Featuring ${sig2}`,
+        `${sig1} and the Backup Dancers`,
+        `${sig1}, ${sig2}, and Poor Decisions`
+    ].filter(name => sig1 !== sig2 || !name.includes(`${sig1} & ${sig2}`));
+
+    const candidates = [
+        ...cardSpecific,
+        ...genericFunny,
+        ...(isPlant ? plantFunny : zombieFunny),
+        ...(vibeFunny[vibe] || vibeFunny.mid),
+        ...duoFunny
+    ];
+
+    // Prefer card-specific jokes sometimes, but not always.
+    if (cardSpecific.length && seed % 3 !== 0) {
+        return pickActually(cardSpecific, 99);
+    }
+
+    return pickActually(candidates, 123);
+}
 
     const copyDeckBtn = document.getElementById('copyDeckBtn');
     if (copyDeckBtn) {
