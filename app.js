@@ -3924,7 +3924,7 @@ if (totalCards > 0 && seeds.length > 1) {
                 }).join('');
 
                 title.innerHTML = `
-        <div style="font-size: 1.2em; color: var(--accent); font-style: italic; margin-bottom: 8px; text-align: center;">"${aiDeckName}"</div>
+        <div style="font-size: 1.2em; color: var(--accent); margin-bottom: 8px; text-align: center;">"${aiDeckName}"</div>
         <div class="title-hero-container">
             ${heroBadgesHtml}
         </div>
@@ -5824,212 +5824,398 @@ function generateDeckName(deck, isPlant) {
         });
     }
     const downloadBtn = document.getElementById('downloadImageBtn');
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', async (e) => {
-            if (currentSeeds.length === 0) return;
+    function toImageFilename(name) {
+    return name
+        .replace(/_/g, ' ')
+        .trim()
+        .replace(/[\s-]+/g, '_')
+        .toLowerCase();
+}
 
-            const btn = e.target;
-            const originalText = btn.innerText;
-            btn.innerText = "Saving...";
-            btn.disabled = true;
+function loadCanvasImage(srcs) {
+    return new Promise(resolve => {
+        let i = 0;
 
-            try {
-                // 1. Setup Canvas Grid Math
-                const padding = 30; // Increased padding slightly for a better frame
-                const cardBoxWidth = 110;
-                const cardBoxHeight = 140;
-                const gap = 18; // Slightly larger gap to accommodate shadows
-                const columns = 4;
-                const rows = Math.ceil(currentSeeds.length / columns);
+        function tryNext() {
+            if (i >= srcs.length) return resolve(null);
 
-                const watermarkHeight = 40; // Increased to give the new watermark pill room
-                const canvasWidth = padding * 2 + (columns * cardBoxWidth) + ((columns - 1) * gap);
-                const rowHeight = cardBoxHeight;
-                const canvasHeight = padding * 2 + (rows * rowHeight) + ((rows - 1) * gap) + watermarkHeight;
+            const img = new Image();
+            img.crossOrigin = "anonymous";
 
-                const canvas = document.createElement('canvas');
-                canvas.width = canvasWidth;
-                canvas.height = canvasHeight;
-                const ctx = canvas.getContext('2d');
+            img.onload = () => resolve(img);
+            img.onerror = () => {
+                i++;
+                tryNext();
+            };
 
-                // 2. Draw Premium Background (Radial Gradient)
-                const cx = canvasWidth / 2;
-                const cy = canvasHeight / 2;
-                const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvasWidth);
-                bgGradient.addColorStop(0, '#2c333a'); // Lighter center spotlight
-                bgGradient.addColorStop(1, '#111417'); // Darker edges
+            img.src = srcs[i];
+        }
 
-                ctx.fillStyle = bgGradient;
-                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        tryNext();
+    });
+}
 
-                // Optional: subtle border around the entire canvas
-                ctx.strokeStyle = '#3e464f';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(2, 2, canvasWidth - 4, canvasHeight - 4);
+function getExportHeroData() {
+    const classArray = [...new Set(
+        currentSeeds
+            .map(seed => cardDatabase[seed.name]?.Class)
+            .filter(Boolean)
+    )].sort();
 
-                // 3. SORT THE CARDS
-                const sortedSeeds = [...currentSeeds].sort((a, b) => {
-                    const costA = cardDatabase[a.name]?.Cost || 0;
-                    const costB = cardDatabase[b.name]?.Cost || 0;
-                    if (costA !== costB) return costA - costB;
-                    return a.name.localeCompare(b.name);
-                });
+    if (classArray.length === 0) {
+        return {
+            heroName: "Custom Deck",
+            heroesData: []
+        };
+    }
 
-                // 4. Load Images
-                const loadedImages = await Promise.all(sortedSeeds.map(seed => {
-                    return new Promise((resolve) => {
-                        const img = new Image();
-                        img.crossOrigin = "anonymous";
-                        const dbName = seed.name.replace(/ /g, '_');
+    if (classArray.length === 1) {
+        const singleClass = classArray[0];
 
-                        img.onload = () => resolve({ img, seed });
-                        img.onerror = () => {
-                            const imgWebp = new Image();
-                            imgWebp.crossOrigin = "anonymous";
-                            imgWebp.onload = () => resolve({ img: imgWebp, seed });
-                            imgWebp.onerror = () => resolve({ img: null, seed });
-                            imgWebp.src = `card_images/${dbName}.webp`;
-                        };
-                        img.src = `card_images/${dbName}.png`;
-                    });
-                }));
+        return {
+            heroName: `Any ${singleClass} Hero`,
+            heroesData: [{
+                name: singleClass,
+                imgFilename: `${toImageFilename(singleClass)}.webp`
+            }]
+        };
+    }
 
-                // 5. Draw the Cards and Badges
-                loadedImages.forEach((item, index) => {
-                    const col = index % columns;
-                    const row = Math.floor(index / columns);
+    const heroName = heroMap[classArray.join(',')] || `Any ${classArray.join(' / ')} Hero`;
 
-                    const x = padding + (col * (cardBoxWidth + gap));
-                    const y = padding + (row * (rowHeight + gap));
+    return {
+        heroName,
+        heroesData: heroName.split(/\s*\/\s*/).map(name => ({
+            name,
+            imgFilename: `${toImageFilename(name)}.webp`
+        }))
+    };
+}
 
-                    let drawWidth = cardBoxWidth;
-                    let drawHeight = cardBoxHeight;
-                    let dx = x;
-                    let dy = y;
+function drawFitText(ctx, text, x, y, maxWidth, startPx, minPx, weight = "bold") {
+    let size = startPx;
 
-                    if (item.img) {
-                        const imgAspect = item.img.width / item.img.height;
-                        const boxAspect = cardBoxWidth / cardBoxHeight;
+    do {
+        ctx.font = `${weight} ${size}px "Segoe UI", sans-serif`;
+        if (ctx.measureText(text).width <= maxWidth) break;
+        size--;
+    } while (size > minPx);
 
-                        if (imgAspect > boxAspect) {
-                            drawWidth = cardBoxWidth;
-                            drawHeight = cardBoxWidth / imgAspect;
-                        } else {
-                            drawHeight = cardBoxHeight;
-                            drawWidth = cardBoxHeight * imgAspect;
-                        }
+    ctx.fillText(text, x, y);
+}
 
-                        dx = x + (cardBoxWidth - drawWidth) / 2;
-                        dy = y + (cardBoxHeight - drawHeight) / 2;
+function drawCircleImage(ctx, img, cx, cy, radius) {
+    ctx.save();
 
-                        // Add Drop Shadow to Cards
-                        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-                        ctx.shadowBlur = 12;
-                        ctx.shadowOffsetY = 6;
-                        ctx.shadowOffsetX = 0;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 5;
 
-                        ctx.drawImage(item.img, dx, dy, drawWidth, drawHeight);
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius + 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.fill();
 
-                        // Reset shadow so it doesn't mess up badges/text
-                        ctx.shadowColor = 'transparent';
-                    } else {
-                        ctx.fillStyle = '#1e2226';
-                        ctx.strokeStyle = '#3e464f';
-                        ctx.lineWidth = 2;
-                        ctx.fillRect(x, y, cardBoxWidth, cardBoxHeight);
-                        ctx.strokeRect(x, y, cardBoxWidth, cardBoxHeight);
-                    }
+    ctx.shadowColor = 'transparent';
 
-                    // Overlay the Premium Quantity Badge
-                    const text = `x${item.seed.count}`;
-                    ctx.font = 'bold 16px "Segoe UI", sans-serif';
-                    const textWidth = ctx.measureText(text).width;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.clip();
 
-                    const badgeWidth = textWidth + 16;
-                    const badgeHeight = 26;
-                    const badgeX = dx - 6;
-                    const badgeY = dy + drawHeight - badgeHeight - 6;
+    const side = radius * 2;
+    ctx.drawImage(img, cx - radius, cy - radius, side, side);
 
-                    // Badge Gradient Background
-                    const badgeGradient = ctx.createLinearGradient(badgeX, badgeY, badgeX, badgeY + badgeHeight);
-                    badgeGradient.addColorStop(0, '#3a4149');
-                    badgeGradient.addColorStop(1, '#1d2126');
+    ctx.restore();
 
-                    ctx.fillStyle = badgeGradient;
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-                    ctx.shadowBlur = 6;
-                    ctx.shadowOffsetY = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}if (downloadBtn) {
+    downloadBtn.addEventListener('click', async (e) => {
+        if (currentSeeds.length === 0) return;
 
+        const btn = e.target;
+        const originalText = btn.innerText;
+        btn.innerText = "Saving...";
+        btn.disabled = true;
+
+        try {
+            const padding = 30;
+            const cardBoxWidth = 110;
+            const cardBoxHeight = 140;
+            const gap = 18;
+            const columns = 4;
+            const rows = Math.ceil(currentSeeds.length / columns);
+
+            const headerHeight = 118;
+            const watermarkHeight = 44;
+
+            const canvasWidth =
+                padding * 2 +
+                columns * cardBoxWidth +
+                (columns - 1) * gap;
+
+            const canvasHeight =
+                padding * 2 +
+                headerHeight +
+                rows * cardBoxHeight +
+                (rows - 1) * gap +
+                watermarkHeight;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            const cx = canvasWidth / 2;
+            const cy = canvasHeight / 2;
+            const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvasWidth);
+            bgGradient.addColorStop(0, '#2c333a');
+            bgGradient.addColorStop(1, '#111417');
+
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            ctx.strokeStyle = '#3e464f';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(2, 2, canvasWidth - 4, canvasHeight - 4);
+
+            // Hero/deck data
+            const { heroName, heroesData } = getExportHeroData();
+
+            const isPlant = currentFaction === "Plant";
+            const aiDeckName =
+                typeof generateDeckName === "function"
+                    ? generateDeckName(currentSeeds, isPlant)
+                    : "Custom Deck";
+
+            // Load hero images
+            const loadedHeroes = await Promise.all(
+                heroesData.map(async hero => {
+                    const base = hero.imgFilename.replace(/\.(webp|png)$/i, '');
+                    const img = await loadCanvasImage([
+                        `hero_images/${base}.webp`,
+                        `hero_images/${base}.png`
+                    ]);
+
+                    return { ...hero, img };
+                })
+            );
+
+            // Header panel
+            const headerX = padding;
+            const headerY = padding;
+            const headerW = canvasWidth - padding * 2;
+            const headerH = 88;
+
+            const headerGradient = ctx.createLinearGradient(headerX, headerY, headerX, headerY + headerH);
+            headerGradient.addColorStop(0, 'rgba(255,255,255,0.11)');
+            headerGradient.addColorStop(1, 'rgba(255,255,255,0.04)');
+
+            ctx.fillStyle = headerGradient;
+            ctx.beginPath();
+            ctx.roundRect(headerX, headerY, headerW, headerH, 18);
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Hero avatars
+            const avatarRadius = loadedHeroes.length > 1 ? 28 : 34;
+            const avatarStartX = headerX + 50;
+            const avatarY = headerY + headerH / 2;
+
+            loadedHeroes.slice(0, 3).forEach((hero, i) => {
+                const avatarX = avatarStartX + i * 34;
+
+                if (hero.img) {
+                    drawCircleImage(ctx, hero.img, avatarX, avatarY, avatarRadius);
+                } else {
                     ctx.beginPath();
-                    ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 6);
+                    ctx.arc(avatarX, avatarY, avatarRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = '#20262d';
                     ctx.fill();
 
-                    // Badge Border
-                    ctx.shadowColor = 'transparent'; // Reset shadow for border
-                    ctx.strokeStyle = '#5a6470';
-                    ctx.lineWidth = 1.5;
+                    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+                    ctx.lineWidth = 3;
                     ctx.stroke();
 
-                    // Badge Text
                     ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 18px "Segoe UI", sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    // Added slight text shadow for extra crispness
-                    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-                    ctx.shadowBlur = 2;
-                    ctx.fillText(text, badgeX + (badgeWidth / 2), badgeY + (badgeHeight / 2) + 1);
+                    ctx.fillText(hero.name[0] || '?', avatarX, avatarY + 1);
+                }
+            });
+
+            // Header text
+            const textX = headerX + 108 + Math.max(0, loadedHeroes.length - 1) * 24;
+            const textMaxW = headerX + headerW - textX - 22;
+
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+
+            ctx.fillStyle = '#9fd36f';
+            drawFitText(ctx, `"${aiDeckName}"`, textX, headerY + 34, textMaxW, 22, 15, "bold");
+
+            ctx.fillStyle = '#d7dde4';
+            drawFitText(ctx, heroName, textX, headerY + 61, textMaxW, 16, 12, "600");
+
+            // Sort cards
+            const sortedSeeds = [...currentSeeds].sort((a, b) => {
+                const costA = cardDatabase[a.name]?.Cost || 0;
+                const costB = cardDatabase[b.name]?.Cost || 0;
+                if (costA !== costB) return costA - costB;
+                return a.name.localeCompare(b.name);
+            });
+
+            // Load card images
+            const loadedImages = await Promise.all(sortedSeeds.map(async seed => {
+                const dbName = seed.name.replace(/_/g, ' ').replace(/ /g, '_');
+
+                const img = await loadCanvasImage([
+                    `card_images/${dbName}.png`,
+                    `card_images/${dbName}.webp`
+                ]);
+
+                return { img, seed };
+            }));
+
+            // Draw cards
+            const cardStartY = padding + headerHeight;
+
+            loadedImages.forEach((item, index) => {
+                const col = index % columns;
+                const row = Math.floor(index / columns);
+
+                const x = padding + col * (cardBoxWidth + gap);
+                const y = cardStartY + row * (cardBoxHeight + gap);
+
+                let drawWidth = cardBoxWidth;
+                let drawHeight = cardBoxHeight;
+                let dx = x;
+                let dy = y;
+
+                if (item.img) {
+                    const imgAspect = item.img.width / item.img.height;
+                    const boxAspect = cardBoxWidth / cardBoxHeight;
+
+                    if (imgAspect > boxAspect) {
+                        drawWidth = cardBoxWidth;
+                        drawHeight = cardBoxWidth / imgAspect;
+                    } else {
+                        drawHeight = cardBoxHeight;
+                        drawWidth = cardBoxHeight * imgAspect;
+                    }
+
+                    dx = x + (cardBoxWidth - drawWidth) / 2;
+                    dy = y + (cardBoxHeight - drawHeight) / 2;
+
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowOffsetY = 6;
+                    ctx.shadowOffsetX = 0;
+
+                    ctx.drawImage(item.img, dx, dy, drawWidth, drawHeight);
+
                     ctx.shadowColor = 'transparent';
-                });
+                } else {
+                    ctx.fillStyle = '#1e2226';
+                    ctx.strokeStyle = '#3e464f';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(x, y, cardBoxWidth, cardBoxHeight);
+                    ctx.strokeRect(x, y, cardBoxWidth, cardBoxHeight);
+                }
 
-                // 6. Draw Modern Watermark (Pill Shape)
-                const wmText = 'pvzhvault.com';
-                ctx.font = 'bold 15px "Segoe UI", sans-serif';
-                const wmTextWidth = ctx.measureText(wmText).width;
+                // Quantity badge
+                const text = `x${item.seed.count}`;
+                ctx.font = 'bold 16px "Segoe UI", sans-serif';
+                const textWidth = ctx.measureText(text).width;
 
-                const wmPadX = 14;
-                const wmPadY = 8;
-                const wmWidth = wmTextWidth + (wmPadX * 2);
-                const wmHeight = 15 + (wmPadY * 2);
-                const wmX = canvasWidth - padding - wmWidth + 10;
-                const wmY = canvasHeight - padding - wmHeight + 15;
+                const badgeWidth = textWidth + 16;
+                const badgeHeight = 26;
+                const badgeX = dx - 6;
+                const badgeY = dy + drawHeight - badgeHeight - 6;
 
-                // Watermark Pill Background
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+                const badgeGradient = ctx.createLinearGradient(badgeX, badgeY, badgeX, badgeY + badgeHeight);
+                badgeGradient.addColorStop(0, '#3a4149');
+                badgeGradient.addColorStop(1, '#1d2126');
+
+                ctx.fillStyle = badgeGradient;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 6;
+                ctx.shadowOffsetY = 3;
+
                 ctx.beginPath();
-                ctx.roundRect(wmX, wmY, wmWidth, wmHeight, wmHeight / 2);
+                ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 6);
                 ctx.fill();
 
-                // Watermark Text with slight gradient
-                const textGrad = ctx.createLinearGradient(wmX, wmY, wmX, wmY + wmHeight);
-                textGrad.addColorStop(0, '#ffffff');
-                textGrad.addColorStop(1, '#b0b5ba');
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = '#5a6470';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
 
-                ctx.fillStyle = textGrad;
+                ctx.fillStyle = '#ffffff';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(wmText, wmX + (wmWidth / 2), wmY + (wmHeight / 2) + 1);
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                ctx.shadowBlur = 2;
+                ctx.fillText(text, badgeX + badgeWidth / 2, badgeY + badgeHeight / 2 + 1);
+                ctx.shadowColor = 'transparent';
+            });
 
-                // 7. Export
-                const link = document.createElement('a');
-                link.download = `deck_export.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
+            // Watermark
+            const wmText = 'pvzhvault.com';
+            ctx.font = 'bold 15px "Segoe UI", sans-serif';
+            const wmTextWidth = ctx.measureText(wmText).width;
 
-                btn.innerText = "Downloaded!";
-                btn.style.background = "#4CAF50";
-            } catch (err) {
-                console.error("Canvas generation failed: ", err);
-                btn.innerText = "Error";
-                btn.style.background = "#f44336";
-            } finally {
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.style.background = "";
-                    btn.disabled = false;
-                }, 2000);
-            }
-        });
-    }
+            const wmPadX = 14;
+            const wmPadY = 8;
+            const wmWidth = wmTextWidth + wmPadX * 2;
+            const wmHeight = 15 + wmPadY * 2;
+            const wmX = canvasWidth - padding - wmWidth + 10;
+            const wmY = canvasHeight - padding - wmHeight + 15;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.beginPath();
+            ctx.roundRect(wmX, wmY, wmWidth, wmHeight, wmHeight / 2);
+            ctx.fill();
+
+            const textGrad = ctx.createLinearGradient(wmX, wmY, wmX, wmY + wmHeight);
+            textGrad.addColorStop(0, '#ffffff');
+            textGrad.addColorStop(1, '#b0b5ba');
+
+            ctx.fillStyle = textGrad;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(wmText, wmX + wmWidth / 2, wmY + wmHeight / 2 + 1);
+
+            // Export
+            const link = document.createElement('a');
+            link.download = `${aiDeckName.replace(/[^\w-]+/g, '_').replace(/^_+|_+$/g, '') || 'deck_export'}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+
+            btn.innerText = "Downloaded!";
+            btn.style.background = "#4CAF50";
+        } catch (err) {
+            console.error("Canvas generation failed: ", err);
+            btn.innerText = "Error";
+            btn.style.background = "#f44336";
+        } finally {
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "";
+                btn.disabled = false;
+            }, 2000);
+        }
+    });
+}
 
     // --- ROUTING LOGIC ---
 
