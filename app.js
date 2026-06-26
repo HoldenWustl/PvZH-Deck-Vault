@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gradeFilter.classList.add('hidden');
         deckView.classList.add('hidden');
         statsView.classList.add('hidden');
+        statsView.classList.remove('stats-visible');
         tiersView.classList.add('hidden');
         guidesView.classList.add('hidden');
         crafterView.classList.add('hidden');
@@ -2375,7 +2376,27 @@ if (totalCards > 0 && seeds.length > 1) {
 
 
     });
+    function animateStatsPanels() {
+    const statsView = document.getElementById("statsView");
+    if (!statsView) return;
 
+    const panels = statsView.querySelectorAll(".stat-card, .chart-box");
+
+    statsView.classList.remove("stats-visible");
+
+    panels.forEach((panel, index) => {
+        panel.style.setProperty("--panel-delay", `${index * 80}ms`);
+    });
+
+    // Force reset
+    void statsView.offsetWidth;
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            statsView.classList.add("stats-visible");
+        });
+    });
+}
     // --- Stats Rendering Logic ---
     function renderStatsChart(limit = 'all') {
         // --- NEW: Hero Deduction Matrix ---
@@ -3703,8 +3724,20 @@ if (totalCards > 0 && seeds.length > 1) {
             }
         });
 
+    animateStatsPanels();
     }
+    function resetStatsAnimation() {
+  const statsView = document.getElementById("statsView");
+  if (!statsView) return;
 
+  statsView.classList.remove("stats-visible");
+
+  const panels = statsView.querySelectorAll(".stat-card, .chart-box");
+  panels.forEach(panel => {
+    panel.style.opacity = "";
+    panel.style.transform = "";
+  });
+}
 
     // --- AI DECK BUILDER: SMART SEED MANAGEMENT ---
 
@@ -7225,4 +7258,3 @@ document.addEventListener("DOMContentLoaded", renderGuides);
         if (e.key === 'Escape') closeMenu();
     });
 })();
-

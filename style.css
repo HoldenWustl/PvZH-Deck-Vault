@@ -4059,3 +4059,30 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
   color: inherit;
   text-decoration: none;
 }
+/* Stats panels enter one-by-one */
+#statsView .stat-card,
+#statsView .chart-box {
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  transition:
+    opacity 450ms ease,
+    transform 450ms cubic-bezier(.2, .8, .2, 1),
+    filter 450ms ease;
+  transition-delay: var(--panel-delay, 0ms);
+}
+
+#statsView.stats-visible .stat-card,
+#statsView.stats-visible .chart-box {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #statsView .stat-card,
+  #statsView .chart-box {
+    transition: none;
+    transform: none;
+    filter: none;
+  }
+}
