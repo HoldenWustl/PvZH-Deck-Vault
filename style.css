@@ -385,6 +385,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     transition: background-color 0.2s ease, transform 0.1s ease;
     text-align: center;
 }
+
 .download-btn:hover { background-color: #236e48; }
 .download-btn:active { transform: scale(0.98); }
 
@@ -1059,7 +1060,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     font-size: 1.1em;
     font-weight: bold;
     color: #fff;
-    background: var(--accent);
+    background: #2196F3;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -1455,7 +1456,6 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     /* Increased from 80px to 110px to make the desktop cards much larger */
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
     gap: 15px; 
-    margin-top: 15px;
 }
 /* Constrain the chart box and allow internal scrolling */
 .chart-box, 
@@ -4084,5 +4084,108 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     transition: none;
     transform: none;
     filter: none;
+  }
+}
+
+#deckActionContainer.hidden {
+  display: none !important;
+}
+
+#deckActionContainer:not(.hidden) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: 360px !important;
+  margin: 24px auto 0 auto !important;
+  padding: 12px !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22) !important;
+}
+
+#deckActionContainer:not(.hidden)::before {
+  content: "Ready to share your deck?" !important;
+  color: var(--text-primary) !important;
+  font-size: 0.86rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.01em !important;
+  text-align: center !important;
+}
+
+#deckActionContainer:not(.hidden)::after {
+  content: none !important;
+}
+
+#downloadImageBtn,
+#downloadImageBtn.generate-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  padding: 13px 18px !important;
+  border: 1px solid rgba(0, 180, 216, 0.45) !important;
+  border-radius: 13px !important;
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  box-shadow: none !important;
+  font-size: 0.95rem !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transform: none !important;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease !important;
+}
+
+#downloadImageBtn:hover,
+#downloadImageBtn.generate-btn:hover {
+  background: rgba(0, 180, 216, 0.22) !important;
+  border-color: rgba(0, 180, 216, 0.75) !important;
+  color: #7be7ff !important;
+  transform: translateY(-1px) !important;
+}
+
+#downloadImageBtn:active,
+#downloadImageBtn.generate-btn:active {
+  transform: translateY(0) !important;
+  background: rgba(0, 180, 216, 0.14) !important;
+}
+
+#downloadImageBtn:focus-visible,
+#downloadImageBtn.generate-btn:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.22) !important;
+}
+
+#downloadImageBtn:disabled,
+#downloadImageBtn.generate-btn:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+@media (max-width: 520px) {
+  #deckActionContainer:not(.hidden) {
+    max-width: 100% !important;
+    padding: 10px !important;
+    border-radius: 14px !important;
+  }
+
+  #downloadImageBtn,
+  #downloadImageBtn.generate-btn {
+    min-height: 46px !important;
+    font-size: 0.92rem !important;
   }
 }

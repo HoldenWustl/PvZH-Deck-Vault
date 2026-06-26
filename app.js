@@ -2002,27 +2002,12 @@ if (totalCards > 0 && seeds.length > 1) {
                 e.stopPropagation();
 
                 const deckToShare = pvzBuildAnalyzeDeck(deckInfo);
-                const cardDictionary = Object.keys(cardDatabase).sort();
+const shareUrl = buildCurrentDeckShareUrl(deckToShare);
 
-                const encodedCards = deckToShare.map(card => {
-                    const index = cardDictionary.indexOf(card.name);
-                    if (index === -1) {
-                        console.error(`🚨 Could not find card in dictionary: ${card.name}`);
-                        return null;
-                    }
-                    const cardIndex = index.toString(36);
-                    return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
-                });
-
-                if (encodedCards.includes(null)) {
-                    alert("Could not share this deck because one or more cards could not be found.");
-                    return;
-                }
-
-                const minimalDeckString = encodedCards.join('-');
-                // No #crafter — bare link so it auto-opens the panel on the home screen.
-                const shareUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}`;
-
+if (!shareUrl) {
+    alert("Could not share this deck because one or more cards could not be found.");
+    return;
+}
                 const originalText = shareBtn.textContent;
                 const flash = (msg) => {
                     shareBtn.textContent = msg;
@@ -4263,28 +4248,7 @@ if (totalCards > 0 && seeds.length > 1) {
     }
     // --- LIVE DECK ANALYTICS ENGINE ---
 
-    document.getElementById('shareDeckBtn').addEventListener('click', function () {
-        const cardDictionary = Object.keys(cardDatabase).sort();
-
-        const minimalDeckString = currentSeeds.map(card => {
-            const cardIndex = cardDictionary.indexOf(card.name).toString(36);
-            // Use a DOT for counts, and omit it entirely if the count is 4
-            return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
-        }).join('-'); // Use a HYPHEN to separate cards (100% URL safe!)
-
-        const shareUrl = `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}#crafter`;
-
-        navigator.clipboard.writeText(shareUrl);
-
-        const originalBg = this.style.background;
-        this.innerText = "Link Copied!";
-        this.style.background = "#4CAF50";
-
-        setTimeout(() => {
-            this.innerText = "Share Link";
-            this.style.background = originalBg;
-        }, 2000);
-    });
+    
     window.addEventListener('DOMContentLoaded', () => {
         const deckCode = new URLSearchParams(window.location.search).get('deck');
         const isCrafterHash = window.location.hash === '#crafter';
@@ -4737,7 +4701,30 @@ if (totalCards > 0 && seeds.length > 1) {
         </span>
     `).join('');
     }
+    function buildCurrentDeckShareUrl(deckToShare = currentSeeds) {
+    const cardDictionary = Object.keys(cardDatabase).sort();
 
+    const encodedCards = deckToShare.map(card => {
+        const index = cardDictionary.indexOf(card.name);
+
+        if (index === -1) {
+            console.error(`🚨 Could not find card in dictionary: ${card.name}`);
+            return null;
+        }
+
+        const cardIndex = index.toString(36);
+        return card.count === 4 ? cardIndex : `${cardIndex}.${card.count}`;
+    });
+
+    if (encodedCards.includes(null)) {
+        return null;
+    }
+
+    const minimalDeckString = encodedCards.join('-');
+
+    // No #crafter — bare link so it auto-opens the panel on the home screen.
+    return `${window.location.origin}${window.location.pathname}?deck=${minimalDeckString}`;
+}
     // ------------------------------------------------------------
     // CONVERSATIONAL AI CO-PILOT — speech bubble edition
     // ------------------------------------------------------------
@@ -4858,7 +4845,25 @@ if (totalCards > 0 && seeds.length > 1) {
                     swapHtml = daveSay(`Great job on such a well-optimized and balanced deck!`);
                 }
 
-                chatFeed.innerHTML = baseHtml + swapHtml;
+                const baseDeckShareUrl = buildCurrentDeckShareUrl();
+
+const deckShareUrl = baseDeckShareUrl
+    ? `${baseDeckShareUrl}#crafter`
+    : null;
+
+const classArray = Array.from(activeClasses).sort();
+const heroName = heroMap[classArray.join(',')] || `Unknown Hero`;
+
+const deckLinkHtml = deckShareUrl
+    ? daveSay(`
+        Share your deck with this message!<br><br>
+        <strong>Hero:</strong> ${heroName}<br>
+        <strong>Link:</strong>
+        <a href="${deckShareUrl}" target="_blank" rel="noopener noreferrer">${deckShareUrl}</a>
+    `)
+    : daveSay(`Your Deck Link could not be generated because one or more cards could not be found.`);
+
+chatFeed.innerHTML = baseHtml + swapHtml + deckLinkHtml;
 
                 const swapBtn = chatFeed.querySelector('.add-rec-btn[data-remove]');
                 if (swapBtn) {
@@ -5808,21 +5813,7 @@ function generateDeckName(deck, isPlant) {
     return pickActually(candidates, 123);
 }
 
-    const copyDeckBtn = document.getElementById('copyDeckBtn');
-    if (copyDeckBtn) {
-        copyDeckBtn.addEventListener('click', (e) => {
-            if (!currentClipboardText) return;
-            navigator.clipboard.writeText(currentClipboardText).then(() => {
-                const btn = e.target;
-                btn.innerText = "Copied!";
-                btn.style.background = "#4CAF50";
-                setTimeout(() => {
-                    btn.innerText = "Copy Text";
-                    btn.style.background = "";
-                }, 2000);
-            }).catch(err => console.error("Failed to copy text: ", err));
-        });
-    }
+    
     const downloadBtn = document.getElementById('downloadImageBtn');
     function toImageFilename(name) {
     return name
