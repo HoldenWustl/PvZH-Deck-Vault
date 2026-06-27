@@ -3845,7 +3845,7 @@ if (!shareUrl) {
         const title = document.getElementById('generatedDeckTitle');
         const actionContainer = document.getElementById('deckActionContainer');
         const totalCards = getTotalCards();
-
+        const isDeckComplete = totalCards === 40;
         // NEW: Always dynamically reconstruct the active classes to prevent de-sync bugs!
         activeClasses.clear();
         currentSeeds.forEach(seed => {
@@ -3857,6 +3857,10 @@ if (!shareUrl) {
         resultsContainer.className = 'visual-deck-grid';
 
         if (tracker) tracker.innerText = `${totalCards}/40`;
+        if (actionContainer) {
+    actionContainer.classList.toggle('hidden', !isDeckComplete);
+    actionContainer.style.display = isDeckComplete ? 'flex' : 'none';
+}
 
         if (currentSeeds.length === 0) {
             manualDeckName = "";
@@ -5084,7 +5088,7 @@ chatFeed.innerHTML = baseHtml + swapHtml + deckLinkHtml;
             htmlString += `<div class="rec-row">`;
 
             recData.forEach((rec, index) => {
-                const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+                const badgeText = index === 0 ? "1st" : (index === 1 ? "2nd" : "3rd");
 
                 htmlString += `
             <div class="rec-card" style="--d: ${index * 70}ms;">
@@ -5153,7 +5157,7 @@ chatFeed.innerHTML = baseHtml + swapHtml + deckLinkHtml;
 
             replacements.forEach((rec, index) => {
                 const cardName = rec.name.replace(/_/g, ' ');
-                const badgeText = index === 0 ? "Best Fit" : (index === 1 ? "2nd Choice" : "3rd Choice");
+                const badgeText = index === 0 ? "1st" : (index === 1 ? "2nd" : "3rd");
 
                 // Compare true percentage scores (unchanged)
                 const scoreDiff = Math.round(rec.score - baselineScore);

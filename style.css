@@ -4363,3 +4363,125 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
         font-size: 14px;
     }
 }
+.crafter-controls.panel-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 18px;
+}
+
+.crafter-controls .action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 12px;
+}
+
+/* Finish button becomes a compact combined control */
+.finish-btn-wrap {
+    position: relative;
+    width: 260px;
+    height: 54px;
+    flex-shrink: 0;
+}
+
+/* Main button keeps normal button size */
+.finish-btn-wrap .finish-btn {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 22px 18px 8px;
+    border-radius: 8px;
+}
+
+/* Budget options live visually inside the top of the Finish button */
+.finish-btn-options {
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    right: 10px;
+    z-index: 2;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+
+    pointer-events: auto;
+}
+
+/* Tiny, low-clutter toggle styling */
+.finish-btn-options .toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.finish-btn-options .toggle-group label {
+    font-family: inherit;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1;
+
+    color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.finish-btn-options .toggle-group input[type="checkbox"] {
+    width: 10px;
+    height: 10px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--accent);
+}
+
+/* Make disabled Finish button not kill the toggles */
+.finish-btn-wrap .finish-btn:disabled {
+    pointer-events: none;
+}
+
+/* Match clear button height */
+.crafter-controls .clear-btn {
+    height: 54px;
+    margin: 0;
+}
+.finish-btn-wrap .finish-btn {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+
+    /* extra top padding leaves room for Budget/Super Budget inside */
+    padding: 22px 18px 8px;
+
+    font-family: inherit;
+    font-size: 1em;
+    font-weight: bold;
+
+    color: #b987ff;
+    background: transparent;
+    border: 1px solid rgba(185, 135, 255, 0.35);
+    border-radius: 8px;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.finish-btn-wrap .finish-btn:hover:not(:disabled) {
+    background: rgba(185, 135, 255, 0.1);
+    border-color: #b987ff;
+}
+
+.finish-btn-wrap .finish-btn:disabled {
+    color: rgba(185, 135, 255, 0.42);
+    border-color: rgba(185, 135, 255, 0.18);
+    background: transparent;
+    cursor: not-allowed;
+    opacity: 1;
+
+    /* keeps toggles clickable over disabled button */
+    pointer-events: none;
+}

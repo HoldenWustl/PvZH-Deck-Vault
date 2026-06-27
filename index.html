@@ -484,22 +484,27 @@
                 </div>
 
                 <div class="crafter-controls panel-controls">
-                    <div class="toggles">
-                        <div class="toggle-group">
-                            <input type="checkbox" id="budgetToggle">
-                            <label for="budgetToggle">Budget</label>
-                        </div>
-                        <div class="toggle-group">
-                            <input type="checkbox" id="superBudgetToggle">
-                            <label for="superBudgetToggle">Super Budget</label>
-                        </div>
-                    </div>
+    <div class="action-buttons">
+        <button id="clearSeedsBtn" class="clear-btn">Clear All</button>
 
-                    <div class="action-buttons">
-                        <button id="clearSeedsBtn" class="clear-btn">Clear All</button>
-                        <button id="generateDeckBtn" class="generate-btn finish-btn" disabled>Finish For Me ✨</button>
-                    </div>
+        <div class="finish-btn-wrap">
+            <button id="generateDeckBtn" class="generate-btn finish-btn" disabled>
+                Finish For Me
+            </button>
+
+            <div class="toggles finish-btn-options">
+                <div class="toggle-group">
+                    <input type="checkbox" id="budgetToggle">
+                    <label for="budgetToggle">Budget</label>
                 </div>
+                <div class="toggle-group">
+                    <input type="checkbox" id="superBudgetToggle">
+                    <label for="superBudgetToggle">Super Budget</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <div class="crafter-results-container">
                     <h3 id="generatedDeckTitle" class="hidden">Final Deck</h3>
