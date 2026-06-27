@@ -1091,9 +1091,21 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     transition: all 0.2s ease;
 }
 
-.clear-btn:hover {
+.clear-btn:hover:not(:disabled) {
     background: rgba(255, 107, 107, 0.1);
     border-color: #ff6b6b;
+}
+.clear-btn:disabled {
+    color: rgba(255, 107, 107, 0.35);
+    border-color: rgba(255, 107, 107, 0.14);
+    background: transparent;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.clear-btn:disabled:hover {
+    background: transparent;
+    border-color: rgba(255, 107, 107, 0.14);
 }
 
 /* Generated Results Grid */

@@ -3844,6 +3844,7 @@ if (!shareUrl) {
         const tracker = document.getElementById('cardCountTracker');
         const title = document.getElementById('generatedDeckTitle');
         const actionContainer = document.getElementById('deckActionContainer');
+        const clearSeedsBtn = document.getElementById('clearSeedsBtn');
         const totalCards = getTotalCards();
         const isDeckComplete = totalCards === 40;
         // NEW: Always dynamically reconstruct the active classes to prevent de-sync bugs!
@@ -3857,6 +3858,9 @@ if (!shareUrl) {
         resultsContainer.className = 'visual-deck-grid';
 
         if (tracker) tracker.innerText = `${totalCards}/40`;
+        if (clearSeedsBtn) {
+    clearSeedsBtn.disabled = totalCards === 0;
+}
         if (actionContainer) {
     actionContainer.classList.toggle('hidden', !isDeckComplete);
     actionContainer.style.display = isDeckComplete ? 'flex' : 'none';
