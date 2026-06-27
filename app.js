@@ -492,18 +492,54 @@ if (totalCards > 0 && seeds.length > 1) {
             consistencyScore = Math.round(pts / seeds.length);
         }
 
-        // --- Power (uses precomputed popularity) ---
-        let powerScore = 0;
-        if (totalCards > 0 && ctx.maxMetaCopies > 0) {
-            let totalPowerPoints = 0;
-            const curveFactor = 1;
-            seeds.forEach(seed => {
-                const metaCopies = ctx.cardPopularity[seed.name] || 0;
-                const rawRatio = metaCopies / ctx.maxMetaCopies;
-                totalPowerPoints += Math.pow(rawRatio, curveFactor) * 100 * seed.count;
-            });
-            powerScore = Math.min(100, Math.round((totalPowerPoints * 2.7) / totalCards));
+      // --- Power (uses precomputed popularity, with smarter weak-card penalty) ---
+let powerScore = 0;
+
+if (totalCards > 0 && ctx.maxMetaCopies > 0) {
+    const curveFactor = 1;
+    const scaleFactor = 2.7;
+
+    const scoredCards = seeds.map(seed => {
+        const metaCopies = ctx.cardPopularity[seed.name] || 0;
+        const rawRatio = metaCopies / ctx.maxMetaCopies;
+
+        return {
+            name: seed.name,
+            count: seed.count,
+            score: Math.pow(rawRatio, curveFactor) * 100
+        };
+    });
+
+    // Original mean-based score
+    const averageRaw =
+        scoredCards.reduce((sum, card) => sum + card.score * card.count, 0) / totalCards;
+
+    const baseScore = Math.min(100, averageRaw * scaleFactor);
+
+    // Only penalize cards that are truly weak relative to the deck
+    // Example: if avg raw is 40, weak threshold is 16.
+    const weakThreshold = averageRaw * 0.4;
+
+    let badnessPoints = 0;
+
+    scoredCards.forEach(card => {
+        if (card.score < weakThreshold) {
+            const badnessRatio = (weakThreshold - card.score) / weakThreshold;
+
+            // Penalize by copies, but softly
+            badnessPoints += badnessRatio * card.count;
         }
+    });
+
+    const badnessPerCard = badnessPoints / totalCards;
+
+    // Mild penalty. Max usually around 0–8 points, not 20+.
+    const weakCardPenalty = badnessPerCard * 15;
+
+    powerScore = Math.round(
+        Math.max(0, baseScore - weakCardPenalty)
+    );
+}
 
         // --- Curve health (full archetype envelope, like the live builder) ---
         let curveHealthText = "...";
