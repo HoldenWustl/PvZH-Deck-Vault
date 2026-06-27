@@ -3859,6 +3859,7 @@ if (!shareUrl) {
         if (tracker) tracker.innerText = `${totalCards}/40`;
 
         if (currentSeeds.length === 0) {
+            manualDeckName = "";
             resultsContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;">No cards added yet. Search above to begin!</div>';
             generateDeckBtn.disabled = true;
             if (title) title.classList.add('hidden');
@@ -3893,30 +3894,73 @@ if (!shareUrl) {
                 }));
             }
 
-            const isPlant = currentFaction === "Plant";
-            const aiDeckName = generateDeckName(currentSeeds, isPlant);
+            const autoDeckName = getAutoDeckName();
+            const deckName = getCurrentDeckName();
 
             if (title) {
-                title.classList.remove('hidden');
+    title.classList.remove('hidden');
 
-                const heroBadgesHtml = heroesData.map(hero => {
-                    return `
-            <div class="title-hero-pill">
-                <img src="hero_images/${hero.imgFilename}" alt="${hero.name}" class="title-hero-avatar">
-                <span class="title-hero-label">${hero.name}</span>
-            </div>
+    const heroAvatarsHtml = heroesData.slice(0, 3).map((hero, i) => {
+        const base = hero.imgFilename.replace(/\.(webp|png)$/i, '');
+
+        return `
+            <img 
+                src="hero_images/${base}.webp" 
+                onerror="this.onerror=null; this.src='hero_images/${base}.png';"
+                alt="${hero.name}" 
+                class="export-header-avatar"
+                style="left: ${i * 34}px;"
+            >
         `;
-                }).join('');
+    }).join('');
 
-                title.innerHTML = `
-        <div style="font-size: 1.2em; color: var(--accent); margin-bottom: 8px; text-align: center;">"${aiDeckName}"</div>
-        <div class="title-hero-container">
-            ${heroBadgesHtml}
+    title.innerHTML = `
+        <div class="export-style-header">
+            <div class="export-header-avatars ${heroesData.length > 1 ? 'multi' : ''}">
+                ${heroAvatarsHtml}
+            </div>
+
+            <div class="export-header-text">
+                <input 
+                    id="manualDeckNameInput"
+                    class="export-deck-name-input"
+                    type="text"
+                    maxlength="${DECK_NAME_MAX_CHARS}"
+                    placeholder="${escapeHtml(autoDeckName)}"
+                    value="${manualDeckName ? escapeHtml(manualDeckName) : ''}"
+                    aria-label="Deck name"
+                >
+
+                <div class="export-hero-name">
+                    ${escapeHtml(heroName)}
+                </div>
+            </div>
         </div>
     `;
-            }
 
-            currentClipboardText = `Deck: ${aiDeckName}\nHero: ${heroName}\n\n`;
+    const deckNameInput = document.getElementById("manualDeckNameInput");
+
+    if (deckNameInput) {
+        deckNameInput.addEventListener("input", () => {
+            manualDeckName = sanitizeDeckName(deckNameInput.value);
+
+            currentClipboardText = `Deck: ${getCurrentDeckName()}\nHero: ${heroName}\n\n`;
+
+            const sortedSeeds = [...currentSeeds].sort((a, b) => {
+                const costA = cardDatabase[a.name]?.Cost || 0;
+                const costB = cardDatabase[b.name]?.Cost || 0;
+                if (costA !== costB) return costA - costB;
+                return a.name.localeCompare(b.name);
+            });
+
+            sortedSeeds.forEach(seed => {
+                currentClipboardText += `${seed.count}x ${seed.name.replace(/_/g, ' ')}\n`;
+            });
+        });
+    }
+}
+
+            currentClipboardText = `Deck: ${deckName}\nHero: ${heroName}\n\n`;
             if (actionContainer) {
                 actionContainer.classList.remove('hidden');
                 actionContainer.style.display = 'flex';
@@ -4701,6 +4745,34 @@ if (!shareUrl) {
         </span>
     `).join('');
     }
+    let manualDeckName = "";
+const DECK_NAME_MAX_CHARS = 24;
+function sanitizeDeckName(name) {
+    return (name || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, DECK_NAME_MAX_CHARS);
+}
+
+function escapeHtml(str) {
+    return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+}
+
+function getAutoDeckName() {
+    const isPlant = currentFaction === "Plant";
+
+    return typeof generateDeckName === "function"
+        ? generateDeckName(currentSeeds, isPlant)
+        : "Custom Deck";
+}
+
+function getCurrentDeckName() {
+    return sanitizeDeckName(manualDeckName) || getAutoDeckName();
+}
     function buildCurrentDeckShareUrl(deckToShare = currentSeeds) {
     const cardDictionary = Object.keys(cardDatabase).sort();
 
@@ -5977,11 +6049,7 @@ function drawCircleImage(ctx, img, cx, cy, radius) {
             // Hero/deck data
             const { heroName, heroesData } = getExportHeroData();
 
-            const isPlant = currentFaction === "Plant";
-            const aiDeckName =
-                typeof generateDeckName === "function"
-                    ? generateDeckName(currentSeeds, isPlant)
-                    : "Custom Deck";
+           const aiDeckName = getCurrentDeckName();
 
             // Load hero images
             const loadedHeroes = await Promise.all(
@@ -6051,7 +6119,7 @@ function drawCircleImage(ctx, img, cx, cy, radius) {
             ctx.textBaseline = 'middle';
 
             ctx.fillStyle = '#9fd36f';
-            drawFitText(ctx, `"${aiDeckName}"`, textX, headerY + 34, textMaxW, 22, 15, "bold");
+            drawFitText(ctx, aiDeckName, textX, headerY + 34, textMaxW, 22, 15, "bold");
 
             ctx.fillStyle = '#d7dde4';
             drawFitText(ctx, heroName, textX, headerY + 61, textMaxW, 16, 12, "600");

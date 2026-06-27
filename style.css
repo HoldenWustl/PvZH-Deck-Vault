@@ -63,9 +63,9 @@ header {
     display: flex;
 }
 
-input[type="text"] {
+input[type="text"]:not(.export-deck-name-input) {
     flex: 1;
-    padding: 12px 15px; /* Bumped padding slightly for better mobile tapping */
+    padding: 12px 15px;
     border-radius: 5px;
     border: none;
     background-color: var(--card-bg);
@@ -1739,7 +1739,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Desktop layout: Side-by-side */
 /* Desktop layout: Side-by-side */
-@media (min-width: 768px) {
+@media (min-width: 1000px) {
     .split-layout {
         flex-direction: row; 
         align-items: stretch;
@@ -4188,4 +4188,167 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     min-height: 46px !important;
     font-size: 0.92rem !important;
   }
+}
+.deck-name-editor-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.deck-name-input {
+    width: min(90%, 420px);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.18);
+    color: var(--accent);
+    font-size: 1.2em;
+    font-weight: 800;
+    text-align: center;
+    outline: none;
+    padding: 4px 8px 6px;
+}
+
+.deck-name-input::placeholder {
+    color: var(--accent);
+    opacity: 1;
+}
+
+.deck-name-input:focus {
+    border-bottom-color: var(--accent);
+    background: rgba(255, 255, 255, 0.04);
+}
+#generatedDeckTitle {
+    width: 100%;
+    margin: 18px auto 16px;
+}
+
+.export-style-header {
+    width: min(100%, 560px);
+    min-height: 88px;
+    margin: 0 auto;
+    padding: 0 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border-radius: 18px;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.11),
+        rgba(255, 255, 255, 0.04)
+    );
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 14px 35px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-sizing: border-box;
+}
+
+.export-header-avatars {
+    position: relative;
+    width: 68px;
+    height: 76px;
+    flex: 0 0 68px;
+}
+
+.export-header-avatars.multi {
+    width: 104px;
+    flex-basis: 104px;
+}
+
+.export-header-avatar {
+    position: absolute;
+    top: 50%;
+    width: 68px;
+    height: 68px;
+    transform: translateY(-50%);
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.35);
+    background: #20262d;
+    box-shadow:
+        0 5px 14px rgba(0, 0, 0, 0.65),
+        0 0 0 4px rgba(255, 255, 255, 0.12);
+}
+
+.export-header-avatars.multi .export-header-avatar {
+    width: 56px;
+    height: 56px;
+}
+
+.export-header-text {
+    min-width: 0;
+    flex: 1;
+    text-align: left;
+}
+
+.export-deck-name-input {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0 0 6px;
+    color: #9fd36f;
+    font: 800 22px "Segoe UI", system-ui, sans-serif;
+    line-height: 1.15;
+    text-align: left;
+    text-overflow: ellipsis;
+}
+
+.export-deck-name-input::placeholder {
+    color: #9fd36f;
+    opacity: 1;
+}
+
+.export-deck-name-input:focus {
+    text-shadow: 0 0 12px rgba(159, 211, 111, 0.25);
+}
+
+.export-hero-name {
+    color: #d7dde4;
+    font: 600 16px "Segoe UI", system-ui, sans-serif;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 560px) {
+    .export-style-header {
+        min-height: 78px;
+        padding: 0 16px;
+        gap: 14px;
+        border-radius: 16px;
+    }
+
+    .export-header-avatars {
+        width: 56px;
+        height: 64px;
+        flex-basis: 56px;
+    }
+
+    .export-header-avatars.multi {
+        width: 88px;
+        flex-basis: 88px;
+    }
+
+    .export-header-avatar {
+        width: 56px;
+        height: 56px;
+    }
+
+    .export-header-avatars.multi .export-header-avatar {
+        width: 48px;
+        height: 48px;
+    }
+
+    .export-deck-name-input {
+        font-size: 18px;
+    }
+
+    .export-hero-name {
+        font-size: 14px;
+    }
 }
