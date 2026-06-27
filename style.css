@@ -3131,9 +3131,14 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     border-radius: 50%;
     object-fit: cover;
     object-position: top center;
-    background: #2a2a35;
-    border: 2px solid var(--pvz-green);
-    box-shadow: 0 0 12px rgba(76, 175, 80, 0.15);
+
+    background: #20262d;
+    border: 3px solid rgba(255, 255, 255, 0.35);
+
+    box-shadow:
+        0 5px 14px rgba(0, 0, 0, 0.65),
+        0 0 0 4px rgba(255, 255, 255, 0.12);
+
     animation: daveBob 3.2s ease-in-out infinite;
 }
 
