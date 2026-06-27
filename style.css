@@ -4381,12 +4381,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     margin-top: 18px;
 }
 
-.crafter-controls .action-buttons {
-    display: flex;
-    justify-content: center;
-    align-items: stretch;
-    gap: 12px;
-}
+
 
 /* Finish button becomes a compact combined control */
 .finish-btn-wrap {
@@ -4496,4 +4491,31 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* keeps toggles clickable over disabled button */
     pointer-events: none;
+}
+.crafter-controls .action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.crafter-controls .clear-btn,
+.crafter-controls .finish-btn-wrap {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.crafter-controls .clear-btn {
+    flex: 0 1 34%;
+    padding-left: 10px;
+    padding-right: 10px;
+    white-space: nowrap;
+}
+
+.crafter-controls .finish-btn-wrap {
+    flex: 1 1 66%;
+    max-width: 260px;
 }
