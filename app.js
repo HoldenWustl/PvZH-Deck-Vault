@@ -622,9 +622,10 @@ if (totalCards > 0 && ctx.maxMetaCopies > 0) {
         }
 
         // --- Verdict ---
-        const base = (curveNumeric * 0.3) + (synergyScore * 0.35) + (powerScore * 0.3) + (consistencyScore * 0.05);
+        const base = (curveNumeric * 0.3) + (synergyScore * 0.375) + (powerScore * 0.275) + (consistencyScore * 0.05);
         const consistencyPenalty = consistencyScore < 70 ? (70 - consistencyScore) * 0.8 : 0;
-        const overallPercent = Math.max(0, base - consistencyPenalty);
+        const powerPenalty = powerScore < 60 ? (60 - powerScore) * 0.2 : 0;
+        const overallPercent = Math.max(0, base - consistencyPenalty - powerPenalty);
         const allTopTier = curveNumeric >= 87.5 && synergyScore >= 87.5 && consistencyScore >= 87.5 && powerScore >= 87.5;
 
         const { grade, gradeColor } = getVerdictGrade(overallPercent, allTopTier, totalCards);
