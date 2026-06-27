@@ -4290,7 +4290,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     outline: none;
     padding: 0;
     margin: 0 0 6px;
-    color: #9fd36f;
+    color: var(--accent);
     font: 800 22px "Segoe UI", system-ui, sans-serif;
     line-height: 1.15;
     text-align: left;
@@ -4298,7 +4298,7 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 .export-deck-name-input::placeholder {
-    color: #9fd36f;
+    color: var(--accent);
     opacity: 1;
 }
 

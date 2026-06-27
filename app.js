@@ -6118,7 +6118,7 @@ function drawCircleImage(ctx, img, cx, cy, radius) {
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
 
-            ctx.fillStyle = '#9fd36f';
+            ctx.fillStyle = '#00b4d8';
             drawFitText(ctx, aiDeckName, textX, headerY + 34, textMaxW, 22, 15, "bold");
 
             ctx.fillStyle = '#d7dde4';
