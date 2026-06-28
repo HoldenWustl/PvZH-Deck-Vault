@@ -6057,7 +6057,7 @@ function drawCircleImage(ctx, img, cx, cy, radius) {
             const rows = Math.ceil(currentSeeds.length / columns);
 
             const headerHeight = 118;
-            const watermarkHeight = 44;
+            const watermarkHeight = 70;
 
             const canvasWidth =
                 padding * 2 +
@@ -6108,6 +6108,12 @@ function drawCircleImage(ctx, img, cx, cy, radius) {
                     return { ...hero, img };
                 })
             );
+            // Load PvZH Vault leaf icon
+const vaultIcon = await loadCanvasImage([
+    `pvzhvault_favicon.png`,
+    `/pvzhvault_favicon.png`,
+    `images/pvzhvault_favicon.png`
+]);
 
             // Header panel
             const headerX = padding;
@@ -6272,31 +6278,71 @@ function drawCircleImage(ctx, img, cx, cy, radius) {
                 ctx.shadowColor = 'transparent';
             });
 
-            // Watermark
-            const wmText = 'pvzhvault.com';
-            ctx.font = 'bold 15px "Segoe UI", sans-serif';
-            const wmTextWidth = ctx.measureText(wmText).width;
+            // Footer creator stamp
+const stampW = Math.min(380, canvasWidth - padding * 2);
+const stampH = 48;
+const stampX = (canvasWidth - stampW) / 2;
+const stampY = canvasHeight - padding - stampH + 4;
 
-            const wmPadX = 14;
-            const wmPadY = 8;
-            const wmWidth = wmTextWidth + wmPadX * 2;
-            const wmHeight = 15 + wmPadY * 2;
-            const wmX = canvasWidth - padding - wmWidth + 10;
-            const wmY = canvasHeight - padding - wmHeight + 15;
+// Soft shadow
+ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+ctx.shadowBlur = 12;
+ctx.shadowOffsetY = 5;
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-            ctx.beginPath();
-            ctx.roundRect(wmX, wmY, wmWidth, wmHeight, wmHeight / 2);
-            ctx.fill();
+// Stamp background
+const stampGradient = ctx.createLinearGradient(stampX, stampY, stampX, stampY + stampH);
+stampGradient.addColorStop(0, 'rgba(255,255,255,0.105)');
+stampGradient.addColorStop(1, 'rgba(255,255,255,0.045)');
 
-            const textGrad = ctx.createLinearGradient(wmX, wmY, wmX, wmY + wmHeight);
-            textGrad.addColorStop(0, '#ffffff');
-            textGrad.addColorStop(1, '#b0b5ba');
+ctx.fillStyle = stampGradient;
+ctx.beginPath();
+ctx.roundRect(stampX, stampY, stampW, stampH, 16);
+ctx.fill();
 
-            ctx.fillStyle = textGrad;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(wmText, wmX + wmWidth / 2, wmY + wmHeight / 2 + 1);
+ctx.shadowColor = 'transparent';
+
+// Border
+ctx.strokeStyle = 'rgba(255,255,255,0.13)';
+ctx.lineWidth = 1.4;
+ctx.stroke();
+
+// Leaf icon
+const iconSize = 30;
+const iconX = stampX + 18;
+const iconY = stampY + (stampH - iconSize) / 2;
+
+ctx.beginPath();
+ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2 + 4, 0, Math.PI * 2);
+ctx.fillStyle = 'rgba(0, 180, 216, 0.13)';
+ctx.fill();
+
+ctx.strokeStyle = 'rgba(0, 180, 216, 0.28)';
+ctx.lineWidth = 1;
+ctx.stroke();
+
+if (vaultIcon) {
+    ctx.drawImage(vaultIcon, iconX, iconY, iconSize, iconSize);
+} else {
+    ctx.fillStyle = '#00b4d8';
+    ctx.font = 'bold 18px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('V', iconX + iconSize / 2, iconY + iconSize / 2 + 1);
+}
+
+// Text
+const stampTextX = iconX + iconSize + 14;
+
+ctx.textAlign = 'left';
+ctx.textBaseline = 'middle';
+
+ctx.font = 'bold 16px "Segoe UI", sans-serif';
+ctx.fillStyle = '#f1f5f9';
+ctx.fillText('Made with PvZH Vault', stampTextX, stampY + 18);
+
+ctx.font = '600 12px "Segoe UI", sans-serif';
+ctx.fillStyle = 'rgba(215, 221, 228, 0.72)';
+ctx.fillText('Build & Explore Decks • pvzhvault.com', stampTextX, stampY + 34);
 
             // Export
             const link = document.createElement('a');
