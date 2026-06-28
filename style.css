@@ -1722,8 +1722,8 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
     display: flex;
     flex-direction: column;
     gap: 15px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .toggles {
@@ -4378,7 +4378,6 @@ button:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
 .crafter-controls.panel-controls {
     display: flex;
     justify-content: center;
-    margin-top: 18px;
 }
 
 
