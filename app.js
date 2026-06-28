@@ -6052,7 +6052,7 @@ function drawCircleImage(ctx, img, cx, cy, radius) {
             const padding = 30;
             const cardBoxWidth = 110;
             const cardBoxHeight = 140;
-            const gap = 18;
+            const gap = 12;
             const columns = 4;
             const rows = Math.ceil(currentSeeds.length / columns);
 
@@ -6223,7 +6223,7 @@ const vaultIcon = await loadCanvasImage([
                     }
 
                     dx = x + (cardBoxWidth - drawWidth) / 2;
-                    dy = y + (cardBoxHeight - drawHeight) / 2;
+dy = y + cardBoxHeight - drawHeight;
 
                     ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
                     ctx.shadowBlur = 12;
