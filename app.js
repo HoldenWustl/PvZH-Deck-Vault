@@ -7356,6 +7356,15 @@ const guidesData = [
         icon: "budget"
     },
     {
+    title: "Best Impfinity Decks",
+    description: "A guide to the strongest Impfinity decks, from fast Pirate aggro builds to powerful budget-friendly Crazy/Sneaky strategies.",
+    href: "/best-impfinity-decks",
+    badge: "Hero Guide",
+    time: "5 min read",
+    date: "June 28, 2026",
+    icon: "hero"
+},
+    {
         title: "Best Decks for Every Hero in PvZH",
         description: "A complete hero-by-hero guide to the best Plant and Zombie decks, including budget and maxed options.",
         href: "/best-decks-for-every-hero",
