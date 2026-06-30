@@ -21,6 +21,27 @@
         "upload_date": "Jun 30, 2026",
         "credit": "Salt, The_Cute_Chick(TCC)"
     },
+    "deck_282": {
+        "name": "pot mop",
+        "cards": [
+            "x4 Bonk_Choy",
+            "x4 Clique_Peas",
+            "x4 Berry_Blast",
+            "x3 Lily_of_the_Valley",
+            "x4 Split_Pea",
+            "x3 Wild_Berry",
+            "x2 Flourish",
+            "x4 Veloci-Radish_Packmate",      
+            "x4 Fig",
+            "x2 Gatling_Pea",     
+            "x3 Potted_Powerhouse",
+            "x3 Espresso_Fiesta"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Jun 30, 2026",
+        "credit": "First Hero"
+    },
      "deck_19089": {
         "name": "Ramp to Repeater",
         "cards": [
@@ -252,6 +273,46 @@
         "upload_date": "Jun 24, 2026",
         "credit": "Tbone"
     },
+     "deck_178672": {
+        "name": "Overshoot Madness",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x3 Disco-Naut",
+            "x4 Quickdraw_Con_Man",
+            "x4 Dr._Spacetime",
+            "x2 Exploding_Fruitcake",
+            "x3 Quazard",
+            "x4 Abracadaver",
+            "x3 Laser_Base_Alpha",
+            "x3 Moon_Base_Z",
+            "x4 Tomb_Raiser",
+            "x3 Binary_Stars",
+            "x3 Cursed_Gargolith"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Jun 24, 2026",
+        "credit": "Mososaurus"
+    },
+     "deck_177672": {
+        "name": "DOZZA",
+        "cards": [
+            "x4 Bungee_Plumber",
+            "x4 Healthy_Treat",
+            "x4 Quickdraw_Con_Man",
+            "x4 Teacher",
+            "x3 Exploding_Fruitcake",
+            "x4 Jurassic_Fossilhead",
+            "x4 Sugary_Treat",
+            "x4 Going_Viral",
+            "x3 Unexpected_Gifts",
+            "x2 All-Star_Zombie"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Jun 24, 2026",
+        "credit": "Dozza"
+    },
      "deck_1717": {
         "name": "Cruistuna",
         "cards": [
@@ -272,6 +333,28 @@
         "youtube_url": "https://www.youtube.com/watch?v=9IkUZ2ht9lc",
         "upload_date": "Jun 22, 2026",
         "credit": "FryEmUp"
+    },
+    "deck_17672": {
+        "name": "BPL",
+        "cards": [
+            "x4 Bonk_Choy",
+            "x4 Clique_Peas",
+            "x4 Lima_Pleurodon",
+            "x2 Primal_Peashooter",
+            "x2 Umbrella_Leaf",
+            "x3 Cabbage_Pult",
+            "x4 Pea_Patch",
+            "x2 Typical_Beanstalk",
+            "x3 Jelly_Bean",
+            "x3 Savage_Spinach",
+            "x4 Gatling_Pea",
+            "x3 Brainana",
+            "x2 Espresso_Fiesta"
+        ],
+        "youtube_title": "",
+        "youtube_url": "",
+        "upload_date": "Jun 22, 2026",
+        "credit": "Michael"
     },
     "deck_14903": {
         "name": "Piport 1.6",
@@ -7147,27 +7230,7 @@
         "upload_date": "Dec 14, 2024",
         "credit": "FryEmUp"
     },
-    "deck_282": {
-        "name": "Pot",
-        "cards": [
-            "x4 Bonk_Choy",
-            "x4 Clique_Peas",
-            "x4 Shroom_For_Two",
-            "x4 Berry_Blast",
-            "x2 Coffee_Grounds",
-            "x3 Lily_of_the_Valley",
-            "x3 Vegetation_Mutation",
-            "x3 Flourish",
-            "x3 Muscle_Sprout",
-            "x4 Veloci-Radish_Packmate",           
-            "x4 Potted_Powerhouse",
-            "x2 Espresso_Fiesta"
-        ],
-        "youtube_title": "",
-        "youtube_url": "",
-        "upload_date": "Dec 13, 2024",
-        "credit": "Boris"
-    },
+    
     "deck_283": {
         "name": "Soft Moc",
         "cards": [
