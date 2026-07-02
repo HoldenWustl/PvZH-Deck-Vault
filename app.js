@@ -632,86 +632,185 @@ if (totalCards > 0 && ctx.maxMetaCopies > 0) {
         return { grade, gradeColor, score: overallPercent, costLabel, synergyScore, consistencyScore, powerScore, avgCost, curveHealthText, curve, avgSparks, curveNumeric };
     }
     window.getTopDecksByMonth = function (monthNumber, customCtx) {
-        // Fallback to find fullDatabase in global scope if not explicitly passed
-        const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
+    const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
+    const cardDb = window.cardDatabase || (typeof cardDatabase !== 'undefined' ? cardDatabase : null);
 
-        if (!db) {
-            console.error("Error: 'fullDatabase' could not be found in the global scope. Please make sure it is defined.");
-            return;
-        }
+    if (!db) {
+        console.error("Error: 'fullDatabase' could not be found in the global scope.");
+        return [];
+    }
 
-        // Maps for dynamic logging and flexible regex generation
-        const monthNames = {
-            1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
-            7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
-        };
+    if (!cardDb) {
+        console.error("Error: 'cardDatabase' could not be found in the global scope.");
+        return [];
+    }
 
-        const monthPatterns = {
-            1: "jan(uary)?", 2: "feb(ruary)?", 3: "mar(ch)?", 4: "apr(il)?",
-            5: "may", 6: "jun(e)?", 7: "jul(y)?", 8: "aug(ust)?",
-            9: "sep(t(ember)?)?", 10: "oct(ober)?", 11: "nov(ember)?", 12: "dec(ember)?"
-        };
+    const heroMap = {
+        // Plants
+        "Mega-Grow,Smarty": "Green Shadow",
+        "Kabloom,Solar": "Solar Flare",
+        "Guardian,Solar": "Wall-Knight",
+        "Mega-Grow,Solar": "Chompzilla",
+        "Guardian,Kabloom": "Spudow",
+        "Guardian,Smarty": "Citron / Beta-Carrotina",
+        "Guardian,Mega-Grow": "Grass Knuckles",
+        "Kabloom,Smarty": "Nightcap",
+        "Kabloom,Mega-Grow": "Captain Combustible",
+        "Smarty,Solar": "Rose",
 
-        const targetMonthName = monthNames[monthNumber];
-        const patternStr = monthPatterns[monthNumber];
+        // Zombies
+        "Brainy,Sneaky": "Super Brainz / Huge-Gigantacus",
+        "Beastly,Hearty": "The Smash",
+        "Crazy,Sneaky": "Impfinity",
+        "Brainy,Hearty": "Rustbolt",
+        "Beastly,Crazy": "Electric Boogaloo",
+        "Beastly,Sneaky": "Brain Freeze",
+        "Brainy,Crazy": "Professor Brainstorm",
+        "Beastly,Brainy": "Immorticia",
+        "Crazy,Hearty": "Z-Mech",
+        "Hearty,Sneaky": "Neptuna"
+    };
 
-        if (!targetMonthName) {
-            console.error("Error: Invalid month number. Please provide a number between 1 (January) and 12 (December).");
-            return;
-        }
+    const monthNames = {
+        1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
+        7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
+    };
 
-        // Dynamically construct the regex for the given month in 2026
-        const dateRegex = new RegExp(`^${patternStr}\\s+\\d+,\\s+2026$`, "i");
-        const compiledDecks = [];
+    const monthPatterns = {
+        1: "jan(uary)?", 2: "feb(ruary)?", 3: "mar(ch)?", 4: "apr(il)?",
+        5: "may", 6: "jun(e)?", 7: "jul(y)?", 8: "aug(ust)?",
+        9: "sep(t(ember)?)?", 10: "oct(ober)?", 11: "nov(ember)?", 12: "dec(ember)?"
+    };
 
-        for (const deckKey in db) {
-            if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
+    const targetMonthName = monthNames[monthNumber];
+    const patternStr = monthPatterns[monthNumber];
 
-            const deck = db[deckKey];
-            if (!deck.upload_date || !deck.cards) continue;
+    if (!targetMonthName) {
+        console.error("Error: Invalid month number. Please provide a number between 1 and 12.");
+        return [];
+    }
 
-            // Filter strictly for the chosen month in 2026
-            if (dateRegex.test(deck.upload_date.trim())) {
-                try {
-                    const activeCtx = customCtx || window.ctx || undefined;
+    const dateRegex = new RegExp(`^${patternStr}\\s+\\d+,\\s+2026$`, "i");
+    const compiledDecks = [];
+    const seenDecks = new Set();
 
-                    // Run your scoring function
-                    const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+    function getHeroFromCards(cards) {
+        const uniqueClasses = new Set();
 
-                    compiledDecks.push({
-                        id: deckKey,
-                        name: deck.name,
-                        score: parseFloat(verdict.score.toFixed(2)),
-                        grade: verdict.grade,
-                        cost: verdict.costLabel,
-                        synergy: verdict.synergyScore,
-                        power: verdict.powerScore,
-                        consistency: verdict.consistencyScore,
-                        date: deck.upload_date,
-                        author: deck.credit || "Unknown"
-                    });
-                } catch (error) {
-                    console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
-                }
+        for (const cardRaw of cards) {
+            let parsedCardName = cardRaw.trim();
+
+            // Strip quantity prefix, e.g. "4x Teleport" or "x4 Teleport"
+            const match = cardRaw.match(/^(\d+x?|x\d+)\s+(.+)$/i);
+            if (match) {
+                parsedCardName = match[2].trim();
+            }
+
+            const keyWithUnderscores = parsedCardName.replace(/\s+/g, '_');
+            const keyWithSpaces = parsedCardName.replace(/_/g, ' ');
+
+            const cardData =
+                cardDb[keyWithUnderscores] ||
+                cardDb[keyWithSpaces] ||
+                cardDb[parsedCardName];
+
+            if (cardData && cardData.Class) {
+                uniqueClasses.add(cardData.Class.trim());
             }
         }
 
-        // Sort descending by score
-        compiledDecks.sort((a, b) => b.score - a.score);
+        const classesArray = Array.from(uniqueClasses).sort();
+        const classesKey = classesArray.join(',');
 
-        // Slice top 10
-        const top10 = compiledDecks.slice(0, 10);
+        return heroMap[classesKey] || "Unknown Hero";
+    }
 
-        // Display Results dynamically in console
-        if (top10.length === 0) {
-            console.log(`%c No decks found for ${targetMonthName} 2026.`, "color: #ff9900; font-weight: bold;");
-        } else {
-            console.log(`%c--- TOP 10 HIGHEST SCORING DECKS (${targetMonthName.toUpperCase()} 2026) ---`, "color: #00ffcc; font-weight: bold; font-size: 13px;");
-            console.table(top10);
+    for (const deckKey in db) {
+        if (!Object.prototype.hasOwnProperty.call(db, deckKey)) continue;
+
+        const deck = db[deckKey];
+        if (!deck.upload_date || !deck.cards) continue;
+
+        if (dateRegex.test(deck.upload_date.trim())) {
+            try {
+                const activeCtx = customCtx || window.ctx || (typeof ctx !== 'undefined' ? ctx : undefined);
+
+                const deckSignature = [...deck.cards]
+                    .map(c => c.trim().toLowerCase().replace(/\s+/g, ' '))
+                    .sort()
+                    .join('|');
+
+                if (seenDecks.has(deckSignature)) {
+                    continue;
+                }
+
+                seenDecks.add(deckSignature);
+
+                const heroName = getHeroFromCards(deck.cards);
+                const verdict = getDeckVerdictFromCards(deck.cards, deckKey, activeCtx);
+                const currentScore = parseFloat(verdict.score.toFixed(2));
+
+                compiledDecks.push({
+                    hero: heroName,
+                    id: deckKey,
+                    name: deck.name || "Unnamed Deck",
+                    score: currentScore,
+                    grade: verdict.grade,
+                    cost: verdict.costLabel,
+                    synergy: verdict.synergyScore,
+                    power: verdict.powerScore,
+                    consistency: verdict.consistencyScore,
+                    date: deck.upload_date,
+                    author: deck.credit || "Unknown",
+                    cards: deck.cards
+                });
+
+            } catch (error) {
+                console.warn(`Skipping deck ${deckKey} due to evaluation error:`, error);
+            }
         }
+    }
 
-        return top10;
-    };
+    const topDecksArray = compiledDecks
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10);
+
+    if (topDecksArray.length === 0) {
+        console.log(`%c No decks found for ${targetMonthName} 2026.`, "color: #ff9900; font-weight: bold;");
+    } else {
+        console.log(
+            `%c--- TOP ${topDecksArray.length} HIGHEST SCORING DECKS (${targetMonthName.toUpperCase()} 2026) ---`,
+            "color: #00ffcc; font-weight: bold; font-size: 13px;"
+        );
+
+        console.table(topDecksArray.map((d, index) => ({
+            Rank: index + 1,
+            Hero: d.hero,
+            "Deck Name": d.name,
+            Score: d.score,
+            Grade: d.grade,
+            Cost: d.cost,
+            Synergy: d.synergy,
+            Power: d.power,
+            Consistency: d.consistency,
+            Date: d.date,
+            Author: d.author
+        })));
+
+        console.log(`%c\n--- FULL DECKLIST BREAKDOWNS ---`, "color: #ffcc00; font-weight: bold; font-size: 13px;");
+
+        topDecksArray.forEach((d, index) => {
+            console.log(
+                `%c#${index + 1}: ${d.name} | Hero: ${d.hero} (Score: ${d.score} | Grade: ${d.grade})`,
+                "color: #ffffff; background: #1a2226; font-weight: bold; padding: 4px 8px; border-left: 4px solid #00ffcc; margin-top: 10px;"
+            );
+
+            console.log(Array.isArray(d.cards) ? d.cards.join("\n") : d.cards);
+        });
+    }
+
+    return topDecksArray;
+};
     window.getTopDecksForHero = function (targetHero, customCtx) {
         // Fallback lookups for databases in global scope
         const db = window.fullDatabase || (typeof fullDatabase !== 'undefined' ? fullDatabase : null);
@@ -7354,11 +7453,19 @@ function drawCurrentClassTiers() {
         container.appendChild(row);
     });
 }
-
 const guidesData = [
     {
-        title: "Top 10 Best Decks in PvZH",
-        description: "A data-backed ranking of the strongest decks in the current meta.",
+        title: "Top 10 Best Decks in PvZH — July 2026",
+        description: "The strongest PvZ Heroes decks for the July 2026 meta, ranked by PvZH Vault data.",
+        href: "/best-decks-pvzh-july-2026",
+        badge: "Latest",
+        time: "6 min read",
+        date: "July 1, 2026",
+        icon: "stack"
+    },
+    {
+        title: "Top 10 Best Decks in PvZH — June 2026",
+        description: "A data-backed ranking of the strongest PvZ Heroes decks from the June 2026 meta.",
         href: "/best-decks-pvzh-june-2026",
         badge: "Most searched",
         time: "6 min read",
