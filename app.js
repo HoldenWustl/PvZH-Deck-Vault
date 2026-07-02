@@ -6449,6 +6449,16 @@ ctx.fillText('Build & Explore Decks • pvzhvault.com', stampTextX, stampY + 34)
             link.href = canvas.toDataURL('image/png');
             link.click();
 
+            // GA4 event: successful deck image download
+if (typeof gtag === 'function') {
+    gtag('event', 'download_deck_image', {
+        deck_name: aiDeckName,
+        hero_name: heroName,
+        card_count: currentSeeds.reduce((sum, seed) => sum + seed.count, 0),
+        value: 1
+    });
+}
+
             btn.innerText = "Downloaded!";
             btn.style.background = "#4CAF50";
         } catch (err) {
